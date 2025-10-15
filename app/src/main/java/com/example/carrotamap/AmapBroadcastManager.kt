@@ -16,6 +16,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.channels.Channel
 import org.json.JSONException
 import org.json.JSONObject
 
@@ -32,17 +33,28 @@ class AmapBroadcastManager(
         private const val TAG = "AmapBroadcastManager"
     }
 
-    // 广播数据存储
+    // 广播数据存储 - 优化版：减少内存占用
+    private val broadcastBuffer = CircularBuffer<BroadcastData>(20) // 减少缓冲区大小
     val broadcastDataList = mutableStateListOf<BroadcastData>()
     val receiverStatus = mutableStateOf("等待广播数据...")
     val totalBroadcastCount = mutableIntStateOf(0)
     val lastUpdateTime = mutableLongStateOf(0L)
+    
+    // 优化：减少UI同步频率
+    private var lastSyncTime = 0L
+    private val syncInterval = 5000L // 5秒同步一次，而不是每10条数据
 
     // 协程作用域
     private val receiverScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    
+    // 广播处理Channel - 避免为每个广播创建新协程
+    private val broadcastChannel = Channel<Pair<Intent, Int>>(Channel.UNLIMITED)
+    
+    // 数据限流器 - 控制处理频率
+    private val throttler = DataThrottler(50L) // 最小50ms间隔
 
     // 广播处理器 (传入Context用于地图切换)
-    private val amapDataProcessor = AmapDataProcessor(carrotManFields)
+    private val amapDataProcessor = AmapDataProcessor(context, carrotManFields)
     private val broadcastHandlers = AmapBroadcastHandlers(carrotManFields, networkManager, context, amapDataProcessor)
 
     // 智能数据变化检测
@@ -146,6 +158,10 @@ class AmapBroadcastManager(
                 intentFilter,
                 ContextCompat.RECEIVER_EXPORTED
             )
+            
+            // 启动广播处理协程
+            startBroadcastProcessor()
+            
             Log.i(TAG, "✅ 增强版广播接收器注册成功")
             Log.d(TAG, "📡 注册的广播Action列表:")
             intentFilter.actionsIterator().forEach { action ->
@@ -159,6 +175,22 @@ class AmapBroadcastManager(
             false
         }
     }
+    
+    /**
+     * 启动广播处理协程 - 单个协程处理所有广播
+     */
+    private fun startBroadcastProcessor() {
+        receiverScope.launch {
+            Log.i(TAG, "🚀 启动广播处理协程")
+            for ((intent, keyType) in broadcastChannel) {
+                try {
+                    processBroadcastData(intent, keyType)
+                } catch (e: Exception) {
+                    Log.e(TAG, "处理广播数据失败: ${e.message}", e)
+                }
+            }
+        }
+    }
 
     /**
      * 取消注册广播接收器
@@ -166,6 +198,7 @@ class AmapBroadcastManager(
     fun unregisterReceiver() {
         try {
             context.unregisterReceiver(enhancedAmapReceiver)
+            broadcastChannel.close()
             receiverScope.cancel()
             Log.i(TAG, "✅ 广播接收器已注销")
         } catch (e: Exception) {
@@ -177,6 +210,7 @@ class AmapBroadcastManager(
      * 清空广播数据
      */
     fun clearBroadcastData() {
+        broadcastBuffer.clear()
         broadcastDataList.clear()
         totalBroadcastCount.intValue = 0
         receiverStatus.value = "数据已清空，等待新的广播..."
@@ -197,10 +231,15 @@ class AmapBroadcastManager(
     }
 
     /**
-     * 🎯 处理高德地图发送的广播数据 - 核心方法
+     * 🎯 处理高德地图发送的广播数据 - 核心方法（优化版）
      */
     private fun handleAmapSendBroadcast(intent: Intent) {
         val keyType = intent.getIntExtra("KEY_TYPE", -1)
+        
+        // 应用限流 - 避免过于频繁的处理
+        if (!throttler.shouldProcess()) {
+            return
+        }
         
         // 🎯 根据KEY_TYPE决定日志输出级别
         val isBriefLog = when (keyType) {
@@ -214,46 +253,69 @@ class AmapBroadcastManager(
             //Log.d(TAG, "📝 处理广播 (简要) KEY_TYPE=$keyType") //零时注释
         } else {
             // 其他KEY_TYPE - 输出详细广播数据
-            Log.d(TAG, "🔍 开始处理高德地图广播数据 (KEY_TYPE: $keyType):")
-            logAllExtras(intent)
+            // 对于频繁的广播类型，抑制详细日志输出
+            val shouldSuppressLogs = when (keyType) {
+                AppConstants.AmapBroadcast.Navigation.GUIDE_INFO,           // 10001
+                AppConstants.AmapBroadcast.MapLocation.UNKNOWN_INFO_13011,  // 13011
+                AppConstants.AmapBroadcast.MapLocation.GEOLOCATION_INFO,    // 12205
+                AppConstants.AmapBroadcast.Navigation.TURN_INFO,            // 10016
+                AppConstants.AmapBroadcast.Navigation.MAP_STATE,            // 10019
+                AppConstants.AmapBroadcast.MapLocation.TRAFFIC_LIGHT,       // 60073
+                60073  // 直接添加数字常量
+                -> true
+                else -> false
+            }
+            
+            if (!shouldSuppressLogs) {
+                Log.d(TAG, "🔍 开始处理高德地图广播数据 (KEY_TYPE: $keyType):")
+                logAllExtras(intent, keyType)
+            }
         }
 
         try {
+            // 发送到Channel处理，避免创建新协程
+            broadcastChannel.trySend(Pair(intent, keyType))
+        } catch (e: Exception) {
+            Log.e(TAG, "发送广播到Channel失败: ${e.message}", e)
+        }
+    }
+    
+    /**
+     * 处理广播数据 - 由单个协程调用
+     */
+    private fun processBroadcastData(intent: Intent, keyType: Int) {
+        try {
             // 🔧 解析基础广播数据
             val broadcastData = parseBroadcastData(intent)
+            
+            // 通知UI更新
+            updateBroadcastData(broadcastData)
 
-            // 🚀 异步处理数据更新，避免阻塞UI
-            receiverScope.launch {
-                // 通知UI更新
-                updateBroadcastData(broadcastData)
-
-                // 根据具体类型处理数据
-                when (keyType) {
-                    AppConstants.AmapBroadcast.Navigation.MAP_STATE -> handleMapState(intent)
-                    AppConstants.AmapBroadcast.Navigation.GUIDE_INFO -> handleGuideInfo(intent)
-                    AppConstants.AmapBroadcast.Navigation.LOCATION_INFO -> handleLocationInfo(intent)
-                    AppConstants.AmapBroadcast.Navigation.TURN_INFO -> handleTurnInfo(intent)
-                    AppConstants.AmapBroadcast.Navigation.NAVIGATION_STATUS -> handleNavigationStatus(intent)
-                    AppConstants.AmapBroadcast.Navigation.ROUTE_INFO -> handleRouteInfo(intent)
-                    // 🎯 临时注释：只使用引导信息广播(KEY_TYPE: 10001)的限速数据
-                    // AppConstants.AmapBroadcast.SpeedCamera.SPEED_LIMIT -> handleSpeedLimit(intent)
-                    // 新增：区间测速(12110) 专用处理
-                    AppConstants.AmapBroadcast.SpeedCamera.SPEED_LIMIT -> handleSpeedLimitInterval(intent)
-                    // 13005 与 10007 解析与映射已移除：仅跳过
-                    AppConstants.AmapBroadcast.SpeedCamera.CAMERA_INFO -> {
-                        Log.d(TAG, "🧹 忽略电子眼(13005)映射：已按要求移除")
-                    }
-                    AppConstants.AmapBroadcast.SpeedCamera.SDI_PLUS_INFO -> {
-                        Log.d(TAG, "🧹 忽略SDI Plus(10007)映射：已按要求移除")
-                    }
-                    AppConstants.AmapBroadcast.MapLocation.TRAFFIC_INFO -> handleTrafficInfo(intent)
-                    AppConstants.AmapBroadcast.MapLocation.NAVI_SITUATION -> handleNaviSituation(intent)
-                    AppConstants.AmapBroadcast.MapLocation.TRAFFIC_LIGHT -> handleTrafficLightInfo(intent)
-                    AppConstants.AmapBroadcast.MapLocation.GEOLOCATION_INFO -> handleGeolocationInfo(intent)
-                    AppConstants.AmapBroadcast.LaneInfo.DRIVE_WAY_INFO -> handleDriveWayInfo(intent)
+            // 根据具体类型处理数据
+            when (keyType) {
+                AppConstants.AmapBroadcast.Navigation.MAP_STATE -> handleMapState(intent)
+                AppConstants.AmapBroadcast.Navigation.GUIDE_INFO -> handleGuideInfo(intent)
+                AppConstants.AmapBroadcast.Navigation.LOCATION_INFO -> handleLocationInfo(intent)
+                AppConstants.AmapBroadcast.Navigation.TURN_INFO -> handleTurnInfo(intent)
+                AppConstants.AmapBroadcast.Navigation.NAVIGATION_STATUS -> handleNavigationStatus(intent)
+                AppConstants.AmapBroadcast.Navigation.ROUTE_INFO -> handleRouteInfo(intent)
+                // 🎯 临时注释：只使用引导信息广播(KEY_TYPE: 10001)的限速数据
+                // AppConstants.AmapBroadcast.SpeedCamera.SPEED_LIMIT -> handleSpeedLimit(intent)
+                // 新增：区间测速(12110) 专用处理
+                AppConstants.AmapBroadcast.SpeedCamera.SPEED_LIMIT -> handleSpeedLimitInterval(intent)
+                // 13005 与 10007 解析与映射已移除：仅跳过
+                AppConstants.AmapBroadcast.SpeedCamera.CAMERA_INFO -> {
+                    Log.d(TAG, "🧹 忽略电子眼(13005)映射：已按要求移除")
                 }
+                AppConstants.AmapBroadcast.SpeedCamera.SDI_PLUS_INFO -> {
+                    Log.d(TAG, "🧹 忽略SDI Plus(10007)映射：已按要求移除")
+                }
+                AppConstants.AmapBroadcast.MapLocation.TRAFFIC_INFO -> handleTrafficInfo(intent)
+                AppConstants.AmapBroadcast.MapLocation.NAVI_SITUATION -> handleNaviSituation(intent)
+                AppConstants.AmapBroadcast.MapLocation.TRAFFIC_LIGHT -> handleTrafficLightInfo(intent)
+                AppConstants.AmapBroadcast.MapLocation.GEOLOCATION_INFO -> handleGeolocationInfo(intent)
+                AppConstants.AmapBroadcast.LaneInfo.DRIVE_WAY_INFO -> handleDriveWayInfo(intent)
             }
-
         } catch (e: Exception) {
             Log.e(TAG, "处理KEY_TYPE $keyType 失败: ${e.message}", e)
         }
@@ -262,7 +324,23 @@ class AmapBroadcastManager(
     /**
      * 🔧 记录所有Intent额外数据（调试用）
      */
-    private fun logAllExtras(intent: Intent) {
+    private fun logAllExtras(intent: Intent, keyType: Int = -1) {
+        // 对于频繁的广播类型，抑制详细日志输出
+        val shouldSuppressLogs = when (keyType) {
+            AppConstants.AmapBroadcast.Navigation.GUIDE_INFO,           // 10001
+            AppConstants.AmapBroadcast.MapLocation.UNKNOWN_INFO_13011,  // 13011
+            AppConstants.AmapBroadcast.MapLocation.GEOLOCATION_INFO,    // 12205
+            AppConstants.AmapBroadcast.Navigation.TURN_INFO,            // 10016
+            AppConstants.AmapBroadcast.Navigation.MAP_STATE,            // 10019
+            AppConstants.AmapBroadcast.MapLocation.TRAFFIC_LIGHT,       // 60073
+            60073  // 直接添加数字常量
+            -> true
+            else -> false
+        }
+        
+        if (shouldSuppressLogs) {
+            return  // 不输出详细日志
+        }
         val extras = intent.extras
         if (extras != null) {
             Log.d(TAG, "📋 Intent包含的所有数据:")
@@ -397,38 +475,49 @@ class AmapBroadcastManager(
         )
     }
 
-    // 更新广播数据到UI
+    // 更新广播数据到UI - 优化版：减少同步频率
+    @Synchronized
     fun updateBroadcastData(broadcastData: BroadcastData) {
         try {
-            broadcastDataList.add(0, broadcastData) // 添加到列表顶部
+            // 添加到环形缓冲区 - O(1)操作
+            broadcastBuffer.add(broadcastData)
             totalBroadcastCount.intValue++
             lastUpdateTime.longValue = broadcastData.timestamp
 
-            // 限制列表大小，避免内存溢出
-            if (broadcastDataList.size > 100) {
-                // 安全地移除多余的元素，保留前50个
-                val currentSize = broadcastDataList.size
-                val removeCount = currentSize - 50
-                if (removeCount > 0 && removeCount <= currentSize) {
-                    // 从末尾开始移除，避免索引问题
-                    repeat(removeCount) {
-                        if (broadcastDataList.size > 50) {
-                            broadcastDataList.removeAt(broadcastDataList.size - 1)
-                        }
-                    }
-                }
-                Log.d(TAG, "📊 列表大小控制: $currentSize -> ${broadcastDataList.size}")
+            // 优化：基于时间间隔同步，而不是数据条数
+            val currentTime = System.currentTimeMillis()
+            if (currentTime - lastSyncTime > syncInterval) {
+                syncBufferToList()
+                lastSyncTime = currentTime
             }
 
-            receiverStatus.value = "已接收 ${totalBroadcastCount.intValue} 条广播数据"
+            // 优化：减少状态更新频率
+            if (totalBroadcastCount.intValue % 50 == 0) {
+                receiverStatus.value = "已接收 ${totalBroadcastCount.intValue} 条广播数据"
+            }
 
         } catch (e: Exception) {
-            Log.e(TAG, "更新广播数据失败: ${e.message}", e)
-            // 发生异常时，尝试清理列表
-            if (broadcastDataList.size > 200) {
+            Log.e(TAG, "❌ 更新广播数据失败: ${e.message}", e)
+        }
+    }
+    
+    /**
+     * 同步缓冲区数据到UI列表 - 优化版
+     */
+    private fun syncBufferToList() {
+        try {
+            val bufferData = broadcastBuffer.getAll()
+            // 优化：只在数据真正变化时才更新UI
+            if (bufferData.size != broadcastDataList.size || 
+                (bufferData.isNotEmpty() && broadcastDataList.isNotEmpty() && 
+                 bufferData.last().timestamp != broadcastDataList.last().timestamp)) {
+                
                 broadcastDataList.clear()
-                Log.w(TAG, "列表异常，已清空重置")
+                broadcastDataList.addAll(bufferData)
+                Log.v(TAG, "🔄 同步缓冲区到UI: ${bufferData.size} 条数据")
             }
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ 同步缓冲区失败: ${e.message}", e)
         }
     }
 

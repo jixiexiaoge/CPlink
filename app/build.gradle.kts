@@ -9,13 +9,23 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.carrotamap"
+        applicationId = "com.example.cplink"
         minSdk = 26
         targetSdk = 35
-        versionCode = 250929
-        versionName = "v250929"
+        versionCode = 251013
+        versionName = "v251013"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    // 签名配置
+    signingConfigs {
+        create("release") {
+            storeFile = file("release.keystore")
+            storePassword = "cplink123456"
+            keyAlias = "cplink_key"
+            keyPassword = "cplink123456"
+        }
     }
 
     buildTypes {
@@ -23,22 +33,23 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             isDebuggable = false
+            isJniDebuggable = false
+            isPseudoLocalesEnabled = false
+            isCrunchPngs = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
+                "security-config.pro"
             )
-            signingConfig = signingConfigs.getByName("debug") // 临时使用debug签名，后续需要创建release签名
+            signingConfig = signingConfigs.getByName("release")
         }
-    }
-
-    // 签名配置
-    signingConfigs {
-        create("release") {
-            // 生产环境签名配置 - 需要创建keystore文件
-            // storeFile = file("release.keystore")
-            // storePassword = "your_store_password"
-            // keyAlias = "your_key_alias"
-            // keyPassword = "your_key_password"
+        debug {
+            isMinifyEnabled = false
+            isShrinkResources = false
+            isDebuggable = true
+            isJniDebuggable = false
+            isPseudoLocalesEnabled = false
+            isCrunchPngs = false
         }
     }
     compileOptions {
@@ -50,6 +61,52 @@ android {
     }
     buildFeatures {
         compose = true
+    }
+    
+    // R8优化配置
+    packaging {
+        resources {
+            excludes += setOf(
+                "META-INF/DEPENDENCIES",
+                "META-INF/LICENSE",
+                "META-INF/LICENSE.txt",
+                "META-INF/license.txt",
+                "META-INF/NOTICE",
+                "META-INF/NOTICE.txt",
+                "META-INF/notice.txt",
+                "META-INF/ASL2.0",
+                "META-INF/*.kotlin_module",
+                "META-INF/*.version",
+                "META-INF/proguard/*",
+                "META-INF/com.android.tools/*",
+                "META-INF/gradle-plugins/*",
+                "META-INF/versions/*",
+                "META-INF/INDEX.LIST",
+                "META-INF/io.netty.versions.properties",
+                "META-INF/spring.schemas",
+                "META-INF/spring.tooling",
+                "META-INF/spring.handlers",
+                "META-INF/spring.factories",
+                "META-INF/spring-autoconfigure-metadata.properties",
+                "META-INF/spring-boot-autoconfigure-processor.properties",
+                "META-INF/spring-configuration-metadata.json",
+                "META-INF/spring-configuration-metadata.properties",
+                "META-INF/spring.factories",
+                "META-INF/spring.schemas",
+                "META-INF/spring.tooling",
+                "META-INF/spring.handlers",
+                "META-INF/spring-autoconfigure-metadata.properties",
+                "META-INF/spring-boot-autoconfigure-processor.properties",
+                "META-INF/spring-configuration-metadata.json",
+                "META-INF/spring-configuration-metadata.properties"
+            )
+        }
+    }
+    
+    // 启用资源混淆
+    aaptOptions {
+        noCompress += setOf("tflite", "lite")
+        ignoreAssetsPattern += setOf("!.svn", "!.git", "!.ds_store", "!*.scc", ".*", "<dir>_*", "!CVS", "!thumbs.db", "!picasa.ini", "!*~")
     }
 }
 
@@ -69,7 +126,11 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
     implementation("com.google.code.gson:gson:2.10.1")
-    implementation("io.github.webrtc-sdk:android:114.5735.04")
+    
+    // ExoPlayer - 用于视频播放
+    implementation("androidx.media3:media3-exoplayer:1.2.1")
+    implementation("androidx.media3:media3-ui:1.2.1")
+    implementation("androidx.media3:media3-common:1.2.1")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

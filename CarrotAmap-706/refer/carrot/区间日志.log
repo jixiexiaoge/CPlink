@@ -1,0 +1,243 @@
+
+2025-09-24 13:46:56.149 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  📦 广播详情: action=AUTONAVI_STANDARD_BROADCAST_SEND, KEY_TYPE=12110, EXTRA_STATE=1
+2025-09-24 13:46:56.149 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  🔍 开始处理高德地图广播数据 (KEY_TYPE: 12110):
+2025-09-24 13:46:56.149 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  📋 Intent包含的所有数据:
+2025-09-24 13:46:56.149 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 START_DISTANCE = 9508.0
+2025-09-24 13:46:56.149 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 END_DISTANCE = 193.0
+2025-09-24 13:46:56.149 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 INTERVAL_DISTANCE = 9701.0
+2025-09-24 13:46:56.149 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 END_DISTANCE_TEXT = 193.0m
+2025-09-24 13:46:56.149 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 LIMITED_SPEED = 120
+2025-09-24 13:46:56.149 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 START_DISTANCE_TEXT = 9.5km
+2025-09-24 13:46:56.149 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 AVERAGE_SPEED = 109
+2025-09-24 13:46:56.149 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 CAMERA_TYPE = 8
+2025-09-24 13:46:56.149 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 INTERVAL_DISTANCE_TEXT = 9.7km
+2025-09-24 13:46:56.149 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_STATE = 1
+2025-09-24 13:46:56.149 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_DLAT = 0.0
+2025-09-24 13:46:56.149 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_DLON = 0.0
+2025-09-24 13:46:56.149 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_SLAT = 31.704974444444446
+2025-09-24 13:46:56.149 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_SLON = 119.02960583333333
+2025-09-24 13:46:56.149 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 KEY_TYPE = 12110
+2025-09-24 13:46:56.149 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  📦 广播详情: action=AUTONAVI_STANDARD_BROADCAST_SEND, KEY_TYPE=13011, EXTRA_STATE=-1
+2025-09-24 13:46:56.149 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  🔍 开始处理高德地图广播数据 (KEY_TYPE: 13011):
+2025-09-24 13:46:56.149 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  📋 Intent包含的所有数据:
+2025-09-24 13:46:56.149 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_TMC_SEGMENT = {"tmc_segment_enabled":false,"total_distance":320751,"residual_distance":199694,"finish_distance":121057,"tmc_segment_size":15,"tmc_info":[{"tmc_segment_number":1,"tmc_status":"10","tmc_segment_distance":"121057","tmc_traveltime":0,"tmc_segment_percent":"38"},{"tmc_segment_number":2,"tmc_status":"1","tmc_segment_distance":"12988","tmc_traveltime":455,"tmc_segment_percent":"4"},{"tmc_segment_number":3,"tmc_status":"5","tmc_segment_distance":"8242","tmc_traveltime":275,"tmc_segment_percent":"3"},{"tmc_segment_number":4,"tmc_status":"1","tmc_segment_distance":"16680","tmc_traveltime":572,"tmc_segment_percent":"5"},{"tmc_segment_number":5,"tmc_status":"5","tmc_segment_distance":"8419","tmc_traveltime":275,"tmc_segment_percent":"3"},{"tmc_segment_number":6,"tmc_status":"1","tmc_segment_distance":"12217","tmc_traveltime":402,"tmc_segment_percent":"4"},{"tmc_segment_number":7,"tmc_status":"5","tmc_segment_distance":"7586","tmc_traveltime":253,"tmc_segment_percent":"2"},{"tmc_segment_number":8,"tmc_status":"1","tmc_segment_distance":"38178","tmc_traveltime":1375,"tmc_segment_percent":"12"},{"tmc_segment_number":9,"tmc_status":"5","tmc_segment_distance":"11690","tmc_traveltime":401,"tmc_segment_percent":"4"},{"tmc_segment_number":10,"tmc_status":"1","tmc_segment_distance":"2609","tmc_traveltime":94,"tmc_segment_percent":"1"},{"tmc_segment_number":11,"tmc_status":"5","tmc_segment_distance":"18535","tmc_traveltime":652,"tmc_segment_percent":"6"},{"tmc_segment_number":12,"tmc_status":"1","tmc_segment_distance":"9392","tmc_traveltime":325,"tmc_segment_percent":"3"},{"tmc_segment_number":13,"tmc_status":"5","tmc_segment_distance":"9443","tmc_traveltime":370,"tmc_segment_percent":"3"},{"tmc_segment_number":14,"tmc_status":"1","tmc_segment_distance":"43711","tmc_traveltime":2147,"tmc_segment_percent":"14"},{"tmc_segment_number":15,"tmc_status":"0","tmc_segment_distance":"4","tmc_traveltime":1,"tmc_segment_percent":"0"}]}
+2025-09-24 13:46:56.149 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 KEY_TYPE = 13011
+2025-09-24 13:46:56.150 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  📦 广播详情: action=AUTONAVI_STANDARD_BROADCAST_SEND, KEY_TYPE=10001, EXTRA_STATE=-1
+2025-09-24 13:46:56.150 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  🧭 处理引导信息广播 (KEY_TYPE: 10001)
+2025-09-24 13:46:56.150 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  📦 广播详情: action=AUTONAVI_STANDARD_BROADCAST_SEND, KEY_TYPE=12205, EXTRA_STATE=-1
+2025-09-24 13:46:56.150 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  🔍 开始处理高德地图广播数据 (KEY_TYPE: 12205):
+2025-09-24 13:46:56.150 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  📋 Intent包含的所有数据:
+2025-09-24 13:46:56.150 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_GEOLOCATION = 0
+2025-09-24 13:46:56.150 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 KEY_TYPE = 12205
+2025-09-24 13:46:57.127 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  📦 广播详情: action=AUTONAVI_STANDARD_BROADCAST_SEND, KEY_TYPE=12205, EXTRA_STATE=-1
+2025-09-24 13:46:57.127 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  🔍 开始处理高德地图广播数据 (KEY_TYPE: 12205):
+2025-09-24 13:46:57.127 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  📋 Intent包含的所有数据:
+2025-09-24 13:46:57.127 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_GEOLOCATION = 0
+2025-09-24 13:46:57.127 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 KEY_TYPE = 12205
+2025-09-24 13:46:57.161 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  📦 广播详情: action=AUTONAVI_STANDARD_BROADCAST_SEND, KEY_TYPE=12110, EXTRA_STATE=0
+2025-09-24 13:46:57.161 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  🔍 开始处理高德地图广播数据 (KEY_TYPE: 12110):
+2025-09-24 13:46:57.161 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  📋 Intent包含的所有数据:
+2025-09-24 13:46:57.161 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 START_DISTANCE = 1877.0
+2025-09-24 13:46:57.161 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 END_DISTANCE = 0.0
+2025-09-24 13:46:57.161 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 INTERVAL_DISTANCE = 0.0
+2025-09-24 13:46:57.161 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 END_DISTANCE_TEXT = 
+2025-09-24 13:46:57.161 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 LIMITED_SPEED = 120
+2025-09-24 13:46:57.161 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 START_DISTANCE_TEXT = 1.9km
+2025-09-24 13:46:57.161 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 AVERAGE_SPEED = 0
+2025-09-24 13:46:57.161 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 CAMERA_TYPE = 8
+2025-09-24 13:46:57.161 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 INTERVAL_DISTANCE_TEXT = 
+2025-09-24 13:46:57.161 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_STATE = 0
+2025-09-24 13:46:57.161 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_DLAT = 0.0
+2025-09-24 13:46:57.161 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_DLON = 0.0
+2025-09-24 13:46:57.161 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_SLAT = 31.704974444444446
+2025-09-24 13:46:57.161 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_SLON = 119.02960583333333
+2025-09-24 13:46:57.161 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 KEY_TYPE = 12110
+2025-09-24 13:46:57.162 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  📦 广播详情: action=AUTONAVI_STANDARD_BROADCAST_SEND, KEY_TYPE=12110, EXTRA_STATE=1
+2025-09-24 13:46:57.162 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  🔍 开始处理高德地图广播数据 (KEY_TYPE: 12110):
+2025-09-24 13:46:57.162 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  📋 Intent包含的所有数据:
+2025-09-24 13:46:57.162 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 START_DISTANCE = 9536.0
+2025-09-24 13:46:57.162 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 END_DISTANCE = 165.0
+2025-09-24 13:46:57.162 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 INTERVAL_DISTANCE = 9701.0
+2025-09-24 13:46:57.162 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 END_DISTANCE_TEXT = 165.0m
+2025-09-24 13:46:57.162 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 LIMITED_SPEED = 120
+2025-09-24 13:46:57.162 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 START_DISTANCE_TEXT = 9.5km
+2025-09-24 13:46:57.162 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 AVERAGE_SPEED = 109
+2025-09-24 13:46:57.162 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 CAMERA_TYPE = 8
+2025-09-24 13:46:57.162 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 INTERVAL_DISTANCE_TEXT = 9.7km
+2025-09-24 13:46:57.162 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_STATE = 1
+2025-09-24 13:46:57.162 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_DLAT = 0.0
+2025-09-24 13:46:57.162 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_DLON = 0.0
+2025-09-24 13:46:57.162 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_SLAT = 31.704974444444446
+2025-09-24 13:46:57.162 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_SLON = 119.02960583333333
+2025-09-24 13:46:57.162 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 KEY_TYPE = 12110
+2025-09-24 13:46:57.178 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  📦 广播详情: action=AUTONAVI_STANDARD_BROADCAST_SEND, KEY_TYPE=13011, EXTRA_STATE=-1
+2025-09-24 13:46:57.178 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  🔍 开始处理高德地图广播数据 (KEY_TYPE: 13011):
+2025-09-24 13:46:57.178 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  📋 Intent包含的所有数据:
+2025-09-24 13:46:57.178 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_TMC_SEGMENT = {"tmc_segment_enabled":false,"total_distance":320751,"residual_distance":199666,"finish_distance":121085,"tmc_segment_size":15,"tmc_info":[{"tmc_segment_number":1,"tmc_status":"10","tmc_segment_distance":"121085","tmc_traveltime":0,"tmc_segment_percent":"38"},{"tmc_segment_number":2,"tmc_status":"1","tmc_segment_distance":"12960","tmc_traveltime":454,"tmc_segment_percent":"4"},{"tmc_segment_number":3,"tmc_status":"5","tmc_segment_distance":"8242","tmc_traveltime":275,"tmc_segment_percent":"3"},{"tmc_segment_number":4,"tmc_status":"1","tmc_segment_distance":"16680","tmc_traveltime":572,"tmc_segment_percent":"5"},{"tmc_segment_number":5,"tmc_status":"5","tmc_segment_distance":"8419","tmc_traveltime":275,"tmc_segment_percent":"3"},{"tmc_segment_number":6,"tmc_status":"1","tmc_segment_distance":"12217","tmc_traveltime":402,"tmc_segment_percent":"4"},{"tmc_segment_number":7,"tmc_status":"5","tmc_segment_distance":"7586","tmc_traveltime":253,"tmc_segment_percent":"2"},{"tmc_segment_number":8,"tmc_status":"1","tmc_segment_distance":"38178","tmc_traveltime":1375,"tmc_segment_percent":"12"},{"tmc_segment_number":9,"tmc_status":"5","tmc_segment_distance":"11690","tmc_traveltime":401,"tmc_segment_percent":"4"},{"tmc_segment_number":10,"tmc_status":"1","tmc_segment_distance":"2609","tmc_traveltime":94,"tmc_segment_percent":"1"},{"tmc_segment_number":11,"tmc_status":"5","tmc_segment_distance":"18535","tmc_traveltime":652,"tmc_segment_percent":"6"},{"tmc_segment_number":12,"tmc_status":"1","tmc_segment_distance":"9392","tmc_traveltime":325,"tmc_segment_percent":"3"},{"tmc_segment_number":13,"tmc_status":"5","tmc_segment_distance":"9443","tmc_traveltime":370,"tmc_segment_percent":"3"},{"tmc_segment_number":14,"tmc_status":"1","tmc_segment_distance":"43711","tmc_traveltime":2147,"tmc_segment_percent":"14"},{"tmc_segment_number":15,"tmc_status":"0","tmc_segment_distance":"4","tmc_traveltime":1,"tmc_segment_percent":"0"}]}
+2025-09-24 13:46:57.178 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 KEY_TYPE = 13011
+2025-09-24 13:46:57.179 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  📦 广播详情: action=AUTONAVI_STANDARD_BROADCAST_SEND, KEY_TYPE=10001, EXTRA_STATE=-1
+2025-09-24 13:46:57.179 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  🧭 处理引导信息广播 (KEY_TYPE: 10001)
+2025-09-24 13:46:57.200 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  📦 广播详情: action=AUTONAVI_STANDARD_BROADCAST_SEND, KEY_TYPE=10001, EXTRA_STATE=-1
+2025-09-24 13:46:57.200 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  🧭 处理引导信息广播 (KEY_TYPE: 10001)
+2025-09-24 13:46:58.167 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  📦 广播详情: action=AUTONAVI_STANDARD_BROADCAST_SEND, KEY_TYPE=12205, EXTRA_STATE=-1
+2025-09-24 13:46:58.167 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  🔍 开始处理高德地图广播数据 (KEY_TYPE: 12205):
+2025-09-24 13:46:58.167 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  📋 Intent包含的所有数据:
+2025-09-24 13:46:58.167 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_GEOLOCATION = 0
+2025-09-24 13:46:58.167 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 KEY_TYPE = 12205
+2025-09-24 13:46:58.187 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  📦 广播详情: action=AUTONAVI_STANDARD_BROADCAST_SEND, KEY_TYPE=13011, EXTRA_STATE=-1
+2025-09-24 13:46:58.187 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  🔍 开始处理高德地图广播数据 (KEY_TYPE: 13011):
+2025-09-24 13:46:58.187 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  📋 Intent包含的所有数据:
+2025-09-24 13:46:58.187 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_TMC_SEGMENT = {"tmc_segment_enabled":false,"total_distance":320751,"residual_distance":199637,"finish_distance":121085,"tmc_segment_size":15,"tmc_info":[{"tmc_segment_number":1,"tmc_status":"10","tmc_segment_distance":"121085","tmc_traveltime":0,"tmc_segment_percent":"38"},{"tmc_segment_number":2,"tmc_status":"1","tmc_segment_distance":"12931","tmc_traveltime":453,"tmc_segment_percent":"4"},{"tmc_segment_number":3,"tmc_status":"5","tmc_segment_distance":"8242","tmc_traveltime":275,"tmc_segment_percent":"3"},{"tmc_segment_number":4,"tmc_status":"1","tmc_segment_distance":"16680","tmc_traveltime":572,"tmc_segment_percent":"5"},{"tmc_segment_number":5,"tmc_status":"5","tmc_segment_distance":"8419","tmc_traveltime":275,"tmc_segment_percent":"3"},{"tmc_segment_number":6,"tmc_status":"1","tmc_segment_distance":"12217","tmc_traveltime":402,"tmc_segment_percent":"4"},{"tmc_segment_number":7,"tmc_status":"5","tmc_segment_distance":"7586","tmc_traveltime":253,"tmc_segment_percent":"2"},{"tmc_segment_number":8,"tmc_status":"1","tmc_segment_distance":"38178","tmc_traveltime":1375,"tmc_segment_percent":"12"},{"tmc_segment_number":9,"tmc_status":"5","tmc_segment_distance":"11690","tmc_traveltime":401,"tmc_segment_percent":"4"},{"tmc_segment_number":10,"tmc_status":"1","tmc_segment_distance":"2609","tmc_traveltime":94,"tmc_segment_percent":"1"},{"tmc_segment_number":11,"tmc_status":"5","tmc_segment_distance":"18535","tmc_traveltime":652,"tmc_segment_percent":"6"},{"tmc_segment_number":12,"tmc_status":"1","tmc_segment_distance":"9392","tmc_traveltime":325,"tmc_segment_percent":"3"},{"tmc_segment_number":13,"tmc_status":"5","tmc_segment_distance":"9443","tmc_traveltime":370,"tmc_segment_percent":"3"},{"tmc_segment_number":14,"tmc_status":"1","tmc_segment_distance":"43711","tmc_traveltime":2147,"tmc_segment_percent":"14"},{"tmc_segment_number":15,"tmc_status":"0","tmc_segment_distance":"4","tmc_traveltime":1,"tmc_segment_percent":"0"}]}
+2025-09-24 13:46:58.187 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 KEY_TYPE = 13011
+2025-09-24 13:46:58.191 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  📦 广播详情: action=AUTONAVI_STANDARD_BROADCAST_SEND, KEY_TYPE=12110, EXTRA_STATE=1
+2025-09-24 13:46:58.191 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  🔍 开始处理高德地图广播数据 (KEY_TYPE: 12110):
+2025-09-24 13:46:58.191 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  📋 Intent包含的所有数据:
+2025-09-24 13:46:58.191 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 START_DISTANCE = 9565.0
+2025-09-24 13:46:58.191 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 END_DISTANCE = 136.0
+2025-09-24 13:46:58.191 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 INTERVAL_DISTANCE = 9701.0
+2025-09-24 13:46:58.191 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 END_DISTANCE_TEXT = 136.0m
+2025-09-24 13:46:58.191 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 LIMITED_SPEED = 120
+2025-09-24 13:46:58.191 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 START_DISTANCE_TEXT = 9.6km
+2025-09-24 13:46:58.191 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 AVERAGE_SPEED = 109
+2025-09-24 13:46:58.191 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 CAMERA_TYPE = 8
+2025-09-24 13:46:58.191 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 INTERVAL_DISTANCE_TEXT = 9.7km
+2025-09-24 13:46:58.191 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_STATE = 1
+2025-09-24 13:46:58.191 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_DLAT = 0.0
+2025-09-24 13:46:58.191 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_DLON = 0.0
+2025-09-24 13:46:58.191 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_SLAT = 31.704974444444446
+2025-09-24 13:46:58.191 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_SLON = 119.02960583333333
+2025-09-24 13:46:58.191 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 KEY_TYPE = 12110
+2025-09-24 13:46:58.198 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  📦 广播详情: action=AUTONAVI_STANDARD_BROADCAST_SEND, KEY_TYPE=10001, EXTRA_STATE=-1
+2025-09-24 13:46:58.198 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  🧭 处理引导信息广播 (KEY_TYPE: 10001)
+2025-09-24 13:46:58.201 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  📦 广播详情: action=AUTONAVI_STANDARD_BROADCAST_SEND, KEY_TYPE=10001, EXTRA_STATE=-1
+2025-09-24 13:46:58.201 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  🧭 处理引导信息广播 (KEY_TYPE: 10001)
+2025-09-24 13:46:59.167 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  📦 广播详情: action=AUTONAVI_STANDARD_BROADCAST_SEND, KEY_TYPE=12205, EXTRA_STATE=-1
+2025-09-24 13:46:59.167 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  🔍 开始处理高德地图广播数据 (KEY_TYPE: 12205):
+2025-09-24 13:46:59.167 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  📋 Intent包含的所有数据:
+2025-09-24 13:46:59.167 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_GEOLOCATION = 0
+2025-09-24 13:46:59.167 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 KEY_TYPE = 12205
+2025-09-24 13:46:59.215 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  📦 广播详情: action=AUTONAVI_STANDARD_BROADCAST_SEND, KEY_TYPE=13011, EXTRA_STATE=-1
+2025-09-24 13:46:59.215 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  🔍 开始处理高德地图广播数据 (KEY_TYPE: 13011):
+2025-09-24 13:46:59.215 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  📋 Intent包含的所有数据:
+2025-09-24 13:46:59.215 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_TMC_SEGMENT = {"tmc_segment_enabled":false,"total_distance":320751,"residual_distance":199607,"finish_distance":121114,"tmc_segment_size":15,"tmc_info":[{"tmc_segment_number":1,"tmc_status":"10","tmc_segment_distance":"121114","tmc_traveltime":0,"tmc_segment_percent":"38"},{"tmc_segment_number":2,"tmc_status":"1","tmc_segment_distance":"12901","tmc_traveltime":452,"tmc_segment_percent":"4"},{"tmc_segment_number":3,"tmc_status":"5","tmc_segment_distance":"8242","tmc_traveltime":275,"tmc_segment_percent":"3"},{"tmc_segment_number":4,"tmc_status":"1","tmc_segment_distance":"16680","tmc_traveltime":572,"tmc_segment_percent":"5"},{"tmc_segment_number":5,"tmc_status":"5","tmc_segment_distance":"8419","tmc_traveltime":275,"tmc_segment_percent":"3"},{"tmc_segment_number":6,"tmc_status":"1","tmc_segment_distance":"12217","tmc_traveltime":402,"tmc_segment_percent":"4"},{"tmc_segment_number":7,"tmc_status":"5","tmc_segment_distance":"7586","tmc_traveltime":253,"tmc_segment_percent":"2"},{"tmc_segment_number":8,"tmc_status":"1","tmc_segment_distance":"38178","tmc_traveltime":1375,"tmc_segment_percent":"12"},{"tmc_segment_number":9,"tmc_status":"5","tmc_segment_distance":"11690","tmc_traveltime":401,"tmc_segment_percent":"4"},{"tmc_segment_number":10,"tmc_status":"1","tmc_segment_distance":"2609","tmc_traveltime":94,"tmc_segment_percent":"1"},{"tmc_segment_number":11,"tmc_status":"5","tmc_segment_distance":"18535","tmc_traveltime":652,"tmc_segment_percent":"6"},{"tmc_segment_number":12,"tmc_status":"1","tmc_segment_distance":"9392","tmc_traveltime":325,"tmc_segment_percent":"3"},{"tmc_segment_number":13,"tmc_status":"5","tmc_segment_distance":"9443","tmc_traveltime":370,"tmc_segment_percent":"3"},{"tmc_segment_number":14,"tmc_status":"1","tmc_segment_distance":"43711","tmc_traveltime":2147,"tmc_segment_percent":"14"},{"tmc_segment_number":15,"tmc_status":"0","tmc_segment_distance":"4","tmc_traveltime":1,"tmc_segment_percent":"0"}]}
+2025-09-24 13:46:59.215 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 KEY_TYPE = 13011
+2025-09-24 13:46:59.219 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  📦 广播详情: action=AUTONAVI_STANDARD_BROADCAST_SEND, KEY_TYPE=10001, EXTRA_STATE=-1
+2025-09-24 13:46:59.219 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  🧭 处理引导信息广播 (KEY_TYPE: 10001)
+2025-09-24 13:46:59.220 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  📦 广播详情: action=AUTONAVI_STANDARD_BROADCAST_SEND, KEY_TYPE=10001, EXTRA_STATE=-1
+2025-09-24 13:46:59.220 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  🧭 处理引导信息广播 (KEY_TYPE: 10001)
+2025-09-24 13:46:59.223 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  📦 广播详情: action=AUTONAVI_STANDARD_BROADCAST_SEND, KEY_TYPE=12110, EXTRA_STATE=1
+2025-09-24 13:46:59.223 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  🔍 开始处理高德地图广播数据 (KEY_TYPE: 12110):
+2025-09-24 13:46:59.223 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  📋 Intent包含的所有数据:
+2025-09-24 13:46:59.223 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 START_DISTANCE = 9595.0
+2025-09-24 13:46:59.223 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 END_DISTANCE = 106.0
+2025-09-24 13:46:59.223 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 INTERVAL_DISTANCE = 9701.0
+2025-09-24 13:46:59.223 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 END_DISTANCE_TEXT = 106.0m
+2025-09-24 13:46:59.223 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 LIMITED_SPEED = 120
+2025-09-24 13:46:59.223 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 START_DISTANCE_TEXT = 9.6km
+2025-09-24 13:46:59.223 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 AVERAGE_SPEED = 109
+2025-09-24 13:46:59.223 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 CAMERA_TYPE = 8
+2025-09-24 13:46:59.223 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 INTERVAL_DISTANCE_TEXT = 9.7km
+2025-09-24 13:46:59.223 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_STATE = 1
+2025-09-24 13:46:59.223 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_DLAT = 0.0
+2025-09-24 13:46:59.223 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_DLON = 0.0
+2025-09-24 13:46:59.223 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_SLAT = 31.704974444444446
+2025-09-24 13:46:59.223 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_SLON = 119.02960583333333
+2025-09-24 13:46:59.223 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 KEY_TYPE = 12110
+2025-09-24 13:47:00.132 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  📦 广播详情: action=AUTONAVI_STANDARD_BROADCAST_SEND, KEY_TYPE=12205, EXTRA_STATE=-1
+2025-09-24 13:47:00.132 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  🔍 开始处理高德地图广播数据 (KEY_TYPE: 12205):
+2025-09-24 13:47:00.132 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  📋 Intent包含的所有数据:
+2025-09-24 13:47:00.132 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_GEOLOCATION = 0
+2025-09-24 13:47:00.132 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 KEY_TYPE = 12205
+2025-09-24 13:47:00.221 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  📦 广播详情: action=AUTONAVI_STANDARD_BROADCAST_SEND, KEY_TYPE=12110, EXTRA_STATE=1
+2025-09-24 13:47:00.221 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  🔍 开始处理高德地图广播数据 (KEY_TYPE: 12110):
+2025-09-24 13:47:00.221 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  📋 Intent包含的所有数据:
+2025-09-24 13:47:00.221 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 START_DISTANCE = 9624.0
+2025-09-24 13:47:00.221 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 END_DISTANCE = 77.0
+2025-09-24 13:47:00.221 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 INTERVAL_DISTANCE = 9701.0
+2025-09-24 13:47:00.221 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 END_DISTANCE_TEXT = 77.0m
+2025-09-24 13:47:00.221 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 LIMITED_SPEED = 120
+2025-09-24 13:47:00.221 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 START_DISTANCE_TEXT = 9.6km
+2025-09-24 13:47:00.221 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 AVERAGE_SPEED = 109
+2025-09-24 13:47:00.221 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 CAMERA_TYPE = 8
+2025-09-24 13:47:00.221 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 INTERVAL_DISTANCE_TEXT = 9.7km
+2025-09-24 13:47:00.221 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_STATE = 1
+2025-09-24 13:47:00.221 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_DLAT = 0.0
+2025-09-24 13:47:00.221 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_DLON = 0.0
+2025-09-24 13:47:00.221 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_SLAT = 31.704974444444446
+2025-09-24 13:47:00.221 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_SLON = 119.02960583333333
+2025-09-24 13:47:00.221 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 KEY_TYPE = 12110
+2025-09-24 13:47:00.251 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  📦 广播详情: action=AUTONAVI_STANDARD_BROADCAST_SEND, KEY_TYPE=13011, EXTRA_STATE=-1
+2025-09-24 13:47:00.251 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  🔍 开始处理高德地图广播数据 (KEY_TYPE: 13011):
+2025-09-24 13:47:00.251 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  📋 Intent包含的所有数据:
+2025-09-24 13:47:00.251 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_TMC_SEGMENT = {"tmc_segment_enabled":false,"total_distance":320751,"residual_distance":199578,"finish_distance":121173,"tmc_segment_size":15,"tmc_info":[{"tmc_segment_number":1,"tmc_status":"10","tmc_segment_distance":"121173","tmc_traveltime":0,"tmc_segment_percent":"38"},{"tmc_segment_number":2,"tmc_status":"1","tmc_segment_distance":"12872","tmc_traveltime":451,"tmc_segment_percent":"4"},{"tmc_segment_number":3,"tmc_status":"5","tmc_segment_distance":"8242","tmc_traveltime":275,"tmc_segment_percent":"3"},{"tmc_segment_number":4,"tmc_status":"1","tmc_segment_distance":"16680","tmc_traveltime":572,"tmc_segment_percent":"5"},{"tmc_segment_number":5,"tmc_status":"5","tmc_segment_distance":"8419","tmc_traveltime":275,"tmc_segment_percent":"3"},{"tmc_segment_number":6,"tmc_status":"1","tmc_segment_distance":"12217","tmc_traveltime":402,"tmc_segment_percent":"4"},{"tmc_segment_number":7,"tmc_status":"5","tmc_segment_distance":"7586","tmc_traveltime":253,"tmc_segment_percent":"2"},{"tmc_segment_number":8,"tmc_status":"1","tmc_segment_distance":"38178","tmc_traveltime":1375,"tmc_segment_percent":"12"},{"tmc_segment_number":9,"tmc_status":"5","tmc_segment_distance":"11690","tmc_traveltime":401,"tmc_segment_percent":"4"},{"tmc_segment_number":10,"tmc_status":"1","tmc_segment_distance":"2609","tmc_traveltime":94,"tmc_segment_percent":"1"},{"tmc_segment_number":11,"tmc_status":"5","tmc_segment_distance":"18535","tmc_traveltime":652,"tmc_segment_percent":"6"},{"tmc_segment_number":12,"tmc_status":"1","tmc_segment_distance":"9392","tmc_traveltime":325,"tmc_segment_percent":"3"},{"tmc_segment_number":13,"tmc_status":"5","tmc_segment_distance":"9443","tmc_traveltime":370,"tmc_segment_percent":"3"},{"tmc_segment_number":14,"tmc_status":"1","tmc_segment_distance":"43711","tmc_traveltime":2147,"tmc_segment_percent":"14"},{"tmc_segment_number":15,"tmc_status":"0","tmc_segment_distance":"4","tmc_traveltime":1,"tmc_segment_percent":"0"}]}
+2025-09-24 13:47:00.251 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 KEY_TYPE = 13011
+2025-09-24 13:47:00.251 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  📦 广播详情: action=AUTONAVI_STANDARD_BROADCAST_SEND, KEY_TYPE=10001, EXTRA_STATE=-1
+2025-09-24 13:47:00.252 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  🧭 处理引导信息广播 (KEY_TYPE: 10001)
+2025-09-24 13:47:00.253 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  📦 广播详情: action=AUTONAVI_STANDARD_BROADCAST_SEND, KEY_TYPE=10001, EXTRA_STATE=-1
+2025-09-24 13:47:00.253 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  🧭 处理引导信息广播 (KEY_TYPE: 10001)
+2025-09-24 13:47:01.162 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  📦 广播详情: action=AUTONAVI_STANDARD_BROADCAST_SEND, KEY_TYPE=12205, EXTRA_STATE=-1
+2025-09-24 13:47:01.162 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  🔍 开始处理高德地图广播数据 (KEY_TYPE: 12205):
+2025-09-24 13:47:01.162 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  📋 Intent包含的所有数据:
+2025-09-24 13:47:01.162 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_GEOLOCATION = 0
+2025-09-24 13:47:01.162 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 KEY_TYPE = 12205
+2025-09-24 13:47:01.245 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  📦 广播详情: action=AUTONAVI_STANDARD_BROADCAST_SEND, KEY_TYPE=13011, EXTRA_STATE=-1
+2025-09-24 13:47:01.245 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  🔍 开始处理高德地图广播数据 (KEY_TYPE: 13011):
+2025-09-24 13:47:01.245 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  📋 Intent包含的所有数据:
+2025-09-24 13:47:01.245 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_TMC_SEGMENT = {"tmc_segment_enabled":false,"total_distance":320751,"residual_distance":199546,"finish_distance":121173,"tmc_segment_size":15,"tmc_info":[{"tmc_segment_number":1,"tmc_status":"10","tmc_segment_distance":"121173","tmc_traveltime":0,"tmc_segment_percent":"38"},{"tmc_segment_number":2,"tmc_status":"1","tmc_segment_distance":"12840","tmc_traveltime":450,"tmc_segment_percent":"4"},{"tmc_segment_number":3,"tmc_status":"5","tmc_segment_distance":"8242","tmc_traveltime":275,"tmc_segment_percent":"3"},{"tmc_segment_number":4,"tmc_status":"1","tmc_segment_distance":"16680","tmc_traveltime":572,"tmc_segment_percent":"5"},{"tmc_segment_number":5,"tmc_status":"5","tmc_segment_distance":"8419","tmc_traveltime":275,"tmc_segment_percent":"3"},{"tmc_segment_number":6,"tmc_status":"1","tmc_segment_distance":"12217","tmc_traveltime":402,"tmc_segment_percent":"4"},{"tmc_segment_number":7,"tmc_status":"5","tmc_segment_distance":"7586","tmc_traveltime":253,"tmc_segment_percent":"2"},{"tmc_segment_number":8,"tmc_status":"1","tmc_segment_distance":"38178","tmc_traveltime":1375,"tmc_segment_percent":"12"},{"tmc_segment_number":9,"tmc_status":"5","tmc_segment_distance":"11690","tmc_traveltime":401,"tmc_segment_percent":"4"},{"tmc_segment_number":10,"tmc_status":"1","tmc_segment_distance":"2609","tmc_traveltime":94,"tmc_segment_percent":"1"},{"tmc_segment_number":11,"tmc_status":"5","tmc_segment_distance":"18535","tmc_traveltime":652,"tmc_segment_percent":"6"},{"tmc_segment_number":12,"tmc_status":"1","tmc_segment_distance":"9392","tmc_traveltime":325,"tmc_segment_percent":"3"},{"tmc_segment_number":13,"tmc_status":"5","tmc_segment_distance":"9443","tmc_traveltime":370,"tmc_segment_percent":"3"},{"tmc_segment_number":14,"tmc_status":"1","tmc_segment_distance":"43711","tmc_traveltime":2147,"tmc_segment_percent":"14"},{"tmc_segment_number":15,"tmc_status":"0","tmc_segment_distance":"4","tmc_traveltime":1,"tmc_segment_percent":"0"}]}
+2025-09-24 13:47:01.245 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 KEY_TYPE = 13011
+2025-09-24 13:47:01.247 16164-20132 AmapBroadcastManager    com.example.carrotamap               D  📊 列表大小控制: 101 -> 50
+2025-09-24 13:47:01.248 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  📦 广播详情: action=AUTONAVI_STANDARD_BROADCAST_SEND, KEY_TYPE=10001, EXTRA_STATE=-1
+2025-09-24 13:47:01.248 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  🧭 处理引导信息广播 (KEY_TYPE: 10001)
+2025-09-24 13:47:01.264 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  📦 广播详情: action=AUTONAVI_STANDARD_BROADCAST_SEND, KEY_TYPE=12110, EXTRA_STATE=1
+2025-09-24 13:47:01.265 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  🔍 开始处理高德地图广播数据 (KEY_TYPE: 12110):
+2025-09-24 13:47:01.265 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  📋 Intent包含的所有数据:
+2025-09-24 13:47:01.265 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 START_DISTANCE = 9656.0
+2025-09-24 13:47:01.265 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 END_DISTANCE = 45.0
+2025-09-24 13:47:01.265 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 INTERVAL_DISTANCE = 9701.0
+2025-09-24 13:47:01.265 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 END_DISTANCE_TEXT = 45.0m
+2025-09-24 13:47:01.265 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 LIMITED_SPEED = 120
+2025-09-24 13:47:01.265 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 START_DISTANCE_TEXT = 9.7km
+2025-09-24 13:47:01.265 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 AVERAGE_SPEED = 109
+2025-09-24 13:47:01.265 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 CAMERA_TYPE = 8
+2025-09-24 13:47:01.265 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 INTERVAL_DISTANCE_TEXT = 9.7km
+2025-09-24 13:47:01.265 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_STATE = 1
+2025-09-24 13:47:01.265 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_DLAT = 0.0
+2025-09-24 13:47:01.265 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_DLON = 0.0
+2025-09-24 13:47:01.265 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_SLAT = 31.704974444444446
+2025-09-24 13:47:01.265 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_SLON = 119.02960583333333
+2025-09-24 13:47:01.265 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 KEY_TYPE = 12110
+
+
+
+2025-09-25 12:07:25.157 26131-26131 AmapBroadcastManager    com.example.carrotamap               D  📦 广播详情: action=AUTONAVI_STANDARD_BROADCAST_SEND, KEY_TYPE=13012, EXTRA_STATE=-1
+2025-09-25 12:07:25.157 26131-26131 AmapBroadcastManager    com.example.carrotamap               D  🔍 开始处理高德地图广播数据 (KEY_TYPE: 13012):
+2025-09-25 12:07:25.157 26131-26131 AmapBroadcastManager    com.example.carrotamap               D  📋 Intent包含的所有数据:
+2025-09-25 12:07:25.157 26131-26131 AmapBroadcastManager    com.example.carrotamap               D     📌 KEY_TYPE = 13012
+2025-09-25 12:07:25.157 26131-26131 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_DRIVE_WAY = {"drive_way_enabled":true,"drive_way_size":4,"drive_way_info":[{"drive_way_number":0,"drive_way_lane_Back_icon":"15","drive_way_lane_Extended":"0","trafficLaneAdvised":false,"trafficLaneExtendedNew":0,"trafficLaneType":0},{"drive_way_number":1,"drive_way_lane_Back_icon":"15","drive_way_lane_Extended":"0","trafficLaneAdvised":false,"trafficLaneExtendedNew":0,"trafficLaneType":0},{"drive_way_number":2,"drive_way_lane_Back_icon":"15","drive_way_lane_Extended":"0","trafficLaneAdvised":false,"trafficLaneExtendedNew":0,"trafficLaneType":0},{"drive_way_number":3,"drive_way_lane_Back_icon":"3","drive_way_lane_Extended":"0","trafficLaneAdvised":false,"trafficLaneExtendedNew":0,"trafficLaneType":0}]}
+
+
+
+2025-09-25 11:54:54.405 20527-20527 AmapBroadcastManager    com.example.carrotamap               D  📦 广播详情: action=AUTONAVI_STANDARD_BROADCAST_SEND, KEY_TYPE=13012, EXTRA_STATE=-1
+2025-09-25 11:54:54.405 20527-20527 AmapBroadcastManager    com.example.carrotamap               D  🔍 开始处理高德地图广播数据 (KEY_TYPE: 13012):
+2025-09-25 11:54:54.405 20527-20527 AmapBroadcastManager    com.example.carrotamap               D  📋 Intent包含的所有数据:
+2025-09-25 11:54:54.405 20527-20527 AmapBroadcastManager    com.example.carrotamap               D     📌 KEY_TYPE = 13012
+2025-09-25 11:54:54.405 20527-20527 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_DRIVE_WAY = {"drive_way_enabled":true,"drive_way_size":5,"drive_way_info":[{"drive_way_number":0,"drive_way_lane_Back_icon":"15","drive_way_lane_Extended":"0","trafficLaneAdvised":false,"trafficLaneExtendedNew":0,"trafficLaneType":0},{"drive_way_number":1,"drive_way_lane_Back_icon":"15","drive_way_lane_Extended":"0","trafficLaneAdvised":false,"trafficLaneExtendedNew":0,"trafficLaneType":0},{"drive_way_number":2,"drive_way_lane_Back_icon":"15","drive_way_lane_Extended":"0","trafficLaneAdvised":false,"trafficLaneExtendedNew":0,"trafficLaneType":0},{"drive_way_number":3,"drive_way_lane_Back_icon":"32","drive_way_lane_Extended":"0","trafficLaneAdvised":false,"trafficLaneExtendedNew":0,"trafficLaneType":0},{"drive_way_number":4,"drive_way_lane_Back_icon":"3","drive_way_lane_Extended":"0","trafficLaneAdvised":false,"trafficLaneExtendedNew":0,"trafficLaneType":0}]}
+
+ 广播详情: action=AUTONAVI_STANDARD_BROADCAST_SEND, KEY_TYPE=12110, EXTRA_STATE=0
+ 开始处理高德地图广播数据 (KEY_TYPE: 12110):
+ Intent包含的所有数据:
+  📌 START_DISTANCE = 231.0
+  📌 END_DISTANCE = 0.0
+  📌 INTERVAL_DISTANCE = 0.0
+  📌 END_DISTANCE_TEXT = 
+  📌 LIMITED_SPEED = 120
+  📌 START_DISTANCE_TEXT = 231.0m
+  📌 AVERAGE_SPEED = 0
+  📌 CAMERA_TYPE = 8
+  📌 INTERVAL_DISTANCE_TEXT = 
+  📌 EXTRA_STATE = 0
+  📌 EXTRA_DLAT = 0.0
+  📌 EXTRA_DLON = 0.0
+  📌 EXTRA_SLAT = 31.25101111111111
+  📌 EXTRA_SLON = 120.84810555555555
+  📌 KEY_TYPE = 12110

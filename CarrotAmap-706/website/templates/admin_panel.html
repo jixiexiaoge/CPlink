@@ -1,0 +1,637 @@
+{% extends "base.html" %}
+
+{% block title %}管理面板 - 反馈管理系统{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-cog"></i> 管理面板</h2>
+            <div>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#apkAddModal">
+                    <i class="fas fa-plus"></i> 添加APK版本
+                </button>
+                <a href="{{ url_for('export_data') }}" class="btn btn-success">
+                    <i class="fas fa-download"></i> 导出数据
+                </a>
+                <a href="{{ url_for('index') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-eye"></i> 查看公开页面
+                </a>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i>
+            <strong>管理员功能：</strong> 可以删除反馈、添加备注、导出数据、管理APK版本
+        </div>
+
+        <!-- Donations 管理区域 -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-hand-holding-heart"></i> 赞助记录管理</h5>
+                <button class="btn btn-sm btn-outline-secondary" onclick="loadDonations()">
+                    <i class="fas fa-sync"></i> 刷新
+                </button>
+            </div>
+            <div class="card-body">
+                <div id="donationsList">
+                    <div class="text-center">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">加载中...</span>
+                        </div>
+                        <p class="mt-2">正在加载赞助记录...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- APK版本管理区域 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="fas fa-mobile-alt"></i> APK版本管理</h5>
+            </div>
+            <div class="card-body">
+                <div id="apkVersionsList">
+                    <div class="text-center">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">加载中...</span>
+                        </div>
+                        <p class="mt-2">正在加载APK版本列表...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if feedbacks %}
+            <div class="row">
+                {% for feedback in feedbacks %}
+                <div class="col-12 mb-4">
+                    <div class="card feedback-card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="mb-0">
+                                    <i class="fas fa-user"></i> 用户 {{ feedback.user_id }}
+                                    <span class="badge bg-secondary">#{{ feedback.id }}</span>
+                                </h5>
+                                <small class="text-muted">
+                                    <i class="fas fa-clock"></i> {{ feedback.time }}
+                                </small>
+                            </div>
+                            <div>
+                                {% if feedback.images %}
+                                    <span class="badge bg-info">
+                                        <i class="fas fa-image"></i> {{ feedback.images|length }} 张图片
+                                    </span>
+                                {% endif %}
+                                <button class="btn btn-sm btn-outline-danger" 
+                                        onclick="deleteFeedback({{ feedback.id }})">
+                                    <i class="fas fa-trash"></i> 删除
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="card-body">
+                            <div class="feedback-content">
+                                <p class="mb-3">{{ feedback.feedback }}</p>
+                                
+                                <!-- 管理员备注编辑 -->
+                                <div class="mb-3">
+                                    <label for="note_{{ feedback.id }}" class="form-label">
+                                        <i class="fas fa-sticky-note"></i> 管理员备注：
+                                    </label>
+                                    <div class="input-group">
+                                        <textarea class="form-control" 
+                                                  id="note_{{ feedback.id }}" 
+                                                  rows="2" 
+                                                  placeholder="添加管理员备注...">{{ feedback.note or '' }}</textarea>
+                                        <button class="btn btn-outline-primary" 
+                                                type="button" 
+                                                onclick="saveNote({{ feedback.id }})">
+                                            <i class="fas fa-save"></i> 保存
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- 图片展示 -->
+                                {% if feedback.images %}
+                                <div class="images-section">
+                                    <h6><i class="fas fa-images"></i> 相关图片：</h6>
+                                    <div class="row">
+                                        {% for image in feedback.images %}
+                                        <div class="col-md-3 col-sm-4 col-6 mb-3">
+                                            <div class="image-thumbnail" onclick="showImage('{{ url_for('uploaded_file', filename=image) }}')">
+                                                <img src="{{ url_for('uploaded_file', filename=image) }}" 
+                                                     class="img-fluid rounded" 
+                                                     alt="反馈图片">
+                                                <div class="image-overlay">
+                                                    <i class="fas fa-search-plus"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="card-footer text-muted">
+                            <small>
+                                <i class="fas fa-calendar"></i> 提交时间：{{ feedback.created_at }}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                <h4 class="text-muted">暂无反馈数据</h4>
+                <p class="text-muted">还没有收到任何反馈信息</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- APK版本添加模态框 -->
+<div class="modal fade" id="apkAddModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-plus"></i> 添加APK版本</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="apkAddForm">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="versionCode" class="form-label">
+                                    <i class="fas fa-code"></i> 版本号 <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" class="form-control" id="versionCode" name="version_code" 
+                                       placeholder="例如: 250909" required>
+                                <div class="form-text">版本号格式：数字，如250909</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="versionName" class="form-label">
+                                    <i class="fas fa-tag"></i> 版本名称
+                                </label>
+                                <input type="text" class="form-control" id="versionName" name="version_name" 
+                                       placeholder="例如: v2.5.9">
+                                <div class="form-text">可选，如v2.5.9</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="updateNotes" class="form-label">
+                            <i class="fas fa-edit"></i> 更新说明 <span class="text-danger">*</span>
+                        </label>
+                        <textarea class="form-control" id="updateNotes" name="update_notes" rows="4" 
+                                  placeholder="请详细描述本次更新的内容和改进..." required></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="downloadUrl" class="form-label">
+                            <i class="fas fa-link"></i> 下载链接 <span class="text-danger">*</span>
+                        </label>
+                        <input type="url" class="form-control" id="downloadUrl" name="download_url" 
+                               placeholder="https://example.com/app.apk" required>
+                        <div class="form-text">APK文件的完整下载链接</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="fileSize" class="form-label">
+                            <i class="fas fa-hdd"></i> 文件大小（可选）
+                        </label>
+                        <input type="number" class="form-control" id="fileSize" name="file_size" 
+                               placeholder="例如: 52428800" min="0">
+                        <div class="form-text">文件大小（字节），可选填写</div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>注意：</strong> 添加新版本后，之前的版本将自动设为非活跃状态。
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> 添加版本
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 确认删除模态框 -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">确认删除</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>确定要删除这条反馈吗？此操作不可撤销。</p>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    删除反馈的同时，相关的图片文件也会被删除。
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-danger" id="confirmDelete">确认删除</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 确认删除APK版本模态框 -->
+<div class="modal fade" id="deleteApkModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">确认删除APK版本</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>确定要删除这个APK版本吗？此操作不可撤销。</p>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    删除版本后，相关的版本信息将被永久删除。
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteApk">确认删除</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let feedbackToDelete = null;
+let apkToDelete = null;
+let donationToDelete = null;
+
+// 页面加载完成后执行
+document.addEventListener('DOMContentLoaded', function() {
+    loadApkVersions();
+    setupApkAddForm();
+    loadDonations();
+});
+
+// 显示图片预览
+function showImage(imageSrc) {
+    document.getElementById('modalImage').src = imageSrc;
+    var modal = new bootstrap.Modal(document.getElementById('imageModal'));
+    modal.show();
+}
+
+// 删除反馈
+function deleteFeedback(feedbackId) {
+    feedbackToDelete = feedbackId;
+    var modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    modal.show();
+}
+
+// 确认删除
+document.getElementById('confirmDelete').addEventListener('click', function() {
+    if (feedbackToDelete) {
+        fetch(`/admin/delete/${feedbackToDelete}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                location.reload();
+            } else {
+                alert('删除失败：' + (data.error || '未知错误'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('删除失败：网络错误');
+        });
+    }
+});
+
+// 保存备注
+function saveNote(feedbackId) {
+    const note = document.getElementById(`note_${feedbackId}`).value;
+    
+    fetch(`/admin/update_note/${feedbackId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ note: note })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            // 显示成功提示
+            const button = event.target;
+            const originalText = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-check"></i> 已保存';
+            button.classList.remove('btn-outline-primary');
+            button.classList.add('btn-success');
+            
+            setTimeout(() => {
+                button.innerHTML = originalText;
+                button.classList.remove('btn-success');
+                button.classList.add('btn-outline-primary');
+            }, 2000);
+        } else {
+            alert('保存失败：' + (data.error || '未知错误'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('保存失败：网络错误');
+    });
+}
+
+// 加载APK版本列表
+function loadApkVersions() {
+    fetch('/admin/apk/list')
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                displayApkVersions(data.versions);
+            } else {
+                document.getElementById('apkVersionsList').innerHTML = 
+                    '<div class="alert alert-warning">加载APK版本列表失败：' + (data.error || '未知错误') + '</div>';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('apkVersionsList').innerHTML = 
+                '<div class="alert alert-danger">加载APK版本列表失败：网络错误</div>';
+        });
+}
+
+// 显示APK版本列表
+function displayApkVersions(versions) {
+    const container = document.getElementById('apkVersionsList');
+    
+    if (versions.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-4">
+                <i class="fas fa-mobile-alt fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">暂无APK版本</h5>
+                <p class="text-muted">点击"添加APK版本"按钮添加第一个版本</p>
+            </div>
+        `;
+        return;
+    }
+    
+    let html = '<div class="row">';
+    versions.forEach(version => {
+        const fileSize = formatFileSize(version.file_size);
+        const uploadTime = new Date(version.upload_time).toLocaleString('zh-CN');
+        const isActive = version.is_active ? 'badge bg-success' : 'badge bg-secondary';
+        const activeText = version.is_active ? '当前版本' : '历史版本';
+        
+        html += `
+            <div class="col-md-6 mb-3">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0">
+                                <i class="fas fa-mobile-alt"></i> 
+                                ${version.version_name || 'v' + version.version_code}
+                            </h6>
+                            <small class="text-muted">版本号: ${version.version_code}</small>
+                        </div>
+                        <div>
+                            <span class="${isActive}">${activeText}</span>
+                            <button class="btn btn-sm btn-outline-danger ms-2" 
+                                    onclick="deleteApkVersion(${version.id})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">${version.update_notes}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                <i class="fas fa-clock"></i> ${uploadTime}
+                            </small>
+                            <small class="text-muted">
+                                <i class="fas fa-file-archive"></i> ${fileSize}
+                            </small>
+                        </div>
+                        <div class="mt-2">
+                            <a href="${version.download_url}" class="btn btn-sm btn-primary" target="_blank">
+                                <i class="fas fa-download"></i> 下载APK
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    html += '</div>';
+    
+    container.innerHTML = html;
+}
+
+// 格式化文件大小
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+// 设置APK添加表单
+function setupApkAddForm() {
+    const form = document.getElementById('apkAddForm');
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(form);
+        const submitButton = form.querySelector('button[type="submit"]');
+        const originalText = submitButton.innerHTML;
+        
+        // 显示添加状态
+        submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 添加中...';
+        submitButton.disabled = true;
+        
+        fetch('/admin/apk/add', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // 关闭模态框
+                const modal = bootstrap.Modal.getInstance(document.getElementById('apkAddModal'));
+                modal.hide();
+                
+                // 清空表单
+                form.reset();
+                
+                // 重新加载APK版本列表
+                loadApkVersions();
+                
+                // 显示成功提示
+                showToast('APK版本添加成功！', 'success');
+            } else {
+                alert('添加失败：' + (data.error || '未知错误'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('添加失败：网络错误');
+        })
+        .finally(() => {
+            // 恢复按钮状态
+            submitButton.innerHTML = originalText;
+            submitButton.disabled = false;
+        });
+    });
+}
+
+// 删除APK版本
+function deleteApkVersion(versionId) {
+    apkToDelete = versionId;
+    const modal = new bootstrap.Modal(document.getElementById('deleteApkModal'));
+    modal.show();
+}
+
+// 确认删除APK版本
+document.getElementById('confirmDeleteApk').addEventListener('click', function() {
+    if (apkToDelete) {
+        fetch(`/admin/apk/delete/${apkToDelete}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // 关闭模态框
+                const modal = bootstrap.Modal.getInstance(document.getElementById('deleteApkModal'));
+                modal.hide();
+                
+                // 重新加载APK版本列表
+                loadApkVersions();
+                
+                // 显示成功提示
+                showToast('APK版本删除成功！', 'success');
+            } else {
+                alert('删除失败：' + (data.error || '未知错误'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('删除失败：网络错误');
+        });
+    }
+});
+
+// 加载赞助记录
+function loadDonations() {
+    fetch('/admin/donations/list')
+        .then(r => r.json())
+        .then(data => {
+            const container = document.getElementById('donationsList');
+            if (data.status !== 'success') {
+                container.innerHTML = '<div class="alert alert-warning">加载失败：' + (data.error || '未知错误') + '</div>';
+                return;
+            }
+            const items = data.data;
+            if (!items || items.length === 0) {
+                container.innerHTML = '<div class="text-center text-muted py-3">暂无赞助记录</div>';
+                return;
+            }
+            let html = '<div class="table-responsive"><table class="table table-sm table-striped"><thead><tr><th>ID</th><th>device_id</th><th>金额</th><th>时间</th><th>操作</th></tr></thead><tbody>';
+            items.forEach(row => {
+                html += `<tr>
+                    <td>${row.id}</td>
+                    <td>${row.device_id || ''}</td>
+                    <td>${row.amount}</td>
+                    <td>${row.created_at}</td>
+                    <td><button class="btn btn-sm btn-outline-danger" onclick="deleteDonation(${row.id})"><i class="fas fa-trash"></i></button></td>
+                </tr>`;
+            });
+            html += '</tbody></table></div>';
+            container.innerHTML = html;
+        })
+        .catch(err => {
+            document.getElementById('donationsList').innerHTML = '<div class="alert alert-danger">网络错误</div>';
+        });
+}
+
+// 删除赞助记录
+function deleteDonation(id) {
+    if (!confirm('确认删除该赞助记录？')) return;
+    fetch(`/admin/donations/delete/${id}`, { method: 'POST', headers: {'Content-Type': 'application/json'} })
+        .then(r => r.json())
+        .then(data => {
+            if (data.status === 'success') {
+                loadDonations();
+            } else {
+                alert('删除失败：' + (data.error || '未知错误'));
+            }
+        })
+        .catch(err => alert('删除失败：网络错误'));
+}
+
+// 显示提示消息
+function showToast(message, type = 'info') {
+    // 创建toast元素
+    const toastContainer = document.getElementById('toast-container') || createToastContainer();
+    
+    const toastId = 'toast-' + Date.now();
+    const toastHtml = `
+        <div class="toast" id="${toastId}" role="alert">
+            <div class="toast-header bg-${type === 'error' ? 'danger' : type === 'success' ? 'success' : 'info'} text-white">
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'} me-2"></i>
+                <strong class="me-auto">提示</strong>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body">
+                ${message}
+            </div>
+        </div>
+    `;
+    
+    toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+    
+    const toastElement = document.getElementById(toastId);
+    const toast = new bootstrap.Toast(toastElement, { delay: 3000 });
+    toast.show();
+    
+    // 自动移除toast元素
+    toastElement.addEventListener('hidden.bs.toast', function() {
+        this.remove();
+    });
+}
+
+// 创建toast容器
+function createToastContainer() {
+    const container = document.createElement('div');
+    container.id = 'toast-container';
+    container.className = 'toast-container position-fixed top-0 end-0 p-3';
+    container.style.zIndex = '9999';
+    document.body.appendChild(container);
+    return container;
+}
+</script>
+{% endblock %}

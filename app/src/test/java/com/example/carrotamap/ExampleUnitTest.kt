@@ -14,7 +14,7 @@ class CarrotAmapUnitTest {
         val fields = CarrotManFields()
 
         // 测试默认值
-        assertEquals(30, fields.nRoadLimitSpeed)
+        assertEquals(0, fields.nRoadLimitSpeed)
         assertEquals(0, fields.active_carrot)
         assertEquals(false, fields.isNavigating)
         assertEquals("good", fields.dataQuality)

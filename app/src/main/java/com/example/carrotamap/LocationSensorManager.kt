@@ -66,8 +66,8 @@ class LocationSensorManager(
                     accuracy = location.accuracy.toDouble(), // GPS精度
                     gps_speed = if (location.hasSpeed()) location.speed.toDouble() else 0.0, // GPS速度 (m/s)
 
-                    // 时间戳和协议字段
-                    epochTime = location.time / 1000,       // Unix时间戳 (秒)
+                    // 时间戳和协议字段 - 使用系统时间提高实时性
+                    epochTime = currentTime / 1000,          // 使用系统时间戳 (秒)
                     heading = if (location.hasBearing()) location.bearing.toDouble() else carrotManFields.value.heading, // 方向角
 
                     // 更新GPS相关信息
@@ -94,19 +94,33 @@ class LocationSensorManager(
                 //Log.i(TAG, "  🔧 提供者: ${location.provider}")
                 //Log.i(TAG, "  ⏰ 时间: ${System.currentTimeMillis() - location.time}ms前")
 
-                // 验证坐标有效性
+                // 验证坐标有效性 - 增强检查
                 if (location.latitude == 0.0 && location.longitude == 0.0) {
                     Log.w(TAG, "⚠️ 接收到无效GPS坐标 (0,0)，跳过更新")
                     return
                 }
+                
+                // 检查GPS数据时效性 - 超过5秒的数据认为过期
+                val locationAge = currentTime - location.time
+                if (locationAge > 5000) {
+                    Log.w(TAG, "⚠️ GPS数据过期 (${locationAge}ms前)，跳过更新")
+                    return
+                }
+                
+                // 检查GPS精度 - 精度超过50米的数据认为不可靠
+                if (location.accuracy > 50.0) {
+                    Log.w(TAG, "⚠️ GPS精度过低 (${location.accuracy}m)，数据可能不可靠")
+                }
 
-                // 更新后验证
-                Log.i(TAG, "✅ GPS字段更新完成:")
-                //Log.i(TAG, "  📍 vpPosPointLat: ${carrotManFields.value.vpPosPointLat} -> ${location.latitude}")
-                //Log.i(TAG, "  📍 vpPosPointLon: ${carrotManFields.value.vpPosPointLon} -> ${location.longitude}")
-                //Log.i(TAG, "  📍 vpPosPointLatNavi: ${carrotManFields.value.vpPosPointLatNavi} -> ${location.latitude}")
-                //Log.i(TAG, "  📍 vpPosPointLonNavi: ${carrotManFields.value.vpPosPointLonNavi} -> ${location.longitude}")
-                //Log.i(TAG, "  🔄 gps_valid: ${carrotManFields.value.gps_valid} -> true")
+                // 更新后验证和实时性报告
+                Log.i(TAG, "✅ GPS字段更新完成 (实时性优化):")
+                Log.d(TAG, "  📍 坐标: lat=${String.format("%.6f", location.latitude)}, lon=${String.format("%.6f", location.longitude)}")
+                Log.d(TAG, "  🚀 速度: ${if (location.hasSpeed()) "${String.format("%.1f", location.speed * 3.6)} km/h" else "无速度数据"}")
+                Log.d(TAG, "  🧭 方向: ${if (location.hasBearing()) "${String.format("%.1f", location.bearing)}°" else "无方向数据"}")
+                Log.d(TAG, "  📡 精度: ${String.format("%.1f", location.accuracy)}m")
+                Log.d(TAG, "  🔧 提供者: ${location.provider}")
+                Log.d(TAG, "  ⏰ 数据年龄: ${locationAge}ms")
+                Log.d(TAG, "  🎯 实时性: ${if (locationAge < 1000) "优秀" else if (locationAge < 3000) "良好" else "一般"}")
 
             } catch (e: Exception) {
                 Log.e(TAG, "GPS位置更新失败: ${e.message}", e)
@@ -184,28 +198,28 @@ class LocationSensorManager(
             // 检查位置权限
             if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 
-                // 启用GPS定位 - 高精度
+                // 启用GPS定位 - 高精度，优化实时性
                 if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
                     locationManager.requestLocationUpdates(
                         LocationManager.GPS_PROVIDER,
-                        1000L, // 1秒更新一次
-                        1f,    // 1米移动距离触发更新
+                        500L, // 0.5秒更新一次，提高实时性
+                        0.5f,  // 0.5米移动距离触发更新，提高精度
                         locationListener
                     )
-                    Log.i(TAG, "✅ GPS定位已启动")
+                    Log.i(TAG, "✅ GPS定位已启动 (高精度模式: 0.5s/0.5m)")
                 } else {
                     Log.w(TAG, "⚠️ GPS提供者未启用，跳过GPS定位")
                 }
 
-                // 启用网络定位 - 作为备选方案
+                // 启用网络定位 - 作为备选方案，优化实时性
                 if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
                     locationManager.requestLocationUpdates(
                         LocationManager.NETWORK_PROVIDER,
-                        2000L, // 2秒更新一次（网络定位频率稍低）
-                        5f,    // 5米移动距离触发更新
+                        1000L, // 1秒更新一次（提高网络定位频率）
+                        2f,    // 2米移动距离触发更新（提高精度）
                         locationListener
                     )
-                    Log.i(TAG, "✅ 网络定位已启动")
+                    Log.i(TAG, "✅ 网络定位已启动 (优化模式: 1s/2m)")
                 } else {
                     Log.w(TAG, "⚠️ 网络提供者未启用，跳过网络定位")
                 }
@@ -293,6 +307,53 @@ class LocationSensorManager(
     }
 
     /**
+     * 检查GPS状态和实时性
+     */
+    fun checkGpsStatus(): Map<String, Any> {
+        val currentTime = System.currentTimeMillis()
+        val fields = carrotManFields.value
+        
+        val gpsAge = if (fields.lastUpdateTime > 0) currentTime - fields.lastUpdateTime else -1
+        val locationAge = if (fields.last_update_gps_time > 0) currentTime - fields.last_update_gps_time else -1
+        
+        return mapOf(
+            "gps_valid" to fields.gps_valid,
+            "latitude" to fields.latitude,
+            "longitude" to fields.longitude,
+            "accuracy" to fields.gps_accuracy_phone,
+            "speed" to fields.gps_speed,
+            "heading" to fields.heading,
+            "gps_age_ms" to gpsAge,
+            "location_age_ms" to locationAge,
+            "real_time_quality" to when {
+                gpsAge < 1000 -> "优秀"
+                gpsAge < 3000 -> "良好"
+                gpsAge < 5000 -> "一般"
+                else -> "较差"
+            },
+            "last_update_time" to fields.lastUpdateTime,
+            "last_gps_time" to fields.last_update_gps_time
+        )
+    }
+    
+    /**
+     * 获取GPS实时性报告
+     */
+    fun getGpsRealtimeReport(): String {
+        val status = checkGpsStatus()
+        return buildString {
+            appendLine("🌍 GPS实时性报告:")
+            appendLine("  📍 坐标: ${String.format("%.6f", status["latitude"] as Double)}, ${String.format("%.6f", status["longitude"] as Double)}")
+            appendLine("  📡 精度: ${String.format("%.1f", status["accuracy"] as Double)}m")
+            appendLine("  🚀 速度: ${String.format("%.1f", status["speed"] as Double)} m/s")
+            appendLine("  🧭 方向: ${String.format("%.1f", status["heading"] as Double)}°")
+            appendLine("  ⏰ GPS年龄: ${status["gps_age_ms"]}ms")
+            appendLine("  🎯 实时性: ${status["real_time_quality"]}")
+            appendLine("  ✅ 状态: ${if (status["gps_valid"] as Boolean) "有效" else "无效"}")
+        }
+    }
+
+    /**
      * 停止位置更新和传感器监听
      */
     fun cleanup() {
@@ -352,6 +413,37 @@ class LocationSensorManager(
             
         } catch (e: Exception) {
             Log.e(TAG, "更新方向角度失败: ${e.message}", e)
+        }
+    }
+
+    /**
+     * GPS预热：提前开始位置获取
+     */
+    fun startGpsWarmup() {
+        try {
+            Log.i(TAG, "🌡️ 启动GPS预热...")
+            
+            // 检查GPS权限
+            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                Log.w(TAG, "⚠️ GPS权限未授予，跳过GPS预热")
+                return
+            }
+            
+            // 启动GPS位置更新（预热模式）
+            if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                locationManager.requestLocationUpdates(
+                    LocationManager.GPS_PROVIDER,
+                    1000L, // 1秒更新间隔
+                    1f,    // 1米最小距离
+                    locationListener
+                )
+                Log.i(TAG, "✅ GPS预热已启动")
+            } else {
+                Log.w(TAG, "⚠️ GPS提供者未启用，跳过GPS预热")
+            }
+            
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ GPS预热失败: ${e.message}", e)
         }
     }
 }

@@ -15,7 +15,7 @@ import androidx.core.content.ContextCompat
  */
 class PermissionManager(
     private val activity: ComponentActivity,
-    private val locationSensorManager: LocationSensorManager
+    private var locationSensorManager: LocationSensorManager
 ) {
     companion object {
         private const val TAG = "PermissionManager"
@@ -52,6 +52,25 @@ class PermissionManager(
         }
         
         Log.i(TAG, "✅ 权限管理器初始化完成")
+    }
+
+    /**
+     * 更新LocationSensorManager引用
+     */
+    fun updateLocationSensorManager(newLocationSensorManager: LocationSensorManager) {
+        locationSensorManager = newLocationSensorManager
+        Log.i(TAG, "✅ LocationSensorManager引用已更新")
+    }
+    
+    /**
+     * 检查GPS状态和实时性
+     */
+    fun checkGpsRealtimeStatus(): String {
+        return try {
+            locationSensorManager.getGpsRealtimeReport()
+        } catch (e: Exception) {
+            "❌ GPS状态检查失败: ${e.message}"
+        }
     }
 
     /**

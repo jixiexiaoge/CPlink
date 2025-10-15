@@ -1,5 +1,6 @@
 package com.example.carrotamap.ui.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -48,27 +49,26 @@ fun CompactStatusCard(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(horizontal = 12.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(
                     modifier = Modifier.weight(1f),
                     horizontalArrangement = Arrangement.Start,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                        Text(
+                    Text(
                         text = if (carrotManFields.isNavigating) "导航中" else "待机",
-                            style = MaterialTheme.typography.bodySmall,
+                        style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.Bold,
                         fontSize = 10.sp
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-        Text(
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
                         text = "${getRoadTypeDescription(carrotManFields.roadType)}-${carrotManFields.roadcate}${if (carrotManFields.nLaneCount > 0) "(${carrotManFields.nLaneCount})" else ""}",
-                            style = MaterialTheme.typography.bodySmall,
+                        style = MaterialTheme.typography.bodySmall,
                         fontSize = 10.sp
-                        )
-                    // 许可证状态显示已移除
+                    )
                 }
 
                 Row(
@@ -191,6 +191,41 @@ fun CompactStatusCard(
                 }
             }
         }
+    }
+}
+
+/**
+ * 交通灯状态指示器
+ */
+@Composable
+private fun TrafficLightIndicator(
+    trafficState: Int,
+    leftSec: Int,
+    direction: Int
+) {
+    val (color, text) = when (trafficState) {
+        0 -> Pair(Color.Gray, "无信号")
+        1 -> Pair(Color.Red, "红灯")
+        2 -> Pair(Color.Green, "绿灯")
+        3 -> Pair(Color.Yellow, "左转")
+        else -> Pair(Color.Gray, "未知")
+    }
+    
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(8.dp)
+                .background(color, RoundedCornerShape(4.dp))
+        )
+        Text(
+            text = if (leftSec > 0) "$text($leftSec)" else text,
+            style = MaterialTheme.typography.bodySmall,
+            fontSize = 8.sp,
+            color = color
+        )
     }
 }
 

@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}反馈列表 - 反馈管理系统{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-list"></i> 反馈列表</h2>
+            <div class="text-muted">
+                共 {{ feedbacks|length }} 条反馈
+            </div>
+        </div>
+
+        {% if feedbacks %}
+            <div class="row">
+                {% for feedback in feedbacks %}
+                <div class="col-12 mb-4">
+                    <div class="card feedback-card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="mb-0">
+                                    <i class="fas fa-user"></i> 用户 {{ feedback.user_id }}
+                                </h5>
+                                <small class="text-muted">
+                                    <i class="fas fa-clock"></i> {{ feedback.time }}
+                                </small>
+                            </div>
+                            <div>
+                                {% if feedback.images %}
+                                    <span class="badge bg-info">
+                                        <i class="fas fa-image"></i> {{ feedback.images|length }} 张图片
+                                    </span>
+                                {% endif %}
+                                {% if feedback.note %}
+                                    <span class="badge bg-warning">
+                                        <i class="fas fa-sticky-note"></i> 有备注
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="card-body">
+                            <div class="feedback-content">
+                                <p class="mb-3">{{ feedback.feedback }}</p>
+                                
+                                <!-- 管理员备注 -->
+                                {% if feedback.note %}
+                                <div class="alert alert-warning mb-3">
+                                    <h6><i class="fas fa-sticky-note"></i> 管理员备注：</h6>
+                                    <p class="mb-0">{{ feedback.note }}</p>
+                                </div>
+                                {% endif %}
+                                
+                                <!-- 图片展示 -->
+                                {% if feedback.images %}
+                                <div class="images-section">
+                                    <h6><i class="fas fa-images"></i> 相关图片：</h6>
+                                    <div class="row">
+                                        {% for image in feedback.images %}
+                                        <div class="col-md-3 col-sm-4 col-6 mb-3">
+                                            <div class="image-thumbnail" onclick="showImage('{{ url_for('uploaded_file', filename=image) }}')">
+                                                <img src="{{ url_for('uploaded_file', filename=image) }}" 
+                                                     class="img-fluid rounded" 
+                                                     alt="反馈图片">
+                                                <div class="image-overlay">
+                                                    <i class="fas fa-search-plus"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="card-footer text-muted">
+                            <small>
+                                <i class="fas fa-calendar"></i> 提交时间：{{ feedback.created_at }}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                <h4 class="text-muted">暂无反馈数据</h4>
+                <p class="text-muted">还没有收到任何反馈信息</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// 显示图片预览
+function showImage(imageSrc) {
+    document.getElementById('modalImage').src = imageSrc;
+    var modal = new bootstrap.Modal(document.getElementById('imageModal'));
+    modal.show();
+}
+</script>
+{% endblock %}

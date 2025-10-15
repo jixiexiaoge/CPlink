@@ -1,0 +1,23 @@
+// 在 app/build.gradle 文件中添加以下依赖
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.9.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    
+    // 网络请求
+    implementation 'com.squareup.okhttp3:okhttp:4.11.0'
+    implementation 'com.squareup.okhttp3:logging-interceptor:4.11.0'
+    
+    // JSON解析
+    implementation 'com.google.code.gson:gson:2.10.1'
+    
+    // 图片加载（可选）
+    implementation 'com.github.bumptech.glide:glide:4.15.1'
+    
+    // 图片选择器（可选，推荐使用）
+    implementation 'com.github.dhaval2404:imagepicker:2.1'
+    
+    // 权限处理（可选）
+    implementation 'com.karumi:dexter:6.2.3'
+}

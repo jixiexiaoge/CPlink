@@ -1,5 +1,6 @@
 package com.example.carrotamap
 
+import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.MutableState
 
@@ -8,6 +9,7 @@ import androidx.compose.runtime.MutableState
  * 负责基础的数据解析和映射，移除复杂的算法计算
  */
 class AmapDataProcessor(
+    private val context: Context,
     private val carrotManFields: MutableState<CarrotManFields>
 ) {
     companion object {
@@ -87,6 +89,9 @@ class AmapDataProcessor(
                 lastUpdateTime = System.currentTimeMillis()
             )
 
+            // 保存到SharedPreferences，供FloatingWindowService使用
+            saveRoadLimitSpeedToPreferences(newLimit)
+
             // 重新计算速度控制
             updateSpeedControl()
             
@@ -98,6 +103,24 @@ class AmapDataProcessor(
             Log.i(TAG, "✅ 限速已更新并标记立即发送")
         } else {
             Log.v(TAG, "🚦 限速无变化: ${newLimit}km/h")
+        }
+    }
+    
+    /**
+     * 保存道路限速到SharedPreferences
+     * 供FloatingWindowService读取使用
+     */
+    private fun saveRoadLimitSpeedToPreferences(roadLimitSpeed: Int) {
+        try {
+            val prefs = context.getSharedPreferences("CarrotAmap", Context.MODE_PRIVATE)
+            prefs.edit().apply {
+                putInt("nRoadLimitSpeed", roadLimitSpeed)
+                putLong("nRoadLimitSpeed_lastUpdate", System.currentTimeMillis())
+                apply()
+            }
+            Log.d(TAG, "💾 道路限速已保存到SharedPreferences: ${roadLimitSpeed}km/h")
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ 保存道路限速到SharedPreferences失败: ${e.message}", e)
         }
     }
 }

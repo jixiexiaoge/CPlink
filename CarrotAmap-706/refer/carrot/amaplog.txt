@@ -1,0 +1,118 @@
+
+2025-09-24 13:47:03.150 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  📦 广播详情: action=AUTONAVI_STANDARD_BROADCAST_SEND, KEY_TYPE=12205, EXTRA_STATE=-1
+2025-09-24 13:47:03.150 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  🔍 开始处理高德地图广播数据 (KEY_TYPE: 12205):
+2025-09-24 13:47:03.150 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  📋 Intent包含的所有数据:
+2025-09-24 13:47:03.150 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_GEOLOCATION = 0
+2025-09-24 13:47:03.150 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 KEY_TYPE = 12205
+2025-09-24 13:47:03.291 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  📦 广播详情: action=AUTONAVI_STANDARD_BROADCAST_SEND, KEY_TYPE=10001, EXTRA_STATE=-1
+2025-09-24 13:47:03.291 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  🧭 处理引导信息广播 (KEY_TYPE: 10001)
+2025-09-24 13:47:03.315 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  📦 广播详情: action=AUTONAVI_STANDARD_BROADCAST_SEND, KEY_TYPE=12110, EXTRA_STATE=2
+2025-09-24 13:47:03.315 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  🔍 开始处理高德地图广播数据 (KEY_TYPE: 12110):
+2025-09-24 13:47:03.315 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  📋 Intent包含的所有数据:
+2025-09-24 13:47:03.315 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 START_DISTANCE = 0.0
+2025-09-24 13:47:03.315 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 END_DISTANCE = 0.0
+2025-09-24 13:47:03.315 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 INTERVAL_DISTANCE = 0.0
+2025-09-24 13:47:03.315 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 END_DISTANCE_TEXT = 
+2025-09-24 13:47:03.315 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 LIMITED_SPEED = 0
+2025-09-24 13:47:03.315 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 START_DISTANCE_TEXT = 
+2025-09-24 13:47:03.315 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 AVERAGE_SPEED = 0
+2025-09-24 13:47:03.315 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 CAMERA_TYPE = 0
+2025-09-24 13:47:03.315 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 INTERVAL_DISTANCE_TEXT = 
+2025-09-24 13:47:03.315 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_STATE = 2
+2025-09-24 13:47:03.315 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_DLAT = 0.0
+2025-09-24 13:47:03.315 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_DLON = 0.0
+2025-09-24 13:47:03.315 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_SLAT = 0.0
+2025-09-24 13:47:03.315 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_SLON = 0.0
+2025-09-24 13:47:03.315 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 KEY_TYPE = 12110
+
+
+2025-09-24 13:47:05.331 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  📦 广播详情: action=AUTONAVI_STANDARD_BROADCAST_SEND, KEY_TYPE=12110, EXTRA_STATE=0
+2025-09-24 13:47:05.331 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  🔍 开始处理高德地图广播数据 (KEY_TYPE: 12110):
+2025-09-24 13:47:05.331 16164-16164 AmapBroadcastManager    com.example.carrotamap               D  📋 Intent包含的所有数据:
+2025-09-24 13:47:05.331 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 START_DISTANCE = 1630.0
+2025-09-24 13:47:05.331 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 END_DISTANCE = 0.0
+2025-09-24 13:47:05.331 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 INTERVAL_DISTANCE = 0.0
+2025-09-24 13:47:05.331 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 END_DISTANCE_TEXT = 
+2025-09-24 13:47:05.331 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 LIMITED_SPEED = 120
+2025-09-24 13:47:05.331 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 START_DISTANCE_TEXT = 1.6km
+2025-09-24 13:47:05.331 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 AVERAGE_SPEED = 0
+2025-09-24 13:47:05.331 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 CAMERA_TYPE = 8
+2025-09-24 13:47:05.331 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 INTERVAL_DISTANCE_TEXT = 
+2025-09-24 13:47:05.331 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_STATE = 0
+2025-09-24 13:47:05.331 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_DLAT = 0.0
+2025-09-24 13:47:05.331 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_DLON = 0.0
+2025-09-24 13:47:05.331 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_SLAT = 31.704974444444446
+2025-09-24 13:47:05.331 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 EXTRA_SLON = 119.02960583333333
+2025-09-24 13:47:05.331 16164-16164 AmapBroadcastManager    com.example.carrotamap               D     📌 KEY_TYPE = 12110
+
+
+
+2025-09-24 07:28:06.873 17738-17738 AmapBroadcastManager    com.example.carrotamap               D  📦 广播详情: action=AUTONAVI_STANDARD_BROADCAST_SEND, KEY_TYPE=10001, EXTRA_STATE=-1
+2025-09-24 07:28:06.873 17738-17738 AmapBroadcastManager    com.example.carrotamap               D  🔍 开始处理高德地图广播数据:
+2025-09-24 07:28:06.873 17738-17738 AmapBroadcastManager    com.example.carrotamap               D  📋 Intent包含的所有数据:
+2025-09-24 07:28:06.873 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 NEW_ICON = 65
+2025-09-24 07:28:06.873 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 EXIT_NAME_INFO = null
+2025-09-24 07:28:06.873 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 arrivePOILatitude = 0.0
+2025-09-24 07:28:06.873 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 NEXT_ROAD_PROGRESS_PERCENT = -1
+2025-09-24 07:28:06.873 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 ROUND_ALL_NUM = 0
+2025-09-24 07:28:06.873 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 cameraPenalty = false
+2025-09-24 07:28:06.873 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 CAMERA_INDEX = -1
+2025-09-24 07:28:06.873 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 CAMERA_SPEED = -1
+2025-09-24 07:28:06.873 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 NEXT_NEXT_TURN_ICON = 0
+2025-09-24 07:28:06.873 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 SAPA_NUM = 2
+2025-09-24 07:28:06.873 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 ROUTE_REMAIN_TIME = 18740
+2025-09-24 07:28:06.873 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 NEXT_SAPA_DIST = 47961
+2025-09-24 07:28:06.873 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 NEXT_SAPA_NAME = 青草服务区
+2025-09-24 07:28:06.873 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 NEXT_SAPA_TYPE = 0
+2025-09-24 07:28:06.873 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 arrivePOIType = 000002
+2025-09-24 07:28:06.873 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 NEXT_ROAD_NAME = 桐城南枢纽
+2025-09-24 07:28:06.874 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 addIcon = 
+2025-09-24 07:28:06.874 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 endPOIAddr = null
+2025-09-24 07:28:06.874 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 endPOIName = 太湖朗峯
+2025-09-24 07:28:06.874 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 endPOIType = 000002
+2025-09-24 07:28:06.874 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 CUR_SEG_NUM = 10
+2025-09-24 07:28:06.874 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 newCamera = false
+2025-09-24 07:28:06.874 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 CUR_ROAD_NAME = G4221沪武高速
+2025-09-24 07:28:06.874 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 LIMITED_SPEED = 120
+2025-09-24 07:28:06.874 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 ETA_TEXT = 预计13:40到达
+2025-09-24 07:28:06.874 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 ROUTE_ALL_TIME = 21359
+2025-09-24 07:28:06.874 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 ROUTE_ALL_DIS = 566781
+2025-09-24 07:28:06.874 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 viaPOItime = 0
+2025-09-24 07:28:06.874 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 CUR_SPEED = 110
+2025-09-24 07:28:06.874 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 NEXT_SEG_REMAIN_TIME = 0
+2025-09-24 07:28:06.874 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 CAR_LATITUDE = 0.0
+2025-09-24 07:28:06.874 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 ROUTE_REMAIN_DIS = 504514
+2025-09-24 07:28:06.874 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 cameraID = 33500416
+2025-09-24 07:28:06.874 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 CAMERA_DIST = -1
+2025-09-24 07:28:06.874 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 CAMERA_TYPE = -1
+2025-09-24 07:28:06.874 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 ICON = 65
+2025-09-24 07:28:06.874 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 TYPE = 0
+2025-09-24 07:28:06.874 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 NEXT_SEG_REMAIN_DIS = 0
+2025-09-24 07:28:06.874 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 EXIT_DIRECTION_INFO = null
+2025-09-24 07:28:06.874 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 routeRemainTrafficLightNum = 6
+2025-09-24 07:28:06.874 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 viaPOIdistance = 0
+2025-09-24 07:28:06.874 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 NEXT_SAPA_DIST_AUTO = 47公里
+2025-09-24 07:28:06.874 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 ROUTE_REMAIN_TIME_AUTO = 5时12分
+2025-09-24 07:28:06.874 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 TRAFFIC_LIGHT_NUM = 0
+2025-09-24 07:28:06.874 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 CAR_DIRECTION = 62
+2025-09-24 07:28:06.874 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 SEG_REMAIN_TIME = 2327
+2025-09-24 07:28:06.874 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 endPOILongitude = 120.6313768029213
+2025-09-24 07:28:06.874 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 nextRoadNOAOrNot = false
+2025-09-24 07:28:06.874 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 SEG_REMAIN_DIS_AUTO = 62公里
+2025-09-24 07:28:06.874 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 ROUTE_REMAIN_DIS_AUTO = 504公里
+2025-09-24 07:28:06.874 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 SEG_REMAIN_DIS = 62132
+2025-09-24 07:28:06.874 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 KEY_TYPE = 10001
+2025-09-24 07:28:06.874 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 ROUNG_ABOUT_NUM = 0
+2025-09-24 07:28:06.874 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 CUR_POINT_NUM = 6
+2025-09-24 07:28:06.874 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 SEG_ASSISTANT_ACTION = 25
+2025-09-24 07:28:06.874 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 NEXT_SEG_REMAIN_DIS_AUTO = 
+2025-09-24 07:28:06.874 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 SAPA_DIST_AUTO = 1.2公里
+2025-09-24 07:28:06.874 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 CAR_LONGITUDE = 0.0
+2025-09-24 07:28:06.874 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 arrivePOILongitude = 0.0
+2025-09-24 07:28:06.874 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 SAPA_DIST = 1277
+2025-09-24 07:28:06.874 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 SAPA_NAME = 温泉服务区
+2025-09-24 07:28:06.874 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 SAPA_TYPE = 0
+2025-09-24 07:28:06.874 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 nextNextAddIcon = 
+2025-09-24 07:28:06.874 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 NEXT_NEXT_ROAD_NAME = null
+2025-09-24 07:28:06.874 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 ROAD_TYPE = 0
+2025-09-24 07:28:06.874 17738-17738 AmapBroadcastManager    com.example.carrotamap               D     📌 endPOILatitude = 31.201044206995313

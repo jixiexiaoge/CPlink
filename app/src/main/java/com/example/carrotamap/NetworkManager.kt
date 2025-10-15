@@ -6,6 +6,9 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONException
@@ -28,6 +31,9 @@ class NetworkManager(
     // 网络客户端
     private lateinit var carrotNetworkClient: CarrotManNetworkClient
     
+    // 批量SharedPreferences写入器 - 优化磁盘IO
+    private val batchedPrefs = BatchedPreferences(context, "openpilot_status", 500L)
+    
     // 网络状态
     private val networkConnectionStatus = mutableStateOf("未连接")
     private val discoveredDevicesList = mutableStateListOf<CarrotManNetworkClient.DeviceInfo>()
@@ -41,6 +47,9 @@ class NetworkManager(
     
     // 自动发送状态跟踪 - 避免重复发送
     private var lastAutoSendState = false
+    
+    // 网络状态更新定时器
+    private var networkStatusUpdateJob: Job? = null
 
     // 导航确认服务已移除
 
@@ -63,7 +72,21 @@ class NetworkManager(
             carrotNetworkClient.setOnConnectionStatusChanged { connected, message ->
                 CoroutineScope(Dispatchers.Main).launch {
                     networkConnectionStatus.value = if (connected) "✅ $message" else "❌ $message"
-                    //Log.i(TAG, "🌐 网络状态变化: $message") //手动注释
+                    
+                    // 获取当前连接的设备信息
+                    val deviceInfo = if (connected) {
+                        // 从网络客户端获取当前设备信息
+                        val connectionStatus = carrotNetworkClient.getConnectionStatus()
+                        val currentDevice = connectionStatus["currentDevice"] as? String ?: message
+                        currentDevice
+                    } else {
+                        ""
+                    }
+                    
+                    // 保存网络连接状态到SharedPreferences供悬浮窗使用
+                    saveNetworkStatusToPrefs(connected, deviceInfo)
+                    
+                    Log.i(TAG, "🌐 网络状态变化: connected=$connected, device=$deviceInfo")
                 }
             }
             
@@ -84,6 +107,9 @@ class NetworkManager(
             // 启动网络服务和自动数据发送
             carrotNetworkClient.start()
             carrotNetworkClient.startAutoDataSending(autoSendEnabled, carrotManFields)
+            
+            // 启动网络状态定期更新
+            startNetworkStatusUpdate()
 
             // 导航确认服务已移除
 
@@ -102,7 +128,7 @@ class NetworkManager(
      */
     private fun parseOpenpilotStatusData(jsonData: String) {
         try {
-            Log.d(TAG, "🔍 开始解析OpenpPilot JSON数据: ${jsonData.take(200)}...")
+            //Log.d(TAG, "🔍 开始解析OpenpPilot JSON数据: ${jsonData.take(200)}...")
 
             val jsonObject = JSONObject(jsonData)
 
@@ -112,11 +138,11 @@ class NetworkManager(
             val isActive = jsonObject.optBoolean("active", false)
             val isOnroad = jsonObject.optBoolean("IsOnroad", false)
 
-            Log.d(TAG, "🚗 解析关键数据: 车速=${vEgo}km/h, 巡航=${vCruise}km/h, 激活=${isActive}, 在路上=${isOnroad}")
+            //Log.d(TAG, "🚗 解析关键数据: 车速=${vEgo}km/h, 巡航=${vCruise}km/h, 激活=${isActive}, 在路上=${isOnroad}")
 
             // 详细记录巡航速度相关字段
             if (jsonObject.has("v_cruise_kph")) {
-                Log.i(TAG, "✅ 发现v_cruise_kph字段: ${jsonObject.optDouble("v_cruise_kph", 0.0)}")
+                //Log.i(TAG, "✅ 发现v_cruise_kph字段: ${jsonObject.optDouble("v_cruise_kph", 0.0)}")
             } else {
                 Log.w(TAG, "⚠️ 未发现v_cruise_kph字段，检查可能的替代字段...")
                 // 检查可能的其他字段名
@@ -131,9 +157,9 @@ class NetworkManager(
             // 解析新的carcruiseSpeed字段（兼容旧版本）
             val carcruiseSpeed = jsonObject.optDouble("carcruiseSpeed", 0.0).toFloat()
             if (jsonObject.has("carcruiseSpeed")) {
-                Log.i(TAG, "✅ 发现carcruiseSpeed字段: ${carcruiseSpeed}km/h")
+                //Log.i(TAG, "✅ 发现carcruiseSpeed字段: ${carcruiseSpeed}km/h")
             } else {
-                Log.d(TAG, "ℹ️ 未发现carcruiseSpeed字段，使用默认值0.0（兼容旧版本）")
+                //Log.d(TAG, "ℹ️ 未发现carcruiseSpeed字段，使用默认值0.0（兼容旧版本）")
             }
 
             val statusData = OpenpilotStatusData(
@@ -157,7 +183,10 @@ class NetworkManager(
             val oldData = openpilotStatusData.value
             openpilotStatusData.value = statusData
 
-            Log.i(TAG, "✅ OpenpPilot状态已更新: 车速=${statusData.vEgoKph}km/h, 激活=${statusData.active}, 在路上=${statusData.isOnroad}")
+            // 保存速度数据到SharedPreferences，供FloatingWindowService使用
+            saveSpeedDataToPreferences(statusData)
+
+            //Log.i(TAG, "✅ OpenpPilot状态已更新: 车速=${statusData.vEgoKph}km/h, 激活=${statusData.active}, 在路上=${statusData.isOnroad}")
 
             // 如果是重要状态变化，记录详细日志
             if (oldData.vEgoKph != statusData.vEgoKph || oldData.active != statusData.active) {
@@ -302,6 +331,30 @@ class NetworkManager(
      * 获取网络统计信息
      */
     fun getNetworkStatistics(): Map<String, Any> = networkStatistics.value
+
+    /**
+     * 保存速度数据到SharedPreferences - 实时写入（不使用批量写入）
+     * 速度数据需要实时显示，不能延迟
+     */
+    private fun saveSpeedDataToPreferences(statusData: OpenpilotStatusData) {
+        try {
+            // 直接写入SharedPreferences，确保实时性
+            val prefs = context.getSharedPreferences("openpilot_status", Context.MODE_PRIVATE)
+            prefs.edit().apply {
+                putFloat("v_cruise_kph", statusData.vCruiseKph)
+                putFloat("carcruise_speed", statusData.carcruiseSpeed)
+                putInt("v_ego_kph", statusData.vEgoKph)
+                putBoolean("active", statusData.active)
+                putBoolean("is_onroad", statusData.isOnroad)
+                putLong("last_update", statusData.lastUpdateTime)
+                apply() // 使用apply()异步写入，不阻塞主线程
+            }
+            
+            //Log.v(TAG, "📊 速度数据已实时保存: 巡航设定=${statusData.vCruiseKph}km/h, 车辆巡航=${statusData.carcruiseSpeed}km/h")
+        } catch (e: Exception) {
+            Log.e(TAG, "保存速度数据失败: ${e.message}", e)
+        }
+    }
 
     /**
      * 获取OpenpPilot状态数据
@@ -501,54 +554,6 @@ class NetworkManager(
         }
     }
 
-    /**
-     * 发送设备位置上报到Azure Logic App
-     * 用于设备标识和位置追踪，包含车辆信息
-     */
-    suspend fun sendDeviceLocationReport(
-        deviceId: String,
-        latitude: Double,
-        longitude: Double,
-        manufacturer: String? = null,
-        model: String? = null,
-        fingerprint: String? = null
-    ): Result<Int> {
-        return withContext(Dispatchers.IO) {
-            try {
-                val url = "https://defaulte3f0b629b0b043238be4e8c5116552.ba.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/880b98dfa98148779fbc858897b417e6/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=XR057b-J1RRarSyF6_fwBVS_SZcXx6neMHZJk2R_OdQ"
-
-                val reportData = mapOf(
-                    "id" to deviceId,
-                    "lat" to latitude.toString(),
-                    "lon" to longitude.toString(),
-                    "manufacturer" to (manufacturer ?: "null"),
-                    "model" to (model ?: "null"),
-                    "fingerprint" to (fingerprint ?: "null")
-                )
-
-                Log.i(TAG, "📡 发送设备位置上报到Azure: $url")
-                Log.d(TAG, "📍 上报数据: id=$deviceId, lat=$latitude, lon=$longitude, manufacturer=$manufacturer, model=$model, fingerprint=$fingerprint")
-
-                val result = sendHttpPostRequestJson(url, reportData)
-
-                // 尝试解析返回的倒计时数值
-                val countdownSeconds = try {
-                    result.toIntOrNull() ?: 850 // 默认850秒
-                } catch (e: Exception) {
-                    Log.w(TAG, "⚠️ 解析倒计时数值失败，使用默认值: ${e.message}")
-                    850
-                }
-
-                Log.i(TAG, "✅ 设备位置上报成功，倒计时: ${countdownSeconds}秒")
-                Result.success(countdownSeconds)
-
-            } catch (e: Exception) {
-                Log.e(TAG, "❌ 发送设备位置上报失败: ${e.message}", e)
-                // 网络失败时返回默认倒计时
-                Result.success(850)
-            }
-        }
-    }
 
     /**
      * 发送form-urlencoded格式的HTTP POST请求
@@ -699,6 +704,46 @@ class NetworkManager(
         }
     }
 
+    /**
+     * 发送控制指令到comma3设备
+     * @param command 指令类型 (SPEED, LANECHANGE)
+     * @param arg 指令参数 (UP, DOWN, LEFT, RIGHT)
+     */
+    fun sendControlCommand(command: String, arg: String) {
+        if (!::carrotNetworkClient.isInitialized) {
+            Log.w(TAG, "⚠️ 网络客户端未初始化，无法发送控制指令")
+            return
+        }
+
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val deviceIP = getCurrentDeviceIP()
+                if (deviceIP == null) {
+                    Log.w(TAG, "⚠️ 无法获取设备IP地址，无法发送控制指令")
+                    return@launch
+                }
+
+                // 构造控制指令JSON
+                val commandMessage = JSONObject().apply {
+                    put("carrotIndex", System.currentTimeMillis())
+                    put("epochTime", System.currentTimeMillis() / 1000)
+                    put("timezone", "Asia/Shanghai")
+                    put("carrotCmd", command)
+                    put("carrotArg", arg)
+                    put("source", "android_floating_window")
+                    put("remote", deviceIP)
+                }
+
+                // 发送UDP数据包
+                carrotNetworkClient.sendCustomDataPacket(commandMessage)
+                
+                Log.i(TAG, "✅ 控制指令已发送: carrotCmd=$command, carrotArg=$arg, 设备=$deviceIP")
+            } catch (e: Exception) {
+                Log.e(TAG, "❌ 发送控制指令失败: ${e.message}", e)
+            }
+        }
+    }
+
 
 
     /**
@@ -711,10 +756,83 @@ class NetworkManager(
 
 
     /**
+     * 启动网络状态定期更新
+     * 每3秒更新一次网络状态到SharedPreferences
+     */
+    private fun startNetworkStatusUpdate() {
+        networkStatusUpdateJob = CoroutineScope(Dispatchers.IO).launch {
+            while (isActive) {
+                try {
+                    // 获取当前连接状态
+                    val connectionStatus = if (::carrotNetworkClient.isInitialized) {
+                        carrotNetworkClient.getConnectionStatus()
+                    } else {
+                        null
+                    }
+                    
+                    if (connectionStatus != null) {
+                        val isRunning = connectionStatus["isRunning"] as? Boolean ?: false
+                        val currentDevice = connectionStatus["currentDevice"] as? String ?: ""
+                        
+                        // 保存到SharedPreferences
+                        saveNetworkStatusToPrefs(isRunning, currentDevice)
+                        
+                        //Log.v(TAG, "🔄 定期更新网络状态: running=$isRunning, device='$currentDevice'")
+                    }
+                    
+                    delay(3000) // 每3秒更新一次
+                } catch (e: Exception) {
+                    Log.e(TAG, "❌ 定期更新网络状态失败: ${e.message}", e)
+                    delay(5000) // 出错后等待5秒再重试
+                }
+            }
+        }
+        Log.i(TAG, "🔄 网络状态定期更新已启动")
+    }
+    
+    /**
+     * 停止网络状态定期更新
+     */
+    private fun stopNetworkStatusUpdate() {
+        networkStatusUpdateJob?.cancel()
+        networkStatusUpdateJob = null
+        Log.i(TAG, "⏹️ 网络状态定期更新已停止")
+    }
+    
+    /**
+     * 保存网络连接状态到SharedPreferences
+     * 供悬浮窗服务读取使用
+     */
+    private fun saveNetworkStatusToPrefs(isConnected: Boolean, deviceInfo: String) {
+        try {
+            val prefs = context.getSharedPreferences("network_status", Context.MODE_PRIVATE)
+            prefs.edit().apply {
+                putBoolean("is_running", isConnected)
+                putString("current_device", deviceInfo)
+                putLong("last_update", System.currentTimeMillis())
+                apply()
+            }
+            //Log.d(TAG, "💾 网络状态已保存: connected=$isConnected, device='$deviceInfo'")
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ 保存网络状态失败: ${e.message}", e)
+        }
+    }
+    
+    /**
      * 清理资源
      */
     fun cleanup() {
         try {
+            // 停止网络状态更新
+            stopNetworkStatusUpdate()
+            
+            // 强制刷新批量写入
+            batchedPrefs.forceFlush()
+            batchedPrefs.cleanup()
+            
+            // 清除网络状态
+            saveNetworkStatusToPrefs(false, "")
+            
             if (::carrotNetworkClient.isInitialized) {
                 carrotNetworkClient.cleanup()
             }

@@ -5,9 +5,15 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- 居中白色实心圆（半径约24dp，对应viewport单位） -->
+    <!-- 逗号符号 - 橘黄色（胡萝卜色 #FF8C00） -->
+    <!-- 逗号主体（圆形部分） -->
     <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M54,30 A24,24 0 1,1 54,78 A24,24 0 1,1 54,30 Z" />
+        android:fillColor="#FF8C00"
+        android:pathData="M54,38 A14,14 0 1,1 54,66 A14,14 0 1,1 54,38 Z" />
+    
+    <!-- 逗号尾巴（弯曲部分） -->
+    <path
+        android:fillColor="#FF8C00"
+        android:pathData="M54,66 Q58,72 62,78 Q58,84 54,78 Q50,84 46,78 Q50,72 54,66 Z" />
 
 </vector>

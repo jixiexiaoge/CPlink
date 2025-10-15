@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SDI类型完整映射表 - CarrotAmap项目</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2.2em;
+            font-weight: 300;
+        }
+        .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+        .legend {
+            background: #f8f9fa;
+            padding: 20px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .legend h3 {
+            margin-top: 0;
+            color: #495057;
+        }
+        .legend-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.9em;
+        }
+        .legend-item.processed { background: #d4edda; color: #155724; }
+        .legend-item.conditional { background: #fff3cd; color: #856404; }
+        .legend-item.ignored { background: #f8d7da; color: #721c24; }
+        .legend-item.special { background: #d1ecf1; color: #0c5460; }
+        
+        .table-container {
+            overflow-x: auto;
+            padding: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9em;
+            background: white;
+        }
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 8px;
+            text-align: center;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        td {
+            padding: 12px 8px;
+            border: 1px solid #e9ecef;
+            text-align: center;
+            vertical-align: middle;
+        }
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        tr:hover {
+            background-color: #e3f2fd;
+            transform: scale(1.01);
+            transition: all 0.2s ease;
+        }
+        
+        .sdi-type {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        .processed { background: #d4edda !important; color: #155724; }
+        .conditional { background: #fff3cd !important; color: #856404; }
+        .ignored { background: #f8d7da !important; color: #721c24; }
+        .special { background: #d1ecf1 !important; color: #0c5460; }
+        
+        .korean-text {
+            font-family: 'Malgun Gothic', sans-serif;
+            font-size: 0.95em;
+        }
+        .chinese-text {
+            color: #495057;
+            font-weight: 500;
+        }
+        .english-text {
+            color: #6c757d;
+            font-style: italic;
+            font-size: 0.9em;
+        }
+        
+        .amap-mapping {
+            background: #e7f3ff;
+            color: #0066cc;
+            font-weight: 600;
+        }
+        .python-processing {
+            background: #fff2e7;
+            color: #cc6600;
+            font-weight: 600;
+        }
+        
+        .section-header {
+            background: #343a40;
+            color: white;
+            font-weight: bold;
+            text-align: left;
+            padding-left: 15px;
+        }
+        
+        .footer {
+            background: #343a40;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 0.9em;
+        }
+        
+        .highlight {
+            background: #ffeb3b;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+        
+        .note {
+            background: #f8f9fa;
+            border-left: 4px solid #007bff;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 6px 6px 0;
+        }
+        .note h4 {
+            margin-top: 0;
+            color: #007bff;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 5px;
+            }
+            .header h1 {
+                font-size: 1.8em;
+            }
+            th, td {
+                padding: 8px 4px;
+                font-size: 0.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚗 SDI类型完整映射表</h1>
+            <p>CarrotAmap项目 - 高德地图与Python端SDI类型映射关系分析</p>
+            <p>Speed Detection Information (SDI) - 速度检测信息系统</p>
+        </div>
+        
+        <div class="legend">
+            <h3>📊 处理状态说明</h3>
+            <div class="legend-grid">
+                <div class="legend-item processed">
+                    <span style="margin-right: 8px;">✅</span>
+                    <strong>直接处理</strong><br>
+                    <small>autoNaviSpeedCtrlMode > 0 时启用</small>
+                </div>
+                <div class="legend-item conditional">
+                    <span style="margin-right: 8px;">⚠️</span>
+                    <strong>条件处理</strong><br>
+                    <small>需要特定条件才启用</small>
+                </div>
+                <div class="legend-item ignored">
+                    <span style="margin-right: 8px;">❌</span>
+                    <strong>不处理</strong><br>
+                    <small>仅记录，不影响速度控制</small>
+                </div>
+                <div class="legend-item special">
+                    <span style="margin-right: 8px;">🔧</span>
+                    <strong>特殊处理</strong><br>
+                    <small>使用特殊逻辑处理</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="note">
+            <h4>🎯 关键发现</h4>
+            <p><strong>数据流向：</strong> 高德地图广播 → Android应用 → Comma3设备 → OpenPilot控制</p>
+            <p><strong>映射策略：</strong> Android端使用mapAmapCameraTypeToSdi()函数将高德CAMERA_TYPE映射到Python SDI类型</p>
+            <p><strong>处理逻辑：</strong> Python端根据autoNaviSpeedCtrlMode参数决定是否启用SDI控制</p>
+        </div>
+        
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th rowspan="2">SDI<br>编号</th>
+                        <th rowspan="2">高德地图<br>CAMERA_TYPE</th>
+                        <th colspan="2">Python描述</th>
+                        <th rowspan="2">中文描述</th>
+                        <th rowspan="2">英文描述</th>
+                        <th rowspan="2">处理状态</th>
+                        <th rowspan="2">启用条件</th>
+                        <th rowspan="2">Android映射<br>mapAmapCameraTypeToSdi()</th>
+                        <th rowspan="2">速度控制<br>影响</th>
+                        <th rowspan="2">备注</th>
+                    </tr>
+                    <tr>
+                        <th>韩文描述</th>
+                        <th>处理逻辑</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- 基础摄像头类型（直接处理） -->
+                    <tr class="section-header">
+                        <td colspan="11">🎯 基础摄像头类型（直接处理）</td>
+                    </tr>
+                    
+                    <tr class="processed">
+                        <td class="sdi-type">0</td>
+                        <td class="amap-mapping">测速摄像头</td>
+                        <td class="korean-text">신호과속</td>
+                        <td class="python-processing">基础测速</td>
+                        <td class="chinese-text">信号超速</td>
+                        <td class="english-text">Signal Speed Violation</td>
+                        <td><span class="highlight">✅ 直接处理</span></td>
+                        <td>autoNaviSpeedCtrlMode > 0</td>
+                        <td>❌ 不映射</td>
+                        <td>根据限速值控制</td>
+                        <td>基础测速摄像头</td>
+                    </tr>
+                    
+                    <tr class="processed">
+                        <td class="sdi-type">1</td>
+                        <td class="amap-mapping">监控摄像头</td>
+                        <td class="korean-text">과속 (고정식)</td>
+                        <td class="python-processing">基础测速</td>
+                        <td class="chinese-text">超速（固定式）</td>
+                        <td class="english-text">Fixed Speed Camera</td>
+                        <td><span class="highlight">✅ 直接处理</span></td>
+                        <td>autoNaviSpeedCtrlMode > 0</td>
+                        <td>✅ 0→1</td>
+                        <td>根据限速值控制</td>
+                        <td>固定式测速摄像头</td>
+                    </tr>
+                    
+                    <tr class="processed">
+                        <td class="sdi-type">2</td>
+                        <td class="amap-mapping">闯红灯拍照</td>
+                        <td class="korean-text">구간단속 시작</td>
+                        <td class="python-processing">区间测速开始</td>
+                        <td class="chinese-text">区间测速开始</td>
+                        <td class="english-text">Section Speed Start</td>
+                        <td><span class="highlight">✅ 直接处理</span></td>
+                        <td>autoNaviSpeedCtrlMode > 0</td>
+                        <td>✅ 8→2</td>
+                        <td>根据限速值控制</td>
+                        <td>区间测速起点</td>
+                    </tr>
+                    
+                    <tr class="processed">
+                        <td class="sdi-type">3</td>
+                        <td class="amap-mapping">违章拍照</td>
+                        <td class="korean-text">구간단속 끝</td>
+                        <td class="python-processing">区间测速结束</td>
+                        <td class="chinese-text">区间测速结束</td>
+                        <td class="english-text">Section Speed End</td>
+                        <td><span class="highlight">✅ 直接处理</span></td>
+                        <td>autoNaviSpeedCtrlMode > 0</td>
+                        <td>✅ 9→3</td>
+                        <td>根据限速值控制</td>
+                        <td>区间测速终点</td>
+                    </tr>
+                    
+                    <tr class="processed">
+                        <td class="sdi-type">4</td>
+                        <td class="amap-mapping">公交专用道摄像头</td>
+                        <td class="korean-text">구간단속중</td>
+                        <td class="python-processing">区间测速中</td>
+                        <td class="chinese-text">区间测速中</td>
+                        <td class="english-text">Section Speed In Progress</td>
+                        <td><span class="highlight">✅ 直接处理</span></td>
+                        <td>autoNaviSpeedCtrlMode > 0</td>
+                        <td>❌ 不映射</td>
+                        <td>根据限速值控制</td>
+                        <td>区间测速进行中</td>
+                    </tr>
+                    
+                    <tr class="processed">
+                        <td class="sdi-type">8</td>
+                        <td class="amap-mapping">固定式超速危险区</td>
+                        <td class="korean-text">고정식 과속위험 구간(박스형)</td>
+                        <td class="python-processing">固定危险区域</td>
+                        <td class="chinese-text">固定式超速危险区（箱式）</td>
+                        <td class="english-text">Fixed Speed Danger Zone</td>
+                        <td><span class="highlight">✅ 直接处理</span></td>
+                        <td>autoNaviSpeedCtrlMode > 0</td>
+                        <td>✅ 1→8</td>
+                        <td>根据限速值控制</td>
+                        <td>固定危险区域</td>
+                    </tr>
+                    
+                    <!-- 条件处理类型 -->
+                    <tr class="section-header">
+                        <td colspan="11">⚠️ 条件处理类型</td>
+                    </tr>
+                    
+                    <tr class="conditional">
+                        <td class="sdi-type">7</td>
+                        <td class="amap-mapping">移动式超速</td>
+                        <td class="korean-text">과속 (이동식)</td>
+                        <td class="python-processing">移动测速</td>
+                        <td class="chinese-text">超速（移动式）</td>
+                        <td class="english-text">Mobile Speed Camera</td>
+                        <td><span class="highlight">⚠️ 条件处理</span></td>
+                        <td>autoNaviSpeedCtrlMode >= 3</td>
+                        <td>❌ 不映射</td>
+                        <td>条件限速控制</td>
+                        <td>移动测速设备</td>
+                    </tr>
+                    
+                    <!-- 特殊处理类型 -->
+                    <tr class="section-header">
+                        <td colspan="11">🔧 特殊处理类型</td>
+                    </tr>
+                    
+                    <tr class="special">
+                        <td class="sdi-type">22</td>
+                        <td class="amap-mapping">减速带</td>
+                        <td class="korean-text">과속방지턱</td>
+                        <td class="python-processing">减速带处理</td>
+                        <td class="chinese-text">减速带</td>
+                        <td class="english-text">Speed Bump</td>
+                        <td><span class="highlight">🔧 特殊处理</span></td>
+                        <td>roadcate > 1 且 autoNaviSpeedCtrlMode >= 2</td>
+                        <td>✅ 13→22</td>
+                        <td>使用autoNaviSpeedBumpSpeed</td>
+                        <td>减速带检测</td>
+                    </tr>
+                    
+                    <tr class="processed">
+                        <td class="sdi-type">75</td>
+                        <td class="amap-mapping">隧道内变道抓拍</td>
+                        <td class="korean-text">터널내 차로변경단속</td>
+                        <td class="python-processing">隧道变道抓拍</td>
+                        <td class="chinese-text">隧道内变道抓拍</td>
+                        <td class="english-text">Tunnel Lane Change</td>
+                        <td><span class="highlight">✅ 直接处理</span></td>
+                        <td>autoNaviSpeedCtrlMode > 0</td>
+                        <td>❌ 不映射</td>
+                        <td>根据限速值控制</td>
+                        <td>特殊测速设备</td>
+                    </tr>
+                    
+                    <tr class="processed">
+                        <td class="sdi-type">76</td>
+                        <td class="amap-mapping">隧道内变道抓拍</td>
+                        <td class="korean-text">터널내 차로변경단속</td>
+                        <td class="python-processing">隧道变道抓拍</td>
+                        <td class="chinese-text">隧道内变道抓拍</td>
+                        <td class="english-text">Tunnel Lane Change</td>
+                        <td><span class="highlight">✅ 直接处理</span></td>
+                        <td>autoNaviSpeedCtrlMode > 0</td>
+                        <td>❌ 不映射</td>
+                        <td>根据限速值控制</td>
+                        <td>特殊测速设备</td>
+                    </tr>
+                    
+                    <!-- 不处理类型 -->
+                    <tr class="section-header">
+                        <td colspan="11">❌ 不处理类型（仅记录）</td>
+                    </tr>
+                    
+                    <tr class="ignored">
+                        <td class="sdi-type">5</td>
+                        <td class="amap-mapping">跟车抓拍摄像头</td>
+                        <td class="korean-text">꼬리물기단속카메라</td>
+                        <td class="python-processing">不处理</td>
+                        <td class="chinese-text">跟车抓拍摄像头</td>
+                        <td class="english-text">Tailgating Camera</td>
+                        <td><span class="highlight">❌ 不处理</span></td>
+                        <td>-</td>
+                        <td>❌ 不映射</td>
+                        <td>无影响</td>
+                        <td>跟车检测摄像头</td>
+                    </tr>
+                    
+                    <tr class="ignored">
+                        <td class="sdi-type">6</td>
+                        <td class="amap-mapping">信号灯抓拍</td>
+                        <td class="korean-text">신호 단속</td>
+                        <td class="python-processing">不处理</td>
+                        <td class="chinese-text">信号灯抓拍</td>
+                        <td class="english-text">Traffic Light Camera</td>
+                        <td><span class="highlight">❌ 不处理</span></td>
+                        <td>-</td>
+                        <td>✅ 2→6</td>
+                        <td>无影响</td>
+                        <td>信号灯抓拍</td>
+                    </tr>
+                    
+                    <tr class="ignored">
+                        <td class="sdi-type">9</td>
+                        <td class="amap-mapping">公交专用道区间</td>
+                        <td class="korean-text">버스전용차로구간</td>
+                        <td class="python-processing">不处理</td>
+                        <td class="chinese-text">公交专用道区间</td>
+                        <td class="english-text">Bus Lane Section</td>
+                        <td><span class="highlight">❌ 不处理</span></td>
+                        <td>-</td>
+                        <td>✅ 4→9</td>
+                        <td>无影响</td>
+                        <td>公交专用道</td>
+                    </tr>
+                    
+                    <tr class="ignored">
+                        <td class="sdi-type">10</td>
+                        <td class="amap-mapping">可变车道抓拍</td>
+                        <td class="korean-text">가변 차로 단속</td>
+                        <td class="python-processing">不处理</td>
+                        <td class="chinese-text">可变车道抓拍</td>
+                        <td class="english-text">Variable Lane Camera</td>
+                        <td><span class="highlight">❌ 不处理</span></td>
+                        <td>-</td>
+                        <td>❌ 不映射</td>
+                        <td>无影响</td>
+                        <td>可变车道</td>
+                    </tr>
+                    
+                    <tr class="ignored">
+                        <td class="sdi-type">11</td>
+                        <td class="amap-mapping">路肩监控点</td>
+                        <td class="korean-text">갓길 감시 지점</td>
+                        <td class="python-processing">不处理</td>
+                        <td class="chinese-text">路肩监控点</td>
+                        <td class="english-text">Shoulder Monitor</td>
+                        <td><span class="highlight">❌ 不处理</span></td>
+                        <td>-</td>
+                        <td>❌ 不映射</td>
+                        <td>无影响</td>
+                        <td>路肩监控</td>
+                    </tr>
+                    
+                    <tr class="ignored">
+                        <td class="sdi-type">12</td>
+                        <td class="amap-mapping">禁止加塞</td>
+                        <td class="korean-text">끼어들기 금지</td>
+                        <td class="python-processing">不处理</td>
+                        <td class="chinese-text">禁止加塞</td>
+                        <td class="english-text">No Cutting In</td>
+                        <td><span class="highlight">❌ 不处理</span></td>
+                        <td>-</td>
+                        <td>❌ 不映射</td>
+                        <td>无影响</td>
+                        <td>禁止加塞</td>
+                    </tr>
+                    
+                    <tr class="ignored">
+                        <td class="sdi-type">13</td>
+                        <td class="amap-mapping">交通信息采集点</td>
+                        <td class="korean-text">교통정보 수집지점</td>
+                        <td class="python-processing">不处理</td>
+                        <td class="chinese-text">交通信息采集点</td>
+                        <td class="english-text">Traffic Info Collection</td>
+                        <td><span class="highlight">❌ 不处理</span></td>
+                        <td>-</td>
+                        <td>✅ 13→22</td>
+                        <td>无影响</td>
+                        <td>信息采集</td>
+                    </tr>
+                    
+                    <tr class="ignored">
+                        <td class="sdi-type">14</td>
+                        <td class="amap-mapping">防盗CCTV</td>
+                        <td class="korean-text">방범용cctv</td>
+                        <td class="python-processing">不处理</td>
+                        <td class="chinese-text">防盗CCTV</td>
+                        <td class="english-text">Security CCTV</td>
+                        <td><span class="highlight">❌ 不处理</span></td>
+                        <td>-</td>
+                        <td>❌ 不映射</td>
+                        <td>无影响</td>
+                        <td>防盗监控</td>
+                    </tr>
+                    
+                    <tr class="ignored">
+                        <td class="sdi-type">15</td>
+                        <td class="amap-mapping">超载车辆危险区</td>
+                        <td class="korean-text">과적차량 위험구간</td>
+                        <td class="python-processing">不处理</td>
+                        <td class="chinese-text">超载车辆危险区</td>
+                        <td class="english-text">Overload Danger Zone</td>
+                        <td><span class="highlight">❌ 不处理</span></td>
+                        <td>-</td>
+                        <td>❌ 不映射</td>
+                        <td>无影响</td>
+                        <td>超载检测</td>
+                    </tr>
+                    
+                    <tr class="ignored">
+                        <td class="sdi-type">16</td>
+                        <td class="amap-mapping">货物装载不良抓拍</td>
+                        <td class="korean-text">적재 불량 단속</td>
+                        <td class="python-processing">不处理</td>
+                        <td class="chinese-text">货物装载不良抓拍</td>
+                        <td class="english-text">Cargo Loading Camera</td>
+                        <td><span class="highlight">❌ 不处理</span></td>
+                        <td>-</td>
+                        <td>❌ 不映射</td>
+                        <td>无影响</td>
+                        <td>货物装载</td>
+                    </tr>
+                    
+                    <tr class="ignored">
+                        <td class="sdi-type">17</td>
+                        <td class="amap-mapping">违停抓拍点</td>
+                        <td class="korean-text">주차단속 지점</td>
+                        <td class="python-processing">不处理</td>
+                        <td class="chinese-text">违停抓拍点</td>
+                        <td class="english-text">Illegal Parking Camera</td>
+                        <td><span class="highlight">❌ 不处理</span></td>
+                        <td>-</td>
+                        <td>✅ 3→17</td>
+                        <td>无影响</td>
+                        <td>违停抓拍</td>
+                    </tr>
+                    
+                    <tr class="ignored">
+                        <td class="sdi-type">18</td>
+                        <td class="amap-mapping">单行道</td>
+                        <td class="korean-text">일방통행도로</td>
+                        <td class="python-processing">不处理</td>
+                        <td class="chinese-text">单行道</td>
+                        <td class="english-text">One Way Street</td>
+                        <td><span class="highlight">❌ 不处理</span></td>
+                        <td>-</td>
+                        <td>❌ 不映射</td>
+                        <td>无影响</td>
+                        <td>单行道</td>
+                    </tr>
+                    
+                    <tr class="ignored">
+                        <td class="sdi-type">19</td>
+                        <td class="amap-mapping">铁路道口</td>
+                        <td class="korean-text">철길 건널목</td>
+                        <td class="python-processing">不处理</td>
+                        <td class="chinese-text">铁路道口</td>
+                        <td class="english-text">Railroad Crossing</td>
+                        <td><span class="highlight">❌ 不处理</span></td>
+                        <td>-</td>
+                        <td>❌ 不映射</td>
+                        <td>无影响</td>
+                        <td>铁路道口</td>
+                    </tr>
+                    
+                    <tr class="ignored">
+                        <td class="sdi-type">20</td>
+                        <td class="amap-mapping">儿童保护区开始</td>
+                        <td class="korean-text">어린이 보호구역(스쿨존 시작 구간)</td>
+                        <td class="python-processing">不处理</td>
+                        <td class="chinese-text">儿童保护区（学校区域开始）</td>
+                        <td class="english-text">School Zone Start</td>
+                        <td><span class="highlight">❌ 不处理</span></td>
+                        <td>-</td>
+                        <td>❌ 不映射</td>
+                        <td>无影响</td>
+                        <td>学校区域</td>
+                    </tr>
+                    
+                    <tr class="ignored">
+                        <td class="sdi-type">21</td>
+                        <td class="amap-mapping">儿童保护区结束</td>
+                        <td class="korean-text">어린이 보호구역(스쿨존 끝 구간)</td>
+                        <td class="python-processing">不处理</td>
+                        <td class="chinese-text">儿童保护区（学校区域结束）</td>
+                        <td class="english-text">School Zone End</td>
+                        <td><span class="highlight">❌ 不处理</span></td>
+                        <td>-</td>
+                        <td>❌ 不映射</td>
+                        <td>无影响</td>
+                        <td>学校区域</td>
+                    </tr>
+                    
+                    <!-- 继续添加更多不处理的类型 -->
+                    <tr class="ignored">
+                        <td class="sdi-type">23</td>
+                        <td class="amap-mapping">LPG加气站</td>
+                        <td class="korean-text">lpg충전소</td>
+                        <td class="python-processing">不处理</td>
+                        <td class="chinese-text">LPG加气站</td>
+                        <td class="english-text">LPG Station</td>
+                        <td><span class="highlight">❌ 不处理</span></td>
+                        <td>-</td>
+                        <td>❌ 不映射</td>
+                        <td>无影响</td>
+                        <td>LPG站</td>
+                    </tr>
+                    
+                    <tr class="ignored">
+                        <td class="sdi-type">24</td>
+                        <td class="amap-mapping">隧道区间</td>
+                        <td class="korean-text">터널 구간</td>
+                        <td class="python-processing">不处理</td>
+                        <td class="chinese-text">隧道区间</td>
+                        <td class="english-text">Tunnel Section</td>
+                        <td><span class="highlight">❌ 不处理</span></td>
+                        <td>-</td>
+                        <td>❌ 不映射</td>
+                        <td>无影响</td>
+                        <td>隧道</td>
+                    </tr>
+                    
+                    <tr class="ignored">
+                        <td class="sdi-type">25</td>
+                        <td class="amap-mapping">服务区</td>
+                        <td class="korean-text">휴게소</td>
+                        <td class="python-processing">不处理</td>
+                        <td class="chinese-text">服务区</td>
+                        <td class="english-text">Service Area</td>
+                        <td><span class="highlight">❌ 不处理</span></td>
+                        <td>-</td>
+                        <td>❌ 不映射</td>
+                        <td>无影响</td>
+                        <td>服务区</td>
+                    </tr>
+                    
+                    <tr class="ignored">
+                        <td class="sdi-type">26</td>
+                        <td class="amap-mapping">收费站</td>
+                        <td class="korean-text">톨게이트</td>
+                        <td class="python-processing">不处理</td>
+                        <td class="chinese-text">收费站</td>
+                        <td class="english-text">Toll Gate</td>
+                        <td><span class="highlight">❌ 不处理</span></td>
+                        <td>-</td>
+                        <td>❌ 不映射</td>
+                        <td>无影响</td>
+                        <td>收费站</td>
+                    </tr>
+                    
+                    <!-- 添加更多类型，直到66 -->
+                    <tr class="ignored">
+                        <td class="sdi-type">27-66</td>
+                        <td class="amap-mapping">其他类型</td>
+                        <td class="korean-text">기타 유형</td>
+                        <td class="python-processing">不处理</td>
+                        <td class="chinese-text">其他类型</td>
+                        <td class="english-text">Other Types</td>
+                        <td><span class="highlight">❌ 不处理</span></td>
+                        <td>-</td>
+                        <td>❌ 不映射</td>
+                        <td>无影响</td>
+                        <td>包括雾区、事故多发区、急弯区等40种类型</td>
+                    </tr>
+                    
+                    <tr class="ignored">
+                        <td class="sdi-type">66</td>
+                        <td class="amap-mapping">空/忽略</td>
+                        <td class="korean-text"></td>
+                        <td class="python-processing">不处理</td>
+                        <td class="chinese-text">空</td>
+                        <td class="english-text">Empty/Ignore</td>
+                        <td><span class="highlight">❌ 不处理</span></td>
+                        <td>-</td>
+                        <td>✅ 其他→66</td>
+                        <td>无影响</td>
+                        <td>未定义类型，用作默认值</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="note">
+            <h4>📋 Android端映射函数详解</h4>
+            <p><strong>mapAmapCameraTypeToSdi()函数映射规则：</strong></p>
+            <ul>
+                <li><code>0 → 1</code>: 测速摄像头 → 固定式超速</li>
+                <li><code>1 → 8</code>: 监控摄像头 → 固定式超速危险区</li>
+                <li><code>2 → 6</code>: 闯红灯拍照 → 信号抓拍</li>
+                <li><code>3 → 17</code>: 违章拍照 → 违停抓拍点</li>
+                <li><code>4 → 9</code>: 公交专用道摄像头 → 公交专用道区间</li>
+                <li><code>8 → 2</code>: 区间测速摄像头 → 区间测速开始</li>
+                <li><code>9 → 3</code>: 区间测速摄像头 → 区间测速结束</li>
+                <li><code>13 → 22</code>: 路口测速 → 减速带</li>
+                <li><code>其他 → 66</code>: 未知类型 → 忽略</li>
+            </ul>
+        </div>
+        
+        <div class="note">
+            <h4>🔧 Python端处理逻辑</h4>
+            <p><strong>_update_sdi()函数处理规则：</strong></p>
+            <ul>
+                <li><strong>基础处理：</strong> SDI类型 0,1,2,3,4,7,8,75,76 且 autoNaviSpeedCtrlMode > 0</li>
+                <li><strong>区间测速：</strong> nSdiBlockType 2,3 时特殊处理区间测速</li>
+                <li><strong>移动测速：</strong> SDI类型 7 需要 autoNaviSpeedCtrlMode >= 3</li>
+                <li><strong>减速带：</strong> SDI类型 22 需要 roadcate > 1 且 autoNaviSpeedCtrlMode >= 2</li>
+            </ul>
+        </div>
+        
+        <div class="footer">
+            <p>📊 CarrotAmap项目 - SDI类型映射表 | 最后更新: 2024年</p>
+            <p>🚗 基于高德地图广播协议和Python carrot_serv.py逆向分析</p>
+        </div>
+    </div>
+</body>
+</html>

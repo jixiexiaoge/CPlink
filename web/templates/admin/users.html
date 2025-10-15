@@ -1,0 +1,143 @@
+{% extends "admin/base.html" %}
+
+{% block title %}用户管理 - 后台管理{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">
+        <i class="fas fa-users"></i> 用户管理
+    </h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <a href="{{ url_for('admin_users_add') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> 添加用户
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">
+            <i class="fas fa-table"></i> 用户列表
+        </h6>
+    </div>
+    <div class="card-body">
+        {% if users %}
+        <div class="table-responsive">
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>设备ID</th>
+                        <th>使用次数</th>
+                        <th>使用时长(h)</th>
+                        <th>累计距离(km)</th>
+                        <th>用户类型</th>
+                        <th>车型信息</th>
+                        <th>微信名</th>
+                        <th>赞助金额</th>
+                        <th>修改时间</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>{{ user.id }}</td>
+                        <td>
+                            <code>{{ user.device_id }}</code>
+                        </td>
+                        <td>
+                            <span class="badge bg-primary">{{ user.usage_count }}</span>
+                        </td>
+                        <td>
+                            <span class="text-success fw-bold">{{ "%.1f"|format(user.usage_duration) }}</span>
+                        </td>
+                        <td>
+                            <span class="text-info fw-bold">{{ "%.1f"|format(user.total_distance) }}</span>
+                        </td>
+                        <td>
+                            {% if user.user_type == -1 %}
+                                <span class="badge bg-dark">管理员专用</span>
+                            {% elif user.user_type == 0 %}
+                                <span class="badge bg-secondary">未知用户</span>
+                            {% elif user.user_type == 1 %}
+                                <span class="badge bg-primary">新用户</span>
+                            {% elif user.user_type == 2 %}
+                                <span class="badge bg-info">支持者</span>
+                            {% elif user.user_type == 3 %}
+                                <span class="badge bg-warning">赞助者</span>
+                            {% elif user.user_type == 4 %}
+                                <span class="badge bg-danger">铁粉</span>
+                            {% else %}
+                                <span class="badge bg-light text-dark">未知</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if user.car_model %}
+                                <span class="text-muted">{{ user.car_model }}</span>
+                            {% else %}
+                                <span class="text-muted">未设置</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if user.wechat_name %}
+                                <span class="text-info">{{ user.wechat_name }}</span>
+                            {% else %}
+                                <span class="text-muted">未设置</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="text-warning fw-bold">¥{{ "%.2f"|format(user.sponsor_amount) }}</span>
+                        </td>
+                        <td>
+                            <small class="text-muted">
+                                {{ user.modify_time.strftime('%Y-%m-%d %H:%M') if user.modify_time else '未知' }}
+                            </small>
+                        </td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <a href="{{ url_for('admin_users_edit', user_id=user.id) }}" class="btn btn-sm btn-warning">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{{ url_for('admin_users_delete', user_id=user.id) }}" 
+                                   class="btn btn-sm btn-danger"
+                                   onclick="return confirm('确定要删除这个用户吗？')">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-users fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">暂无用户数据</h5>
+            <p class="text-muted">点击上方"添加用户"按钮开始添加用户</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    $('#dataTable').DataTable({
+        "language": {
+            "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/Chinese.json"
+        },
+        "pageLength": 25,
+        "order": [[ 0, "desc" ]]
+    });
+});
+</script>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.24/css/dataTables.bootstrap5.min.css">
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.24/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+{% endblock %}

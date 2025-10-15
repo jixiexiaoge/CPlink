@@ -1,187 +1,149 @@
 package com.example.carrotamap
 
 import android.util.Log
-import kotlinx.coroutines.delay
-import java.io.IOException
-import java.net.ConnectException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
+import java.net.ConnectException
 import org.json.JSONException
 
 /**
- * 异常处理工具类
- * 提供统一的异常处理策略，区分不同类型的异常并采取相应的处理措施
+ * 错误处理器
+ * 统一处理应用中的各种异常和错误
  */
 object ErrorHandler {
+    private const val TAG = "ErrorHandler"
     
     /**
-     * 异常类型枚举
+     * 错误类型枚举
      */
     enum class ErrorType {
         NETWORK_TIMEOUT,      // 网络超时
-        NETWORK_IO,           // 网络IO异常
-        NETWORK_CONNECTION,   // 网络连接异常
-        NETWORK_UNKNOWN_HOST, // 未知主机异常
-        JSON_PARSE,           // JSON解析异常
-        PERMISSION_DENIED,    // 权限被拒绝
-        SYSTEM_ERROR,         // 系统错误
-        UNKNOWN              // 未知异常
+        NETWORK_CONNECTION,   // 网络连接错误
+        JSON_PARSE,          // JSON解析错误
+        PERMISSION_DENIED,   // 权限被拒绝
+        LOCATION_ERROR,      // 位置服务错误
+        UNKNOWN_ERROR        // 未知错误
     }
     
     /**
-     * 异常处理结果
+     * 错误处理结果
      */
     data class ErrorResult(
         val type: ErrorType,
         val message: String,
         val shouldRetry: Boolean,
-        val retryDelayMs: Long = 0L,
-        val maxRetries: Int = 3
+        val userMessage: String
     )
     
     /**
-     * 分析异常并返回处理策略
+     * 分析异常并返回处理结果
      */
-    fun analyzeException(exception: Throwable): ErrorResult {
+    fun analyzeException(exception: Exception): ErrorResult {
         return when (exception) {
             is SocketTimeoutException -> ErrorResult(
                 type = ErrorType.NETWORK_TIMEOUT,
-                message = "网络连接超时",
+                message = "网络连接超时: ${exception.message}",
                 shouldRetry = true,
-                retryDelayMs = 1000L,
-                maxRetries = 5
+                userMessage = "网络连接超时，请检查网络连接后重试"
+            )
+            is UnknownHostException -> ErrorResult(
+                type = ErrorType.NETWORK_CONNECTION,
+                message = "无法解析主机地址: ${exception.message}",
+                shouldRetry = true,
+                userMessage = "网络连接失败，请检查网络设置"
             )
             is ConnectException -> ErrorResult(
                 type = ErrorType.NETWORK_CONNECTION,
-                message = "网络连接失败：${exception.message}",
+                message = "连接被拒绝: ${exception.message}",
                 shouldRetry = true,
-                retryDelayMs = 2000L,
-                maxRetries = 3
-            )
-            is UnknownHostException -> ErrorResult(
-                type = ErrorType.NETWORK_UNKNOWN_HOST,
-                message = "无法解析主机地址：${exception.message}",
-                shouldRetry = true,
-                retryDelayMs = 5000L,
-                maxRetries = 2
-            )
-            is IOException -> ErrorResult(
-                type = ErrorType.NETWORK_IO,
-                message = "网络IO异常：${exception.message}",
-                shouldRetry = true,
-                retryDelayMs = 1500L,
-                maxRetries = 3
+                userMessage = "无法连接到服务器，请稍后重试"
             )
             is JSONException -> ErrorResult(
                 type = ErrorType.JSON_PARSE,
-                message = "数据解析失败：${exception.message}",
+                message = "JSON解析错误: ${exception.message}",
                 shouldRetry = false,
-                retryDelayMs = 0L,
-                maxRetries = 0
+                userMessage = "数据格式错误，请联系技术支持"
             )
             is SecurityException -> ErrorResult(
                 type = ErrorType.PERMISSION_DENIED,
-                message = "权限被拒绝：${exception.message}",
+                message = "权限被拒绝: ${exception.message}",
                 shouldRetry = false,
-                retryDelayMs = 0L,
-                maxRetries = 0
+                userMessage = "权限不足，请在设置中授予必要权限"
             )
             else -> ErrorResult(
-                type = ErrorType.UNKNOWN,
-                message = "未知异常：${exception.message}",
+                type = ErrorType.UNKNOWN_ERROR,
+                message = "未知错误: ${exception.message}",
                 shouldRetry = false,
-                retryDelayMs = 2000L,
-                maxRetries = 1
+                userMessage = "发生未知错误，请重启应用"
             )
         }
     }
     
     /**
-     * 记录异常日志
+     * 处理网络错误
      */
-    fun logError(tag: String, operation: String, exception: Throwable, errorResult: ErrorResult) {
-        val logMessage = "[$operation] ${errorResult.message} - 类型: ${errorResult.type}"
-        
-        when (errorResult.type) {
-            ErrorType.NETWORK_TIMEOUT -> Log.w(tag, logMessage)
-            ErrorType.NETWORK_IO, ErrorType.NETWORK_CONNECTION -> Log.e(tag, logMessage, exception)
-            ErrorType.JSON_PARSE -> Log.e(tag, logMessage, exception)
-            ErrorType.PERMISSION_DENIED -> Log.e(tag, logMessage, exception)
-            ErrorType.SYSTEM_ERROR -> Log.e(tag, logMessage, exception)
-            ErrorType.NETWORK_UNKNOWN_HOST -> Log.w(tag, logMessage)
-            ErrorType.UNKNOWN -> Log.e(tag, logMessage, exception)
-        }
+    fun handleNetworkError(exception: Exception, operation: String): ErrorResult {
+        val result = analyzeException(exception)
+        Log.e(TAG, "网络操作失败: $operation - ${result.message}", exception)
+        return result
     }
     
     /**
-     * 带重试机制的异步操作执行器
+     * 处理位置服务错误
      */
-    suspend fun <T> executeWithRetry(
-        operation: String,
-        tag: String,
-        maxRetries: Int = 3,
-        block: suspend () -> T
-    ): T? {
-        var lastException: Throwable? = null
-        var retryCount = 0
-        
-        while (retryCount <= maxRetries) {
-            try {
-                return block()
-            } catch (e: Exception) {
-                lastException = e
-                val errorResult = analyzeException(e)
-                logError(tag, operation, e, errorResult)
-                
-                if (!errorResult.shouldRetry || retryCount >= maxRetries) {
-                    Log.e(tag, "操作失败，停止重试：$operation")
-                    break
-                }
-                
-                retryCount++
-                Log.i(tag, "第 $retryCount 次重试 $operation，延迟 ${errorResult.retryDelayMs}ms")
-                delay(errorResult.retryDelayMs)
-            }
+    fun handleLocationError(exception: Exception, operation: String): ErrorResult {
+        val result = when (exception) {
+            is SecurityException -> ErrorResult(
+                type = ErrorType.PERMISSION_DENIED,
+                message = "位置权限被拒绝: ${exception.message}",
+                shouldRetry = false,
+                userMessage = "位置权限被拒绝，请在设置中开启位置权限"
+            )
+            else -> ErrorResult(
+                type = ErrorType.LOCATION_ERROR,
+                message = "位置服务错误: ${exception.message}",
+                shouldRetry = true,
+                userMessage = "位置服务异常，请检查GPS设置"
+            )
         }
-        
-        lastException?.let {
-            Log.e(tag, "操作最终失败：$operation", it)
-        }
-        return null
+        Log.e(TAG, "位置服务操作失败: $operation - ${result.message}", exception)
+        return result
     }
     
     /**
-     * 记录操作成功日志
+     * 处理权限错误
      */
-    fun logSuccess(tag: String, operation: String, details: String = "") {
-        val message = if (details.isNotEmpty()) "$operation - $details" else operation
-        if (AppConstants.Logging.ENABLE_DEBUG_LOGS) {
-            Log.d(tag, "✅ $message")
-        }
+    fun handlePermissionError(permission: String): ErrorResult {
+        val result = ErrorResult(
+            type = ErrorType.PERMISSION_DENIED,
+            message = "权限被拒绝: $permission",
+            shouldRetry = false,
+            userMessage = "权限被拒绝，请在设置中授予权限"
+        )
+        Log.w(TAG, "权限检查失败: $permission")
+        return result
     }
     
     /**
-     * 记录操作警告日志
+     * 记录错误并返回用户友好的消息
      */
-    fun logWarning(tag: String, operation: String, warning: String) {
-        Log.w(tag, "⚠️ [$operation] $warning")
+    fun logAndGetUserMessage(exception: Exception, context: String): String {
+        val result = analyzeException(exception)
+        Log.e(TAG, "错误发生在: $context", exception)
+        return result.userMessage
     }
     
     /**
-     * 记录详细调试信息
+     * 检查是否应该重试操作
      */
-    fun logDebug(tag: String, message: String) {
-        if (AppConstants.Logging.ENABLE_DEBUG_LOGS) {
-            Log.d(tag, message)
-        }
+    fun shouldRetry(exception: Exception): Boolean {
+        return analyzeException(exception).shouldRetry
     }
     
     /**
-     * 记录详细调试信息（仅在启用详细日志时）
+     * 获取错误类型
      */
-    fun logVerbose(tag: String, message: String) {
-        if (AppConstants.Logging.ENABLE_VERBOSE_LOGS) {
-            Log.v(tag, message)
-        }
+    fun getErrorType(exception: Exception): ErrorType {
+        return analyzeException(exception).type
     }
-} 
+}

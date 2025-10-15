@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+
+{% block title %}排行榜 - CPlink 管理系统{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-trophy"></i> 排行榜</h2>
+            <a href="/admin/login" class="btn btn-primary">
+                <i class="fas fa-sign-in-alt"></i> 管理员登录
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- 使用时长排行榜 -->
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-clock"></i> 使用时长排行榜
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if users_by_duration %}
+                    {% for user in users_by_duration[:10] %}
+                    <div class="d-flex justify-content-between align-items-center mb-2 p-2 border rounded">
+                        <div class="d-flex align-items-center">
+                            {% if loop.index == 1 %}
+                                <i class="fas fa-crown text-warning me-2"></i>
+                            {% elif loop.index <= 3 %}
+                                <i class="fas fa-medal text-warning me-2"></i>
+                            {% else %}
+                                <span class="badge bg-secondary me-2">{{ loop.index }}</span>
+                            {% endif %}
+                            <div>
+                                <div class="fw-bold">{{ user.device_id[:8] }}...</div>
+                                <small class="text-muted">{{ user.car_model or '未设置车型' }}</small>
+                                <div>
+                                    {% if user.user_type == -1 %}
+                                        <span class="badge bg-dark">管理员专用</span>
+                                    {% elif user.user_type == 0 %}
+                                        <span class="badge bg-secondary">未知用户</span>
+                                    {% elif user.user_type == 1 %}
+                                        <span class="badge bg-primary">新用户</span>
+                                    {% elif user.user_type == 2 %}
+                                        <span class="badge bg-info">支持者</span>
+                                    {% elif user.user_type == 3 %}
+                                        <span class="badge bg-warning">赞助者</span>
+                                    {% elif user.user_type == 4 %}
+                                        <span class="badge bg-danger">铁粉</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <div class="fw-bold text-primary">{{ "%.1f"|format(user.usage_duration) }}h</div>
+                            <small class="text-muted">{{ user.usage_count }}次</small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-3">
+                        <i class="fas fa-clock fa-2x text-muted mb-2"></i>
+                        <p class="text-muted mb-0">暂无数据</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- 累计距离排行榜 -->
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-route"></i> 累计距离排行榜
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if users_by_distance %}
+                    {% for user in users_by_distance[:10] %}
+                    <div class="d-flex justify-content-between align-items-center mb-2 p-2 border rounded">
+                        <div class="d-flex align-items-center">
+                            {% if loop.index == 1 %}
+                                <i class="fas fa-crown text-warning me-2"></i>
+                            {% elif loop.index <= 3 %}
+                                <i class="fas fa-medal text-warning me-2"></i>
+                            {% else %}
+                                <span class="badge bg-secondary me-2">{{ loop.index }}</span>
+                            {% endif %}
+                            <div>
+                                <div class="fw-bold">{{ user.device_id[:8] }}...</div>
+                                <small class="text-muted">{{ user.car_model or '未设置车型' }}</small>
+                                <div>
+                                    {% if user.user_type == -1 %}
+                                        <span class="badge bg-dark">管理员专用</span>
+                                    {% elif user.user_type == 0 %}
+                                        <span class="badge bg-secondary">未知用户</span>
+                                    {% elif user.user_type == 1 %}
+                                        <span class="badge bg-primary">新用户</span>
+                                    {% elif user.user_type == 2 %}
+                                        <span class="badge bg-info">支持者</span>
+                                    {% elif user.user_type == 3 %}
+                                        <span class="badge bg-warning">赞助者</span>
+                                    {% elif user.user_type == 4 %}
+                                        <span class="badge bg-danger">铁粉</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <div class="fw-bold text-success">{{ "%.1f"|format(user.total_distance) }}km</div>
+                            <small class="text-muted">{{ user.usage_count }}次</small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-3">
+                        <i class="fas fa-route fa-2x text-muted mb-2"></i>
+                        <p class="text-muted mb-0">暂无数据</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- 使用次数排行榜 -->
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-bar"></i> 使用次数排行榜
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if users_by_count %}
+                    {% for user in users_by_count[:10] %}
+                    <div class="d-flex justify-content-between align-items-center mb-2 p-2 border rounded">
+                        <div class="d-flex align-items-center">
+                            {% if loop.index == 1 %}
+                                <i class="fas fa-crown text-warning me-2"></i>
+                            {% elif loop.index <= 3 %}
+                                <i class="fas fa-medal text-warning me-2"></i>
+                            {% else %}
+                                <span class="badge bg-secondary me-2">{{ loop.index }}</span>
+                            {% endif %}
+                            <div>
+                                <div class="fw-bold">{{ user.device_id[:8] }}...</div>
+                                <small class="text-muted">{{ user.car_model or '未设置车型' }}</small>
+                                <div>
+                                    {% if user.user_type == -1 %}
+                                        <span class="badge bg-dark">管理员专用</span>
+                                    {% elif user.user_type == 0 %}
+                                        <span class="badge bg-secondary">未知用户</span>
+                                    {% elif user.user_type == 1 %}
+                                        <span class="badge bg-primary">新用户</span>
+                                    {% elif user.user_type == 2 %}
+                                        <span class="badge bg-info">支持者</span>
+                                    {% elif user.user_type == 3 %}
+                                        <span class="badge bg-warning">赞助者</span>
+                                    {% elif user.user_type == 4 %}
+                                        <span class="badge bg-danger">铁粉</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <div class="fw-bold text-info">{{ user.usage_count }}次</div>
+                            <small class="text-muted">{{ "%.1f"|format(user.usage_duration) }}h</small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-3">
+                        <i class="fas fa-chart-bar fa-2x text-muted mb-2"></i>
+                        <p class="text-muted mb-0">暂无数据</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 统计信息 -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-pie"></i> 统计信息
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 text-center">
+                        <div class="p-3">
+                            <i class="fas fa-users fa-2x text-primary mb-2"></i>
+                            <h4>{{ users_by_duration|length }}</h4>
+                            <p class="text-muted mb-0">总用户数</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <div class="p-3">
+                            <i class="fas fa-clock fa-2x text-success mb-2"></i>
+                            <h4>{{ "%.1f"|format(users_by_duration|sum(attribute='usage_duration')) }}h</h4>
+                            <p class="text-muted mb-0">总使用时长</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <div class="p-3">
+                            <i class="fas fa-route fa-2x text-info mb-2"></i>
+                            <h4>{{ "%.1f"|format(users_by_distance|sum(attribute='total_distance')) }}km</h4>
+                            <p class="text-muted mb-0">总累计距离</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <div class="p-3">
+                            <i class="fas fa-chart-bar fa-2x text-warning mb-2"></i>
+                            <h4>{{ users_by_count|sum(attribute='usage_count') }}</h4>
+                            <p class="text-muted mb-0">总使用次数</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
