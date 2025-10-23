@@ -51,6 +51,11 @@ class CarrotManNetworkClient(
     private var discoveredDevices = mutableMapOf<String, DeviceInfo>()
     private var currentTargetDevice: DeviceInfo? = null
     
+    // 设备发现增强
+    private var deviceDiscoveryEnabled = true
+    private var lastDeviceDiscoveryTime = 0L
+    private val deviceDiscoveryInterval = 5000L // 5秒发现间隔
+    
     // Socket连接管理
     private var listenSocket: DatagramSocket? = null
     private var dataSocket: DatagramSocket? = null
@@ -87,6 +92,13 @@ class CarrotManNetworkClient(
     private var lastReconnectTime = 0L
     private var reconnectDelay = 2000L // 2秒重连延迟
     private var lastSuccessfulSendTime = 0L
+    
+    // 网络稳定性增强参数
+    private var networkStabilityCheckInterval = 30000L // 30秒检查一次网络稳定性
+    private var lastNetworkStabilityCheck = 0L
+    private var networkQualityScore = 100 // 网络质量评分 (0-100)
+    private var successfulSendsInWindow = 0
+    private var totalSendsInWindow = 0
 
     // ATC状态跟踪（用于日志记录）
     private var lastAtcPausedState: Boolean? = null
@@ -129,6 +141,7 @@ class CarrotManNetworkClient(
             initializeSockets()
             startDeviceListener()
             startDeviceHealthCheck()
+            startDeviceDiscovery() // 启动设备发现服务
             startHeartbeatTask() // 启动心跳任务而不是定时器
             onConnectionStatusChanged?.invoke(false, "")
             Log.i(TAG, "CarrotMan 网络服务启动成功")
@@ -491,6 +504,9 @@ class CarrotManNetworkClient(
             Log.d(TAG, "⏸️ 网络恢复中，跳过CarrotMan数据发送")
             return
         }
+        
+        // 检查网络稳定性
+        checkNetworkStability()
 
         // 发送完整导航数据（许可证系统已移除）
         //Log.d(TAG, "发送完整导航数据")
@@ -499,9 +515,14 @@ class CarrotManNetworkClient(
             try {
                 val jsonData = convertCarrotFieldsToJson(carrotFields)
                 sendDataPacket(jsonData)
+                
+                // 记录成功发送
+                recordSuccessfulSend()
                 onDataSent?.invoke(++totalPacketsSent)
                 //Log.v(TAG, "CarrotMan数据包发送成功 #$totalPacketsSent")
             } catch (e: Exception) {
+                // 记录失败发送
+                recordFailedSend()
                 // 使用新的错误处理机制
                 handleNetworkError(e, "CarrotMan数据发送")
                 
@@ -529,13 +550,13 @@ class CarrotManNetworkClient(
             put("epochTime", if (fields.epochTime > 0) fields.epochTime else System.currentTimeMillis() / 1000)
             put("timezone", fields.timezone.ifEmpty { "Asia/Shanghai" })
 
-            // ========== GPS定位字段（必需） ==========
-            // 🔍 根据文档，这些是手机GPS或导航GPS的核心字段
-            put("latitude", fields.latitude)                 // GPS纬度 (WGS84)
-            put("longitude", fields.longitude)               // GPS经度 (WGS84)
-            put("heading", fields.heading)                   // 方向角 (0-360度)
-            put("accuracy", fields.accuracy)                 // GPS精度 (米)
-            put("gps_speed", fields.gps_speed)               // GPS速度 (m/s)
+            // ========== GPS定位字段（已移除） ==========
+            // 🔍 根据用户要求，移除以下5个GPS字段：
+            // - latitude (GPS纬度)
+            // - longitude (GPS经度) 
+            // - heading (方向角)
+            // - accuracy (GPS精度)
+            // - gps_speed (GPS速度)
 
             // ========== 导航位置字段（兼容字段） ==========
             // 🔍 根据文档，这些字段用于导航系统位置
@@ -598,10 +619,7 @@ class CarrotManNetworkClient(
             put("carrotCmd", fields.carrotCmd)               // 命令类型
             put("carrotArg", fields.carrotArg)               // 命令参数
 
-            // 🔍 调试日志：记录关键GPS数据
-            //if (fields.latitude != 0.0 && fields.longitude != 0.0) {
-            //    Log.v(TAG, "📤 发送GPS数据: lat=${String.format("%.6f", fields.latitude)}, lon=${String.format("%.6f", fields.longitude)}, heading=${String.format("%.1f", fields.heading)}°, speed=${String.format("%.1f", fields.gps_speed)}m/s")
-            //}
+            // 🔍 GPS字段已移除，不再记录GPS数据日志
         }
     }
     
@@ -623,6 +641,8 @@ class CarrotManNetworkClient(
                 return@withContext
             }
             
+            Log.d(TAG, "📡 发送UDP数据包到 ${device.ip}:${device.port}, 大小: ${dataBytes.size} bytes")
+            
             val packet = DatagramPacket(
                 dataBytes,
                 dataBytes.size,
@@ -632,6 +652,8 @@ class CarrotManNetworkClient(
             
             dataSocket?.send(packet)
             lastSendTime = System.currentTimeMillis()
+            
+            Log.d(TAG, "✅ UDP数据包发送成功")
             
             // 记录成功发送
             recordSuccessfulSend()
@@ -1026,15 +1048,70 @@ class CarrotManNetworkClient(
             isNetworkRecovering = false
         }
     }
-
+    
     /**
-     * 记录成功发送，重置错误计数
+     * 检查网络稳定性
+     */
+    private fun checkNetworkStability() {
+        val currentTime = System.currentTimeMillis()
+        
+        // 定期检查网络质量
+        if (currentTime - lastNetworkStabilityCheck > networkStabilityCheckInterval) {
+            lastNetworkStabilityCheck = currentTime
+            
+            // 计算网络质量评分
+            if (totalSendsInWindow > 0) {
+                val successRate = (successfulSendsInWindow.toDouble() / totalSendsInWindow) * 100
+                networkQualityScore = successRate.toInt()
+                
+                // 根据网络质量调整重连策略
+                when {
+                    networkQualityScore < 50 -> {
+                        // 网络质量差，降低错误阈值
+                        maxConsecutiveErrors = 2
+                        Log.w(TAG, "📉 网络质量较差 (${networkQualityScore}%)，降低错误阈值")
+                    }
+                    networkQualityScore < 80 -> {
+                        // 网络质量一般，使用默认阈值
+                        maxConsecutiveErrors = 3
+                        Log.i(TAG, "📊 网络质量一般 (${networkQualityScore}%)，使用默认阈值")
+                    }
+                    else -> {
+                        // 网络质量良好，提高错误阈值
+                        maxConsecutiveErrors = 5
+                        Log.d(TAG, "📈 网络质量良好 (${networkQualityScore}%)，提高错误阈值")
+                    }
+                }
+                
+                // 重置统计窗口
+                successfulSendsInWindow = 0
+                totalSendsInWindow = 0
+            }
+        }
+    }
+    
+    /**
+     * 记录成功发送
      */
     private fun recordSuccessfulSend() {
-        consecutiveNetworkErrors = 0
+        successfulSendsInWindow++
+        totalSendsInWindow++
         lastSuccessfulSendTime = System.currentTimeMillis()
-        isNetworkRecovering = false
+        
+        // 重置连续错误计数
+        if (consecutiveNetworkErrors > 0) {
+            consecutiveNetworkErrors = 0
+            Log.d(TAG, "✅ 网络连接恢复，重置错误计数")
+        }
     }
+    
+    /**
+     * 记录失败发送
+     */
+    private fun recordFailedSend() {
+        totalSendsInWindow++
+    }
+
     
     // 设置设备发现事件回调
     fun setOnDeviceDiscovered(callback: (DeviceInfo) -> Unit) {
@@ -1127,15 +1204,16 @@ class CarrotManNetworkClient(
                             if (currentFields.needsImmediateSend) {
                                 Log.i(TAG, "🚀 立即发送数据包 (限速变化):")
                             } else {
-                                //Log.d(TAG, "📤 准备自动发送数据包:")
+                                Log.d(TAG, "📤 准备自动发送数据包:")
                             }
-                            //Log.d(TAG, "   位置: lat=${currentFields.latitude}, lon=${currentFields.longitude}")
-                            //Log.d(TAG, "  🛣️ 道路: ${currentFields.szPosRoadName}")
-                            //Log.d(TAG, "  🚦 限速: ${currentFields.nRoadLimitSpeed}km/h")
-                            //Log.d(TAG, "  🎯 目标: ${currentFields.szGoalName}")
-                            //Log.d(TAG, "  🧭 导航状态: ${currentFields.isNavigating}")
-                            //Log.d(TAG, "  🔄 转向信息: 类型=${currentFields.nTBTTurnType}, 距离=${currentFields.nTBTDist}m, 指令=${currentFields.szTBTMainText}")
-                            //Log.d(TAG, "  🔄 下一转向: 类型=${currentFields.nTBTTurnTypeNext}, 距离=${currentFields.nTBTDistNext}m")
+                            Log.d(TAG, "   位置: lat=${currentFields.latitude}, lon=${currentFields.longitude}")
+                            Log.d(TAG, "  🛣️ 道路: ${currentFields.szPosRoadName}")
+                            Log.d(TAG, "  🚦 限速: ${currentFields.nRoadLimitSpeed}km/h")
+                            Log.d(TAG, "  🎯 目标: ${currentFields.szGoalName}")
+                            Log.d(TAG, "  🧭 导航状态: ${currentFields.isNavigating}")
+                            Log.d(TAG, "  🔄 转向信息: 类型=${currentFields.nTBTTurnType}, 距离=${currentFields.nTBTDist}m, 指令=${currentFields.szTBTMainText}")
+                            Log.d(TAG, "  🔄 下一转向: 类型=${currentFields.nTBTTurnTypeNext}, 距离=${currentFields.nTBTDistNext}m")
+                            Log.d(TAG, "  📏 X系列距离: 转弯=${currentFields.xDistToTurn}m, 下一转弯=${currentFields.xDistToTurnNext}m")
                         }
 
                         sendCarrotManData(currentFields)
@@ -1171,23 +1249,142 @@ class CarrotManNetworkClient(
      * @param jsonData 要发送的JSON数据
      */
     fun sendCustomDataPacket(jsonData: JSONObject) {
+        Log.d(TAG, "📦 CarrotManNetworkClient.sendCustomDataPacket: ${jsonData.toString()}")
+        
         if (!isRunning || currentTargetDevice == null) {
             Log.w(TAG, "⚠️ 网络服务未运行或无连接设备，无法发送自定义数据包")
+            Log.w(TAG, "⚠️ 状态检查 - 运行状态: $isRunning, 连接设备: $currentTargetDevice")
             return
         }
 
         networkScope.launch {
             try {
+                Log.d(TAG, "📡 开始发送自定义数据包到设备: ${currentTargetDevice?.ip}:${currentTargetDevice?.port}")
                 sendDataPacket(jsonData)
                 totalPacketsSent++
                 
-                //Log.i(TAG, "✅ 自定义数据包发送成功 #$totalPacketsSent")
-                //Log.d(TAG, "📦 数据内容: ${jsonData.toString()}")
+                Log.i(TAG, "✅ 自定义数据包发送成功 #$totalPacketsSent")
+                Log.d(TAG, "📦 数据内容: ${jsonData.toString()}")
                 
                 onDataSent?.invoke(totalPacketsSent)
             } catch (e: Exception) {
                 Log.e(TAG, "❌ 发送自定义数据包失败: ${e.message}", e)
             }
+        }
+    }
+    
+    /**
+     * 启动设备发现服务
+     */
+    private fun startDeviceDiscovery() {
+        if (!deviceDiscoveryEnabled) return
+        
+        Log.i(TAG, "🔍 启动设备发现服务...")
+        
+        networkScope.launch {
+            while (isRunning && deviceDiscoveryEnabled) {
+                try {
+                    performDeviceDiscovery()
+                    delay(deviceDiscoveryInterval)
+                } catch (e: Exception) {
+                    Log.e(TAG, "❌ 设备发现失败: ${e.message}", e)
+                    delay(deviceDiscoveryInterval)
+                }
+            }
+        }
+    }
+    
+    /**
+     * 执行设备发现
+     */
+    private suspend fun performDeviceDiscovery() {
+        try {
+            val currentTime = System.currentTimeMillis()
+            
+            // 发送广播发现请求
+            sendDiscoveryBroadcast()
+            
+            // 检查已发现设备的活跃状态
+            checkDiscoveredDevices()
+            
+            // 自动选择最佳设备
+            autoSelectBestDevice()
+            
+            lastDeviceDiscoveryTime = currentTime
+            
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ 执行设备发现失败: ${e.message}", e)
+        }
+    }
+    
+    /**
+     * 发送设备发现广播
+     */
+    private fun sendDiscoveryBroadcast() {
+        try {
+            val discoveryMessage = "CARROT_DISCOVERY_REQUEST"
+            val packet = DatagramPacket(
+                discoveryMessage.toByteArray(),
+                discoveryMessage.length,
+                InetAddress.getByName("255.255.255.255"),
+                BROADCAST_PORT
+            )
+            
+            dataSocket?.send(packet)
+            Log.d(TAG, "📡 发送设备发现广播")
+            
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ 发送发现广播失败: ${e.message}", e)
+        }
+    }
+    
+    /**
+     * 检查已发现设备的活跃状态
+     */
+    private fun checkDiscoveredDevices() {
+        val currentTime = System.currentTimeMillis()
+        val inactiveDevices = mutableListOf<String>()
+        
+        discoveredDevices.forEach { (deviceId, device) ->
+            if (!device.isActive()) {
+                inactiveDevices.add(deviceId)
+                Log.d(TAG, "⏰ 设备已离线: $device")
+            }
+        }
+        
+        // 移除离线设备
+        inactiveDevices.forEach { deviceId ->
+            discoveredDevices.remove(deviceId)
+            Log.i(TAG, "🗑️ 移除离线设备: $deviceId")
+        }
+        
+        // 如果当前目标设备离线，清除目标
+        if (currentTargetDevice != null && !currentTargetDevice!!.isActive()) {
+            Log.w(TAG, "⚠️ 当前目标设备已离线，清除目标")
+            currentTargetDevice = null
+        }
+    }
+    
+    /**
+     * 自动选择最佳设备
+     */
+    private fun autoSelectBestDevice() {
+        if (currentTargetDevice != null && currentTargetDevice!!.isActive()) {
+            return // 当前设备仍然活跃
+        }
+        
+        val activeDevices = discoveredDevices.values.filter { it.isActive() }
+        if (activeDevices.isEmpty()) {
+            Log.d(TAG, "📭 没有发现活跃设备")
+            return
+        }
+        
+        // 选择最活跃的设备（最近发现的）
+        val bestDevice = activeDevices.maxByOrNull { it.lastSeen }
+        if (bestDevice != null) {
+            currentTargetDevice = bestDevice
+            Log.i(TAG, "🎯 自动选择设备: $bestDevice")
+            onConnectionStatusChanged?.invoke(true, "已连接到设备: ${bestDevice.ip}")
         }
     }
 }
@@ -1242,3 +1439,5 @@ fun haversineDistance(lat1: Double, lon1: Double, lat2: Double, lon2: Double): D
     val c = 2 * kotlin.math.atan2(kotlin.math.sqrt(a), kotlin.math.sqrt(1 - a))
     return R * c
 }
+
+

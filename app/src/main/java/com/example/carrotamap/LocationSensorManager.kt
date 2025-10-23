@@ -66,8 +66,8 @@ class LocationSensorManager(
                     accuracy = location.accuracy.toDouble(), // GPS精度
                     gps_speed = if (location.hasSpeed()) location.speed.toDouble() else 0.0, // GPS速度 (m/s)
 
-                    // 时间戳和协议字段 - 使用系统时间提高实时性
-                    epochTime = currentTime / 1000,          // 使用系统时间戳 (秒)
+                    // 时间戳和协议字段
+                    epochTime = location.time / 1000,       // Unix时间戳 (秒)
                     heading = if (location.hasBearing()) location.bearing.toDouble() else carrotManFields.value.heading, // 方向角
 
                     // 更新GPS相关信息
@@ -86,13 +86,13 @@ class LocationSensorManager(
                 )
 
                 // 🔍 详细GPS数据日志
-                //Log.i(TAG, "🌍 GPS位置更新接收:")
-                //Log.i(TAG, "  📍 坐标: lat=${String.format("%.6f", location.latitude)}, lon=${String.format("%.6f", location.longitude)}")
-                //Log.i(TAG, "  🚀 速度: ${if (location.hasSpeed()) "${String.format("%.1f", location.speed * 3.6)} km/h" else "无速度数据"}")
-                //Log.i(TAG, "  🧭 方向: ${if (location.hasBearing()) "${String.format("%.1f", location.bearing)}°" else "无方向数据"}")
-                //Log.i(TAG, "  📡 精度: ${location.accuracy}m")
-                //Log.i(TAG, "  🔧 提供者: ${location.provider}")
-                //Log.i(TAG, "  ⏰ 时间: ${System.currentTimeMillis() - location.time}ms前")
+                Log.i(TAG, "🌍 GPS位置更新接收:")
+                Log.i(TAG, "  📍 坐标: lat=${String.format("%.6f", location.latitude)}, lon=${String.format("%.6f", location.longitude)}")
+                Log.i(TAG, "  🚀 速度: ${if (location.hasSpeed()) "${String.format("%.1f", location.speed * 3.6)} km/h" else "无速度数据"}")
+                Log.i(TAG, "  🧭 方向: ${if (location.hasBearing()) "${String.format("%.1f", location.bearing)}°" else "无方向数据"}")
+                Log.i(TAG, "  📡 精度: ${location.accuracy}m")
+                Log.i(TAG, "  🔧 提供者: ${location.provider}")
+                Log.i(TAG, "  ⏰ 时间: ${System.currentTimeMillis() - location.time}ms前")
 
                 // 验证坐标有效性 - 增强检查
                 if (location.latitude == 0.0 && location.longitude == 0.0) {
@@ -100,10 +100,17 @@ class LocationSensorManager(
                     return
                 }
                 
-                // 检查GPS数据时效性 - 超过5秒的数据认为过期
+                // 检查GPS数据时效性 - 启动初期允许使用较旧的数据（30秒内），运行后要求更严格（5秒内）
                 val locationAge = currentTime - location.time
-                if (locationAge > 5000) {
+                val maxAge = if (carrotManFields.value.gps_valid) 5000 else 30000 // 如果GPS已有效，要求5秒内；否则允许30秒
+                if (locationAge > maxAge) {
                     Log.w(TAG, "⚠️ GPS数据过期 (${locationAge}ms前)，跳过更新")
+                    return
+                }
+                
+                // 对于极旧的数据（超过2分钟），直接拒绝并记录
+                if (locationAge > 120000) {
+                    Log.e(TAG, "❌ GPS数据极旧 (${locationAge}ms前)，数据不可用，等待新GPS信号")
                     return
                 }
                 
@@ -186,6 +193,56 @@ class LocationSensorManager(
     }
 
     /**
+     * 暂停位置更新服务（用于悬浮窗模式）
+     */
+    fun pauseLocationUpdates() {
+        Log.i(TAG, "⏸️ 暂停GPS位置更新服务...")
+        try {
+            locationManager.removeUpdates(locationListener)
+            Log.i(TAG, "✅ GPS位置更新已暂停")
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ 暂停GPS位置更新失败: ${e.message}", e)
+        }
+    }
+
+    /**
+     * 恢复位置更新服务（用于返回前台）
+     */
+    fun resumeLocationUpdates() {
+        Log.i(TAG, "▶️ 恢复GPS位置更新服务...")
+        try {
+            // 重新启动位置更新
+            startLocationUpdates()
+            Log.i(TAG, "✅ GPS位置更新已恢复")
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ 恢复GPS位置更新失败: ${e.message}", e)
+        }
+    }
+
+    /**
+     * 强制GPS更新（用于确保后台实时性）
+     */
+    fun forceGpsUpdate() {
+        Log.i(TAG, "🔄 强制GPS更新...")
+        try {
+            // 立即请求一次位置更新
+            requestImmediateLocationUpdate()
+            
+            // 如果GPS数据过旧，强制重新启动
+            val currentTime = System.currentTimeMillis()
+            if (carrotManFields.value.last_update_gps_time_phone > 0) {
+                val gpsAge = currentTime - carrotManFields.value.last_update_gps_time_phone
+                if (gpsAge > 5000) { // 如果GPS数据超过5秒
+                    Log.w(TAG, "⚠️ GPS数据过旧 (${gpsAge}ms)，强制重启GPS")
+                    startLocationUpdates()
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ 强制GPS更新失败: ${e.message}", e)
+        }
+    }
+
+    /**
      * 启动位置更新服务
      */
     fun startLocationUpdates() {
@@ -198,15 +255,15 @@ class LocationSensorManager(
             // 检查位置权限
             if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 
-                // 启用GPS定位 - 高精度，优化实时性
+                // 启用GPS定位 - 高精度，优化实时性，支持后台模式
                 if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
                     locationManager.requestLocationUpdates(
                         LocationManager.GPS_PROVIDER,
-                        500L, // 0.5秒更新一次，提高实时性
-                        0.5f,  // 0.5米移动距离触发更新，提高精度
+                        100L, // 0.1秒更新一次，最高实时性
+                        0.0f,  // 任何移动都触发更新，确保实时性
                         locationListener
                     )
-                    Log.i(TAG, "✅ GPS定位已启动 (高精度模式: 0.5s/0.5m)")
+                    Log.i(TAG, "✅ GPS定位已启动 (最高精度模式: 0.1s/0.0m，强制后台实时)")
                 } else {
                     Log.w(TAG, "⚠️ GPS提供者未启用，跳过GPS定位")
                 }

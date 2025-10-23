@@ -3,8 +3,10 @@ package com.example.carrotamap
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.Manifest
 import android.net.Uri
 import android.os.Bundle
+import android.os.Build
 import android.os.PowerManager
 import android.provider.Settings
 import android.util.Log
@@ -200,6 +202,7 @@ class MainActivity : ComponentActivity() {
     // 自检查状态
     private val selfCheckStatus = mutableStateOf(SelfCheckStatus())
     
+
     // Activity Result Launcher for overlay permission
     private val overlayPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -210,6 +213,17 @@ class MainActivity : ComponentActivity() {
         } else {
             Log.w(TAG, "❌ 悬浮窗权限被拒绝")
             isFloatingWindowEnabled.value = false
+        }
+    }
+
+    // Android 13+ 通知权限请求
+    private val notificationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            Log.i(TAG, "🔔 通知权限已授予")
+        } else {
+            Log.w(TAG, "🔔 通知权限被拒绝")
         }
     }
 
@@ -227,6 +241,12 @@ class MainActivity : ComponentActivity() {
         
         // 请求悬浮窗权限
         requestFloatingWindowPermission()
+
+        // 请求通知权限（Android 13+ 前台服务通知需要）
+        requestNotificationPermissionIfNeeded()
+        
+        // 启动前台服务
+        startForegroundService()
 
         Log.i(TAG, "🚀 MainActivity正在启动...")
 
@@ -264,7 +284,14 @@ class MainActivity : ComponentActivity() {
      */
     private fun setupPermissionsAndLocation() {
         if (::permissionManager.isInitialized) {
-            permissionManager.setupPermissionsAndLocation()
+            Log.i(TAG, "🔐 开始权限设置流程...")
+            
+            // 使用智能权限请求策略
+            permissionManager.smartPermissionRequest()
+            
+            // 输出权限状态报告
+            val permissionReport = permissionManager.getPermissionStatusReport()
+            Log.i(TAG, permissionReport)
         } else {
             Log.e(TAG, "❌ 权限管理器未初始化，无法设置权限")
         }
@@ -631,7 +658,8 @@ class MainActivity : ComponentActivity() {
                     bottomBar = {
                         BottomNavigationBar(
                             currentPage = currentPage,
-                            onPageChange = { page -> currentPage = page }
+                            onPageChange = { page -> currentPage = page },
+                            userType = userType.value
                         )
                     }
                 ) { paddingValues ->
@@ -653,7 +681,14 @@ class MainActivity : ComponentActivity() {
                             1 -> HelpPage()
                             2 -> QAPage()
                             3 -> ProfilePage(usageStats.value, deviceId.value)
-                            4 -> DataPage(carrotManFields.value, dataFieldManager, networkManager, amapBroadcastManager)
+                            4 -> {
+                                // 数据页面：只有铁粉（用户类型4）才能访问
+                                if (userType.value == 4) {
+                                    DataPage(carrotManFields.value, dataFieldManager, networkManager, amapBroadcastManager)
+                                } else {
+                                    DataPageAccessDenied(userType.value)
+                                }
+                            }
                         }
                         
                         // 下载弹窗
@@ -695,6 +730,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+
     /**
      * 请求悬浮窗权限
      */
@@ -712,6 +748,69 @@ class MainActivity : ComponentActivity() {
             }
         } catch (e: Exception) {
             Log.w(TAG, "⚠️ 请求悬浮窗权限失败: ${e.message}")
+        }
+    }
+
+    /**
+     * Android 13+ 请求通知权限，确保前台服务通知正常显示
+     */
+    private fun requestNotificationPermissionIfNeeded() {
+        try {
+            if (Build.VERSION.SDK_INT >= 33) {
+                val granted = checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+                if (!granted) {
+                    Log.i(TAG, "🔔 请求通知权限 (Android 13+)")
+                    notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                } else {
+                    Log.i(TAG, "🔔 已有通知权限")
+                }
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "⚠️ 请求通知权限失败: ${e.message}")
+        }
+    }
+    
+    /**
+     * 启动前台服务
+     */
+    private fun startForegroundService() {
+        try {
+            Log.i(TAG, "🔔 启动前台服务...")
+            
+            val serviceIntent = Intent(this, CarrotAmapForegroundService::class.java).apply {
+                action = CarrotAmapForegroundService.ACTION_START_SERVICE
+            }
+            
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(serviceIntent)
+            } else {
+                startService(serviceIntent)
+            }
+            
+            Log.i(TAG, "✅ 前台服务启动成功")
+            
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ 启动前台服务失败: ${e.message}", e)
+        }
+    }
+    
+    /**
+     * 停止前台服务
+     */
+    private fun stopForegroundService() {
+        try {
+            Log.i(TAG, "🛑 停止前台服务...")
+            
+            val serviceIntent = Intent(this, CarrotAmapForegroundService::class.java).apply {
+                action = CarrotAmapForegroundService.ACTION_STOP_SERVICE
+            }
+            
+            stopService(serviceIntent)
+            
+            Log.i(TAG, "✅ 前台服务停止成功")
+            
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ 停止前台服务失败: ${e.message}", e)
         }
     }
 
@@ -751,6 +850,9 @@ class MainActivity : ComponentActivity() {
             }
             startService(intent)
         }
+        
+        // 注意：不暂停GPS更新，让GPS在后台继续工作
+        Log.i(TAG, "🌍 GPS位置更新在后台继续运行")
     }
 
     /**
@@ -765,6 +867,7 @@ class MainActivity : ComponentActivity() {
             action = FloatingWindowService.ACTION_STOP_FLOATING
         }
         startService(intent)
+        
         
         // 重新设置屏幕常亮，确保不会被清除
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -791,6 +894,9 @@ class MainActivity : ComponentActivity() {
             if (::deviceManager.isInitialized) {
                 deviceManager.recordAppUsage()
             }
+            
+            // 停止前台服务
+            stopForegroundService()
             
             // 注销控制指令广播接收器
             unregisterCarrotCommandReceiver()
@@ -1415,10 +1521,12 @@ class MainActivity : ComponentActivity() {
             
             // 检查NetworkManager是否已初始化
             if (::networkManager.isInitialized) {
+                Log.d(TAG, "✅ NetworkManager已初始化，准备发送控制指令")
                 networkManager.sendControlCommand(command, arg)
                 Log.i(TAG, "✅ 指令已发送: $command $arg")
             } else {
                 Log.w(TAG, "⚠️ NetworkManager未初始化，无法发送指令")
+                Log.w(TAG, "⚠️ 请等待网络服务启动完成后再试")
             }
         } catch (e: Exception) {
             Log.e(TAG, "❌ 发送Carrot命令失败: ${e.message}", e)
@@ -1536,6 +1644,7 @@ private fun DataPage(
             }
         }
     }
+
 }
 
 /**
@@ -1712,15 +1821,24 @@ private fun HomePage(deviceId: String, remainingSeconds: Int, selfCheckStatus: S
 @Composable
 private fun BottomNavigationBar(
     currentPage: Int,
-    onPageChange: (Int) -> Unit
+    onPageChange: (Int) -> Unit,
+    userType: Int = 0
 ) {
-    val pages = listOf(
+    // 根据用户类型决定是否显示数据页面
+    val basePages = listOf(
         BottomNavItem("主页", Icons.Default.Home, 0),
         BottomNavItem("帮助", Icons.Default.Info, 1),
         BottomNavItem("问答", Icons.Default.Info, 2),
-        BottomNavItem("我的", Icons.Default.Person, 3),
-        BottomNavItem("数据", Icons.Default.Settings, 4)
+        BottomNavItem("我的", Icons.Default.Person, 3)
     )
+    
+    val pages = if (userType == 4) {
+        // 铁粉用户可以看到数据页面
+        basePages + BottomNavItem("数据", Icons.Default.Settings, 4)
+    } else {
+        // 其他用户类型不显示数据页面
+        basePages
+    }
     
     NavigationBar(
         containerColor = Color.White,
@@ -1983,6 +2101,165 @@ private fun ControlButton(
                 fontWeight = FontWeight.Medium,
                 textAlign = androidx.compose.ui.text.style.TextAlign.Center
             )
+        }
+    }
+}
+
+/**
+ * 数据页面访问拒绝组件
+ * 只有铁粉（用户类型4）才能访问数据页面
+ */
+@Composable
+private fun DataPageAccessDenied(userType: Int) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                brush = androidx.compose.ui.graphics.Brush.verticalGradient(
+                    colors = listOf(
+                        Color(0xFFF8FAFC),
+                        Color(0xFFE2E8F0)
+                    )
+                )
+            )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            // 锁图标
+            Icon(
+                imageVector = Icons.Default.Lock,
+                contentDescription = "访问受限",
+                modifier = Modifier.size(80.dp),
+                tint = Color(0xFF64748B)
+            )
+            
+            Spacer(modifier = Modifier.height(24.dp))
+            
+            // 标题
+            Text(
+                text = "🔒 数据页面访问受限",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF1E293B),
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            )
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // 用户类型信息
+            val userTypeText = when (userType) {
+                0 -> "未知用户"
+                1 -> "新用户"
+                2 -> "支持者"
+                3 -> "赞助者"
+                4 -> "铁粉"
+                else -> "未知类型($userType)"
+            }
+            
+            Text(
+                text = "当前用户类型：$userTypeText",
+                fontSize = 16.sp,
+                color = Color(0xFF64748B),
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            )
+            
+            Spacer(modifier = Modifier.height(24.dp))
+            
+            // 说明卡片
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(20.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "🚀 数据页面功能说明",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF1E293B)
+                    )
+                    
+                    Spacer(modifier = Modifier.height(12.dp))
+                    
+                    Text(
+                        text = "数据页面提供实时导航数据监控功能，包括：",
+                        fontSize = 14.sp,
+                        color = Color(0xFF64748B),
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
+                    
+                    Spacer(modifier = Modifier.height(12.dp))
+                    
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        listOf(
+                            "📊 实时CarrotMan字段数据",
+                            "🌐 网络连接状态监控",
+                            "📡 高德地图广播数据统计",
+                            "🔧 系统状态和性能指标",
+                            "📈 数据质量分析报告"
+                        ).forEach { feature ->
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Text(
+                                    text = "✓",
+                                    fontSize = 16.sp,
+                                    color = Color(0xFF22C55E),
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(
+                                    text = feature,
+                                    fontSize = 14.sp,
+                                    color = Color(0xFF475569)
+                                )
+                            }
+                        }
+                    }
+                    
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    // 升级提示
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFFFEF3C7)),
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = "💎 升级到铁粉用户",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF92400E)
+                            )
+                            
+                            Spacer(modifier = Modifier.height(8.dp))
+                            
+                            Text(
+                                text = "只有铁粉用户才能访问数据页面功能。\n请联系管理员升级您的账户类型。",
+                                fontSize = 13.sp,
+                                color = Color(0xFF92400E),
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                lineHeight = 18.sp
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
 }

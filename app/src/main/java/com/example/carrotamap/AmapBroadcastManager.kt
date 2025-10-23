@@ -55,7 +55,7 @@ class AmapBroadcastManager(
 
     // 广播处理器 (传入Context用于地图切换)
     private val amapDataProcessor = AmapDataProcessor(context, carrotManFields)
-    private val broadcastHandlers = AmapBroadcastHandlers(carrotManFields, networkManager, context, amapDataProcessor)
+    private val broadcastHandlers = AmapBroadcastHandlers(carrotManFields, networkManager, context)
 
     // 智能数据变化检测
     private var lastSpeedLimit: Int? = null
@@ -302,7 +302,7 @@ class AmapBroadcastManager(
                 // 🎯 临时注释：只使用引导信息广播(KEY_TYPE: 10001)的限速数据
                 // AppConstants.AmapBroadcast.SpeedCamera.SPEED_LIMIT -> handleSpeedLimit(intent)
                 // 新增：区间测速(12110) 专用处理
-                AppConstants.AmapBroadcast.SpeedCamera.SPEED_LIMIT -> handleSpeedLimitInterval(intent)
+                AppConstants.AmapBroadcast.SpeedCamera.SPEED_LIMIT -> broadcastHandlers.handleSpeedLimit(intent)
                 // 13005 与 10007 解析与映射已移除：仅跳过
                 AppConstants.AmapBroadcast.SpeedCamera.CAMERA_INFO -> {
                     Log.d(TAG, "🧹 忽略电子眼(13005)映射：已按要求移除")
@@ -566,7 +566,7 @@ class AmapBroadcastManager(
     // private fun handleSpeedLimit(intent: Intent) = broadcastHandlers.handleSpeedLimit(intent)
     private fun handleCameraInfo(intent: Intent) = broadcastHandlers.handleCameraInfo(intent)
     private fun handleSdiPlusInfo(intent: Intent) = broadcastHandlers.handleSdiPlusInfo(intent)
-    private fun handleSpeedLimitInterval(intent: Intent) = broadcastHandlers.handleSpeedLimitInterval(intent)
+    // private fun handleSpeedLimitInterval(intent: Intent) = broadcastHandlers.handleSpeedLimitInterval(intent)
     private fun handleTrafficInfo(intent: Intent) = broadcastHandlers.handleTrafficInfo(intent)
     private fun handleNaviSituation(intent: Intent) = broadcastHandlers.handleNaviSituation(intent)
     private fun handleTrafficLightInfo(intent: Intent) = broadcastHandlers.handleTrafficLightInfo(intent)

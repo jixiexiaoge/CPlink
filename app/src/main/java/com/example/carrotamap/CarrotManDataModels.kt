@@ -134,13 +134,37 @@ data class CarrotManFields(
     var xSpdDist: Int = 0,                      // 速度限制距离
     var xSpdType: Int = -1,                     // 速度限制类型
     var xTurnInfo: Int = -1,                    // 转弯信息
-    var xDistToTurn: Int = 0,                   // 转弯距离
+    var xDistToTurn: Double = 0.0,              // 转弯距离
 
     // 基础倒计时
     var left_tbt_sec: Int = 0,                  // TBT倒计时
     var left_spd_sec: Int = 0,                  // 速度倒计时
     var left_sec: Int = 0,                      // 综合倒计时
     var carrot_left_sec: Int = 0,               // CarrotMan倒计时
+
+    // 新增字段 - 用于AmapBroadcastHandlers
+    var mapState: Int = -1,                     // 地图状态
+    var extraState: Int = -1,                   // 额外状态
+    var navStatus: Int = -1,                     // 导航状态
+    var routeDistance: Int = 0,                 // 路线距离
+    var routeTime: Int = 0,                     // 路线时间
+    var routeType: Int = -1,                    // 路线类型
+    var speedLimitType: Int = -1,               // 限速类型
+    var trafficLevel: Int = -1,                 // 交通等级
+    var trafficDescription: String = "",         // 交通描述
+    var situationType: Int = -1,                // 态势类型
+    var situationDistance: Int = 0,             // 态势距离
+    var situationDescription: String = "",      // 态势描述
+    var trafficLightState: Int = -1,            // 红绿灯状态
+    var trafficLightDistance: Int = 0,          // 红绿灯距离
+    var trafficLightCountdown: Int = 0,         // 红绿灯倒计时
+    var adminArea: String = "",                 // 行政区
+    var cityName: String = "",                  // 城市名称
+    var districtName: String = "",               // 区县名称
+    var laneCount: Int = 0,                     // 车道数
+    var laneType: Int = -1,                     // 车道类型
+    var laneDescription: String = "",            // 车道描述
+    var vTurnSpeed: Double = 0.0,               // 转弯速度
 
     // 导航类型映射
     var navType: String = "invalid",            // 导航类型
@@ -195,7 +219,6 @@ data class CarrotManFields(
     var xSpdCountDown: Int = 100,               // X系列速度倒计时
     var desiredSpeed: Int = 0,                  // 期望速度
     var desiredSource: String = "",             // 期望数据源
-    var vTurnSpeed: Int = 0,                    // 转弯速度
     var nSdiPlusBlockType: Int = -1,            // SDI Plus区间类型
     var nSdiPlusBlockSpeed: Int = 0,            // SDI Plus区间限速
     var nSdiPlusBlockDist: Int = 0,             // SDI Plus区间距离

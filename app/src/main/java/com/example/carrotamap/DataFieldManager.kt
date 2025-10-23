@@ -32,7 +32,8 @@ class DataFieldManager {
     }
 
     /**
-     * GPS定位字段（7706发送）：latitude/longitude/heading/accuracy/gps_speed
+     * GPS定位字段（已移除发送）：latitude/longitude/heading/accuracy/gps_speed
+     * 注意：这些字段已从JSON发送中移除，仅用于内部显示
      */
     fun getGpsLocationFields(carrotManFields: CarrotManFields): List<Triple<String, String, String>> {
         return listOf(
@@ -181,7 +182,7 @@ class DataFieldManager {
             Triple("atcType", "ATC类型", carrotManFields.atcType.ifEmpty { "无" }),
             Triple("desiredSpeed", "期望速度", "${carrotManFields.desiredSpeed} km/h"),
             Triple("desiredSource", "速度来源", carrotManFields.desiredSource),
-            Triple("vTurnSpeed", "转弯速度", String.format("%.1f km/h", carrotManFields.vTurnSpeed)),
+            Triple("vTurnSpeed", "转弯速度", "${carrotManFields.vTurnSpeed} km/h"),
             Triple("totalDistance", "总距离", "${carrotManFields.totalDistance} m"),
             Triple("naviPaths", "导航路径", if (carrotManFields.naviPaths.isNotEmpty()) "有路径" else "无路径")
         )

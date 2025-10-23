@@ -386,14 +386,14 @@ def get_video(video_id):
 def index():
     # 按使用时长排序
     users_by_duration = User.query.order_by(User.usage_duration.desc()).all()
-    # 按累计距离排序
-    users_by_distance = User.query.order_by(User.total_distance.desc()).all()
+    # 按赞助金额排序
+    users_by_sponsor = User.query.order_by(User.sponsor_amount.desc()).all()
     # 按使用次数排序
     users_by_count = User.query.order_by(User.usage_count.desc()).all()
     
     return render_template('index.html', 
                          users_by_duration=users_by_duration,
-                         users_by_distance=users_by_distance,
+                         users_by_sponsor=users_by_sponsor,
                          users_by_count=users_by_count)
 
 # 后台管理路由

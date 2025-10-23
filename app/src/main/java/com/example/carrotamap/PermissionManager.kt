@@ -3,6 +3,7 @@ package com.example.carrotamap
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.os.Build
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
@@ -24,6 +25,29 @@ class PermissionManager(
         private val GPS_TEST_PERMISSIONS = arrayOf(
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION
+        )
+        
+        // 核心权限 - 应用正常运行必需的权限
+        private val CORE_PERMISSIONS = arrayOf(
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.INTERNET,
+            Manifest.permission.ACCESS_NETWORK_STATE,
+            Manifest.permission.WAKE_LOCK
+        )
+        
+        // 可选权限 - 增强功能的权限
+        private val OPTIONAL_PERMISSIONS = arrayOf(
+            Manifest.permission.FOREGROUND_SERVICE,
+            Manifest.permission.SYSTEM_ALERT_WINDOW
+        )
+        
+        // Android 12+ 权限
+        private val ANDROID_12_PERMISSIONS = arrayOf<String>()
+        
+        // Android 13+ 权限
+        private val ANDROID_13_PERMISSIONS = arrayOf(
+            Manifest.permission.POST_NOTIFICATIONS
         )
     }
 
@@ -126,7 +150,8 @@ class PermissionManager(
         }.toMap()
 
         // 然后检查所有权限
-        val allPermissionStatus = AppConstants.Permissions.ALL_PERMISSIONS.map { permission ->
+        val allPermissionsDynamic = buildAllPermissionsDynamic()
+        val allPermissionStatus = allPermissionsDynamic.map { permission ->
             val granted = ContextCompat.checkSelfPermission(activity, permission) == PackageManager.PERMISSION_GRANTED
             if (!AppConstants.Permissions.CORE_PERMISSIONS.contains(permission)) {
                 Log.i(TAG, "  ${if (granted) "✅" else "❌"} [可选] $permission: ${if (granted) "已授予" else "需要请求"}")
@@ -155,7 +180,7 @@ class PermissionManager(
             Log.i(TAG, "⚠️ 需要请求核心权限")
             val missingCorePermissions = corePermissionStatus.filter { !it.value }.keys.toTypedArray()
             Log.i(TAG, "📝 需要请求的核心权限: ${missingCorePermissions.joinToString(", ")}")
-            fullPermissionLauncher?.launch(AppConstants.Permissions.ALL_PERMISSIONS)
+            fullPermissionLauncher?.launch(allPermissionsDynamic)
         }
     }
 
@@ -203,9 +228,14 @@ class PermissionManager(
             Log.w(TAG, "⚠️ 部分权限未获取，功能可能受限")
             Log.w(TAG, "❌ 被拒绝的权限: ${deniedPermissions.keys.joinToString(", ")}")
 
-            // 检查核心权限是否都被授予
+            // 检查核心权限是否都被授予（需要检查实际的权限状态，而不是请求结果）
             val corePermissionsGranted = AppConstants.Permissions.CORE_PERMISSIONS.all { corePermission ->
-                permissions[corePermission] == true
+                // 如果请求列表中有这个权限，检查请求结果；否则检查当前系统状态
+                if (permissions.containsKey(corePermission)) {
+                    permissions[corePermission] == true
+                } else {
+                    isPermissionGranted(corePermission)
+                }
             }
 
             if (corePermissionsGranted) {
@@ -215,7 +245,11 @@ class PermissionManager(
             } else {
                 Log.e(TAG, "❌ 核心权限被拒绝，无法启动GPS功能")
                 val deniedCorePermissions = AppConstants.Permissions.CORE_PERMISSIONS.filter { 
-                    permissions[it] != true 
+                    if (permissions.containsKey(it)) {
+                        permissions[it] != true
+                    } else {
+                        !isPermissionGranted(it)
+                    }
                 }
                 Log.e(TAG, "❌ 被拒绝的核心权限: ${deniedCorePermissions.joinToString(", ")}")
             }
@@ -243,6 +277,113 @@ class PermissionManager(
     fun areCorePermissionsGranted(): Boolean {
         return AppConstants.Permissions.CORE_PERMISSIONS.all { permission ->
             isPermissionGranted(permission)
+        }
+    }
+
+    /**
+     * 根据系统版本构建完整权限清单
+     */
+    private fun buildAllPermissionsDynamic(): Array<String> {
+        val permissions = mutableListOf<String>()
+        
+        // 添加核心权限
+        permissions.addAll(CORE_PERMISSIONS)
+        
+        // 添加可选权限
+        permissions.addAll(OPTIONAL_PERMISSIONS)
+        
+        // Android 12+ 权限
+        if (Build.VERSION.SDK_INT >= 31) {
+            permissions.addAll(ANDROID_12_PERMISSIONS)
+        }
+        
+        // Android 13+ 权限
+        if (Build.VERSION.SDK_INT >= 33) {
+            permissions.addAll(ANDROID_13_PERMISSIONS)
+        }
+        
+        // Android 10+ 后台位置权限
+        if (Build.VERSION.SDK_INT >= 29) {
+            permissions.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+        }
+        
+        return permissions.distinct().toTypedArray()
+    }
+    
+    /**
+     * 检查权限状态并返回详细报告
+     */
+    fun getPermissionStatusReport(): String {
+        val report = StringBuilder()
+        report.appendLine("📋 权限状态报告:")
+        
+        // 检查核心权限
+        report.appendLine("🔑 核心权限:")
+        CORE_PERMISSIONS.forEach { permission ->
+            val granted = isPermissionGranted(permission)
+            report.appendLine("  ${if (granted) "✅" else "❌"} $permission")
+        }
+        
+        // 检查可选权限
+        report.appendLine("🔧 可选权限:")
+        OPTIONAL_PERMISSIONS.forEach { permission ->
+            val granted = isPermissionGranted(permission)
+            report.appendLine("  ${if (granted) "✅" else "❌"} $permission")
+        }
+        
+        // 检查Android版本特定权限
+        if (Build.VERSION.SDK_INT >= 31) {
+            report.appendLine("📱 Android 12+ 权限:")
+            ANDROID_12_PERMISSIONS.forEach { permission ->
+                val granted = isPermissionGranted(permission)
+                report.appendLine("  ${if (granted) "✅" else "❌"} $permission")
+            }
+        }
+        
+        if (Build.VERSION.SDK_INT >= 33) {
+            report.appendLine("📱 Android 13+ 权限:")
+            ANDROID_13_PERMISSIONS.forEach { permission ->
+                val granted = isPermissionGranted(permission)
+                report.appendLine("  ${if (granted) "✅" else "❌"} $permission")
+            }
+        }
+        
+        return report.toString()
+    }
+    
+    /**
+     * 智能权限请求 - 根据当前状态决定请求策略
+     */
+    fun smartPermissionRequest() {
+        Log.i(TAG, "🧠 开始智能权限请求...")
+        
+        // 检查核心权限状态
+        val corePermissionsStatus = CORE_PERMISSIONS.map { permission ->
+            permission to isPermissionGranted(permission)
+        }.toMap()
+        
+        val coreGrantedCount = corePermissionsStatus.values.count { it }
+        Log.i(TAG, "📊 核心权限状态: $coreGrantedCount/${CORE_PERMISSIONS.size} 已授予")
+        
+        if (coreGrantedCount == CORE_PERMISSIONS.size) {
+            Log.i(TAG, "✅ 核心权限已全部授予，启动GPS功能")
+            locationSensorManager.startLocationUpdates()
+            startGpsStatusMonitoring()
+            
+            // 检查是否需要请求可选权限
+            val optionalPermissionsStatus = OPTIONAL_PERMISSIONS.map { permission ->
+                permission to isPermissionGranted(permission)
+            }.toMap()
+            
+            val missingOptionalPermissions = optionalPermissionsStatus.filter { !it.value }.keys.toTypedArray()
+            if (missingOptionalPermissions.isNotEmpty()) {
+                Log.i(TAG, "📝 请求可选权限以获得完整功能")
+                fullPermissionLauncher?.launch(missingOptionalPermissions)
+            }
+        } else {
+            Log.i(TAG, "⚠️ 需要请求核心权限")
+            val missingCorePermissions = corePermissionsStatus.filter { !it.value }.keys.toTypedArray()
+            fullPermissionLauncher?.launch(missingCorePermissions)
         }
     }
 

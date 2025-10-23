@@ -710,6 +710,8 @@ class NetworkManager(
      * @param arg 指令参数 (UP, DOWN, LEFT, RIGHT)
      */
     fun sendControlCommand(command: String, arg: String) {
+        Log.d(TAG, "🎮 NetworkManager.sendControlCommand: $command $arg")
+        
         if (!::carrotNetworkClient.isInitialized) {
             Log.w(TAG, "⚠️ 网络客户端未初始化，无法发送控制指令")
             return
@@ -723,6 +725,8 @@ class NetworkManager(
                     return@launch
                 }
 
+                Log.d(TAG, "📡 准备发送控制指令到设备: $deviceIP")
+
                 // 构造控制指令JSON
                 val commandMessage = JSONObject().apply {
                     put("carrotIndex", System.currentTimeMillis())
@@ -730,9 +734,11 @@ class NetworkManager(
                     put("timezone", "Asia/Shanghai")
                     put("carrotCmd", command)
                     put("carrotArg", arg)
-                    put("source", "android_floating_window")
+                    put("source", "android_main_activity")
                     put("remote", deviceIP)
                 }
+
+                Log.d(TAG, "📦 控制指令JSON: ${commandMessage.toString()}")
 
                 // 发送UDP数据包
                 carrotNetworkClient.sendCustomDataPacket(commandMessage)

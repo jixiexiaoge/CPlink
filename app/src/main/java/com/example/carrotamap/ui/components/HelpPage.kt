@@ -2,6 +2,8 @@ package com.example.carrotamap.ui.components
 
 import android.content.Intent
 import android.net.Uri
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -14,6 +16,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.*
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,6 +28,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
@@ -56,6 +61,13 @@ fun HelpPage() {
     var videos by remember { mutableStateOf<List<VideoItem>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    
+    // 折叠状态
+    var isFAQExpanded by remember { mutableStateOf(false) }
+    var isVideoExpanded by remember { mutableStateOf(false) }
+    
+    // 全屏浏览器弹窗状态
+    var showFullscreenBrowser by remember { mutableStateOf(false) }
     
     // 获取视频数据
     LaunchedEffect(Unit) {
@@ -96,7 +108,10 @@ fun HelpPage() {
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(bottom = 16.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { isFAQExpanded = !isFAQExpanded }
+                        .padding(bottom = 16.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Info,
@@ -109,16 +124,25 @@ fun HelpPage() {
                         text = "常见问题",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E293B)
+                        color = Color(0xFF1E293B),
+                        modifier = Modifier.weight(1f)
+                    )
+                    Icon(
+                        imageVector = if (isFAQExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                        contentDescription = if (isFAQExpanded) "收起" else "展开",
+                        tint = Color(0xFF64748B),
+                        modifier = Modifier.size(24.dp)
                     )
                 }
                 
-                // 常见问题列表
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    getFAQItems().forEach { faq ->
-                        FAQItemCard(faq = faq)
+                // 常见问题列表 - 根据折叠状态显示
+                if (isFAQExpanded) {
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        getFAQItems().forEach { faq ->
+                            FAQItemCard(faq = faq)
+                        }
                     }
                 }
             }
@@ -126,7 +150,7 @@ fun HelpPage() {
         
         Spacer(modifier = Modifier.height(16.dp))
         
-        // 视频教程卡片 - 放在后面
+        // 视频教程卡片 - 放在后面，可折叠
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -138,7 +162,10 @@ fun HelpPage() {
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(bottom = 16.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { isVideoExpanded = !isVideoExpanded }
+                        .padding(bottom = 16.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.PlayArrow,
@@ -151,50 +178,60 @@ fun HelpPage() {
                         text = "视频教程",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E293B)
+                        color = Color(0xFF1E293B),
+                        modifier = Modifier.weight(1f)
+                    )
+                    Icon(
+                        imageVector = if (isVideoExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                        contentDescription = if (isVideoExpanded) "收起" else "展开",
+                        tint = Color(0xFF64748B),
+                        modifier = Modifier.size(24.dp)
                     )
                 }
                 
-                when {
-                    isLoading -> {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(100.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularProgressIndicator(
-                                color = Color(0xFF3B82F6)
+                // 视频教程内容 - 根据折叠状态显示
+                if (isVideoExpanded) {
+                    when {
+                        isLoading -> {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(100.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator(
+                                    color = Color(0xFF3B82F6)
+                                )
+                            }
+                        }
+                        errorMessage != null -> {
+                            Text(
+                                text = errorMessage!!,
+                                color = Color.Red,
+                                fontSize = 14.sp,
+                                modifier = Modifier.padding(vertical = 16.dp)
                             )
                         }
-                    }
-                    errorMessage != null -> {
-                        Text(
-                            text = errorMessage!!,
-                            color = Color.Red,
-                            fontSize = 14.sp,
-                            modifier = Modifier.padding(vertical = 16.dp)
-                        )
-                    }
-                    videos.isEmpty() -> {
-                        Text(
-                            text = "暂无视频教程",
-                            color = Color(0xFF64748B),
-                            fontSize = 14.sp,
-                            modifier = Modifier.padding(vertical = 16.dp)
-                        )
-                    }
-                    else -> {
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            videos.forEach { video ->
-                                VideoItemCard(
-                                    video = video,
-                                    onClick = { videoUrl ->
-                                        openVideoInBrowser(context, videoUrl)
-                                    }
-                                )
+                        videos.isEmpty() -> {
+                            Text(
+                                text = "暂无视频教程",
+                                color = Color(0xFF64748B),
+                                fontSize = 14.sp,
+                                modifier = Modifier.padding(vertical = 16.dp)
+                            )
+                        }
+                        else -> {
+                            Column(
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                videos.forEach { video ->
+                                    VideoItemCard(
+                                        video = video,
+                                        onClick = { videoUrl ->
+                                            openVideoInBrowser(context, videoUrl)
+                                        }
+                                    )
+                                }
                             }
                         }
                     }
@@ -202,8 +239,44 @@ fun HelpPage() {
             }
         }
         
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        // 查看排行榜按钮 - 简化版
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            // 查看排行榜按钮
+            Button(
+                onClick = { showFullscreenBrowser = true },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF3B82F6)
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(60.dp)
+                    .padding(10.dp),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Text(
+                    text = "查看排行榜",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+        }
+        
         // 底部间距，确保内容可以完全滚动
         Spacer(modifier = Modifier.height(16.dp))
+    }
+    
+    // 全屏浏览器弹窗
+    if (showFullscreenBrowser) {
+        FullscreenBrowserDialog(
+            onDismiss = { showFullscreenBrowser = false }
+        )
     }
 }
 
@@ -418,5 +491,157 @@ private fun openVideoInBrowser(context: android.content.Context, videoUrl: Strin
         android.util.Log.d("HelpPage", "打开视频链接: $videoUrl")
     } catch (e: Exception) {
         android.util.Log.e("HelpPage", "打开视频链接失败", e)
+    }
+}
+
+/**
+ * 全屏浏览器弹窗组件
+ */
+@Composable
+private fun FullscreenBrowserDialog(
+    onDismiss: () -> Unit
+) {
+    val context = LocalContext.current
+    var webView: WebView? by remember { mutableStateOf(null) }
+    var canGoBack by remember { mutableStateOf(false) }
+    var canGoForward by remember { mutableStateOf(false) }
+    
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(
+            dismissOnBackPress = true,
+            dismissOnClickOutside = false,
+            usePlatformDefaultWidth = false
+        )
+    ) {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = Color.White
+        ) {
+            Column(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                // 顶部工具栏
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color(0xFFF8FAFC))
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    // 返回按钮
+                    IconButton(
+                        onClick = {
+                            webView?.let { wv ->
+                                if (wv.canGoBack()) {
+                                    wv.goBack()
+                                } else {
+                                    onDismiss()
+                                }
+                            } ?: onDismiss()
+                        }
+                    ) {
+                        Icon(
+                            imageVector = if (canGoBack) Icons.Default.ArrowBack else Icons.Default.Close,
+                            contentDescription = if (canGoBack) "返回" else "关闭",
+                            tint = Color(0xFF1E293B)
+                        )
+                    }
+                    
+                    // 标题
+                    Text(
+                        text = "CP搭子排行榜",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color(0xFF1E293B),
+                        modifier = Modifier.weight(1f),
+                        textAlign = TextAlign.Center
+                    )
+                    
+                    // 前进按钮
+                    IconButton(
+                        onClick = {
+                            webView?.let { wv ->
+                                if (wv.canGoForward()) {
+                                    wv.goForward()
+                                }
+                            }
+                        },
+                        enabled = canGoForward
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowForward,
+                            contentDescription = "前进",
+                            tint = if (canGoForward) Color(0xFF1E293B) else Color(0xFF94A3B8)
+                        )
+                    }
+                    
+                    // 刷新按钮
+                    IconButton(
+                        onClick = {
+                            webView?.reload()
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = "刷新",
+                            tint = Color(0xFF1E293B)
+                        )
+                    }
+                }
+                
+                // WebView 容器
+                AndroidView(
+                    factory = { ctx ->
+                        WebView(ctx).apply {
+                            webView = this
+                            
+                            webViewClient = object : WebViewClient() {
+                                override fun onPageFinished(view: WebView?, url: String?) {
+                                    super.onPageFinished(view, url)
+                                    canGoBack = view?.canGoBack() ?: false
+                                    canGoForward = view?.canGoForward() ?: false
+                                }
+                            }
+                            
+                            settings.apply {
+                                javaScriptEnabled = true
+                                domStorageEnabled = true
+                                loadWithOverviewMode = true
+                                useWideViewPort = true
+                                builtInZoomControls = true
+                                displayZoomControls = false
+                                cacheMode = android.webkit.WebSettings.LOAD_DEFAULT
+                                mixedContentMode = android.webkit.WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+                                databaseEnabled = true
+                                userAgentString = "Mozilla/5.0 (Linux; Android 10; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36"
+                                setLayerType(android.view.View.LAYER_TYPE_HARDWARE, null)
+                                textZoom = 100
+                                loadsImagesAutomatically = true
+                                blockNetworkImage = false
+                            }
+                            
+                            // 滚动设置
+                            isVerticalScrollBarEnabled = true
+                            isHorizontalScrollBarEnabled = true
+                            scrollBarStyle = android.view.View.SCROLLBARS_OUTSIDE_OVERLAY
+                            isClickable = true
+                            isFocusable = true
+                            isFocusableInTouchMode = true
+                            overScrollMode = android.view.View.OVER_SCROLL_ALWAYS
+                            isNestedScrollingEnabled = true
+                            setScrollContainer(true)
+                            isLongClickable = true
+                            
+                            loadUrl("https://app.mspa.shop/")
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .weight(1f)
+                )
+            }
+        }
     }
 }

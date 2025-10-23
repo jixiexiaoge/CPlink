@@ -46,6 +46,7 @@ class FloatingWindowService : Service() {
     private var cruiseSpeedIndicator: SpeedIndicatorView? = null
     private var carSpeedIndicator: SpeedIndicatorView? = null
     
+    
     // 智能控速按钮状态管理
     private var speedControlButton: Button? = null
     private var currentSpeedMode = 0 // 0=智能控速, 1=原车巡航, 2=弯道减速
@@ -57,12 +58,51 @@ class FloatingWindowService : Service() {
     
     // 使用广播方式发送控制指令，避免端口冲突
 
+    /**
+     * 检查悬浮窗权限
+     */
+    private fun checkOverlayPermission(): Boolean {
+        return try {
+            val hasPermission = Settings.canDrawOverlays(this)
+            Log.d(TAG, "🔍 悬浮窗权限检查: $hasPermission")
+            hasPermission
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ 检查悬浮窗权限失败: ${e.message}", e)
+            false
+        }
+    }
+    
+    /**
+     * 检查用户类型权限
+     */
+    private fun checkUserTypePermission(): Boolean {
+        return try {
+            val sharedPreferences = getSharedPreferences("device_prefs", Context.MODE_PRIVATE)
+            val userType = sharedPreferences.getInt("user_type", 0)
+            
+            // 用户类型2（支持者）不支持悬浮窗功能
+            val hasPermission = userType != 2
+            Log.d(TAG, "👤 用户类型权限检查: userType=$userType, hasPermission=$hasPermission")
+            hasPermission
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ 检查用户类型权限失败: ${e.message}", e)
+            true // 默认允许，避免权限检查失败导致功能不可用
+        }
+    }
+
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             ACTION_START_FLOATING -> {
                 if (!isFloatingVisible) {
+                    // 检查用户类型权限
+                    if (!checkUserTypePermission()) {
+                        Log.i(TAG, "💚 支持者用户，不启动悬浮窗功能")
+                        stopSelf()
+                        return START_STICKY
+                    }
+                    
                     initializeNetworkManager()
                     showFloatingWindow()
                     startSpeedDataCheck()
@@ -81,11 +121,6 @@ class FloatingWindowService : Service() {
      * 显示悬浮窗
      */
     private fun showFloatingWindow() {
-        if (!Settings.canDrawOverlays(this)) {
-            Log.w(TAG, "❌ 没有悬浮窗权限")
-            return
-        }
-
         try {
             windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
             
@@ -1082,6 +1117,7 @@ class FloatingWindowService : Service() {
             116.4074 // 默认坐标（北京）
         }
     }
+
 
     override fun onDestroy() {
         super.onDestroy()

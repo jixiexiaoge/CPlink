@@ -25,7 +25,7 @@
             </div>
             <div class="card-body">
                 {% if users_by_duration %}
-                    {% for user in users_by_duration[:10] %}
+                    {% for user in users_by_duration[:80] %}
                     <div class="d-flex justify-content-between align-items-center mb-2 p-2 border rounded">
                         <div class="d-flex align-items-center">
                             {% if loop.index == 1 %}
@@ -71,17 +71,17 @@
         </div>
     </div>
 
-    <!-- 累计距离排行榜 -->
+    <!-- 赞助金额排行榜 -->
     <div class="col-md-4 mb-4">
         <div class="card h-100">
             <div class="card-header bg-success text-white">
                 <h5 class="mb-0">
-                    <i class="fas fa-route"></i> 累计距离排行榜
+                    <i class="fas fa-dollar-sign"></i> 赞助金额排行榜
                 </h5>
             </div>
             <div class="card-body">
-                {% if users_by_distance %}
-                    {% for user in users_by_distance[:10] %}
+                {% if users_by_sponsor %}
+                    {% for user in users_by_sponsor[:80] %}
                     <div class="d-flex justify-content-between align-items-center mb-2 p-2 border rounded">
                         <div class="d-flex align-items-center">
                             {% if loop.index == 1 %}
@@ -112,14 +112,14 @@
                             </div>
                         </div>
                         <div class="text-end">
-                            <div class="fw-bold text-success">{{ "%.1f"|format(user.total_distance) }}km</div>
+                            <div class="fw-bold text-success">¥{{ "%.2f"|format(user.sponsor_amount) }}</div>
                             <small class="text-muted">{{ user.usage_count }}次</small>
                         </div>
                     </div>
                     {% endfor %}
                 {% else %}
                     <div class="text-center py-3">
-                        <i class="fas fa-route fa-2x text-muted mb-2"></i>
+                        <i class="fas fa-dollar-sign fa-2x text-muted mb-2"></i>
                         <p class="text-muted mb-0">暂无数据</p>
                     </div>
                 {% endif %}
@@ -137,7 +137,7 @@
             </div>
             <div class="card-body">
                 {% if users_by_count %}
-                    {% for user in users_by_count[:10] %}
+                    {% for user in users_by_count[:80] %}
                     <div class="d-flex justify-content-between align-items-center mb-2 p-2 border rounded">
                         <div class="d-flex align-items-center">
                             {% if loop.index == 1 %}
@@ -211,9 +211,9 @@
                     </div>
                     <div class="col-md-3 text-center">
                         <div class="p-3">
-                            <i class="fas fa-route fa-2x text-info mb-2"></i>
-                            <h4>{{ "%.1f"|format(users_by_distance|sum(attribute='total_distance')) }}km</h4>
-                            <p class="text-muted mb-0">总累计距离</p>
+                            <i class="fas fa-dollar-sign fa-2x text-info mb-2"></i>
+                            <h4>¥{{ "%.2f"|format(users_by_sponsor|sum(attribute='sponsor_amount')) }}</h4>
+                            <p class="text-muted mb-0">总赞助金额</p>
                         </div>
                     </div>
                     <div class="col-md-3 text-center">
