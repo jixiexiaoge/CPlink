@@ -837,9 +837,9 @@ class MainActivity : ComponentActivity() {
             deviceManager.recordAppUsage()
         }
         
-        // 用户类型2不支持者不启动悬浮窗
-        if (userType.value == 2) {
-            Log.i(TAG, "💚 支持者用户，不启动悬浮窗功能")
+        // 只有用户类型3（赞助者）和4（铁粉）才能使用悬浮窗
+        if (userType.value !in listOf(3, 4)) {
+            Log.i(TAG, "🔒 用户类型${userType.value}不支持悬浮窗功能，仅限赞助者和铁粉")
             return
         }
         

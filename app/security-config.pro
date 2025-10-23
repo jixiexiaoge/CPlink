@@ -5,8 +5,7 @@
 -renamesourcefileattribute SourceFile
 -keepattributes SourceFile,LineNumberTable
 
-# 混淆所有类名、方法名、字段名
--useuniqueclassmembernames
+# 混淆所有类名、方法名、字段名 (已移除过时选项)
 -keeppackagenames
 
 # 移除未使用的代码和资源

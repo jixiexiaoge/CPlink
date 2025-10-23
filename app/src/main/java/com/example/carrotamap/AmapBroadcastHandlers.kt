@@ -100,31 +100,77 @@ class AmapBroadcastHandlers(
 
         /**
          * 统一映射：高德 CAMERA_TYPE → Python nSdiType
-         * 目的：避免将"闯红灯/违停/公交专用道"等错误映射为区间测速三态(2/3/4)
-         * 建议初版（可根据路测再调整）：
-         *  - 0(测速摄像头/固定测速)   → 1(固定式超速)
-         *  - 1(通用监控/非测速)       → 66(空/忽略)
-         *  - 2(闯红灯拍照)           → 6(信号抓拍)
-         *  - 3(违停拍照)             → 17(违停抓拍点)
-         *  - 4(公交专用道摄像头)     → 9(公交专用道区间)
-         *  - 其他未知                → 66(空/忽略)
+         * 基于Python代码中的SDI类型定义进行修正
+         * 参考carrot_serv.py中的_get_sdi_descr函数和SDI类型定义
          */
         fun mapAmapCameraTypeToSdi(cameraType: Int): Int {
             return when (cameraType) {
-                0 -> 1           // 固定测速 -> 固定式超速
-                1 -> 8          // 通用监控 -> 忽略
-                2 -> 6           // 闯红灯 -> 信号抓拍
-                3 -> 17          // 违停 -> 违停抓拍点  要确认的
-                4 -> 9           // 公交专用道 -> 公交专用道区间
-                5 -> 11           // 应急车道抓拍
-                8 -> 2           // 区间测速摄像头 -> 区间测速开始
-                9 -> 3           // 区间测速摄像头 -> 区间测速结束
-                10 -> 7           // 移动式超速 测试验证下
-                11 -> 26           //  ETC 没有合适的
-                12 -> 41           // 人行道拍照 靠右右转车道
-                13 -> 41           // 人行道拍照
-
-                else -> 66       // 其他未知 -> 忽略
+                0 -> 1           // 测速摄像头 -> 固定测速摄像头 (1)
+                1 -> 14          // 通用监控 -> 治安监控 (14)
+                2 -> 6           // 闯红灯拍照 -> 闯红灯拍照 (6)
+                3 -> 17          // 违停拍照 -> 违停拍照点 (17)
+                4 -> 9           // 公交专用道摄像头 -> 公交专用车道区间 (9)
+                5 -> 11          // 应急车道抓拍 -> 应急车道拍照 (11)
+                6 -> 8           // 测速拍照 -> 测速拍照 (8)
+                7 -> 7           // 移动式超速 -> 流动测速摄像头 (7)
+                8 -> 2           // 区间测速开始 -> 区间测速开始 (2)
+                9 -> 3           // 区间测速结束 -> 区间测速结束 (3)
+                11 -> 26         // ETC拍照 -> 收费站 (26)
+                12 -> 41         // 人行道拍照 -> 行人乱穿马路多发处 (41)
+                13 -> 41         // 人行道拍照 -> 行人乱穿马路多发处 (41)
+                14 -> 14         // 治安监控 -> 治安监控 (14)
+                15 -> 15         // 超载车辆风险区 -> 超载车辆风险区 (15)
+                16 -> 16         // 装载不当拍照 -> 装载不当拍照 (16)
+                17 -> 17         // 违停拍照点 -> 违停拍照点 (17)
+                18 -> 18         // 单行道 -> 单行道 (18)
+                19 -> 19         // 铁路道口 -> 铁路道口 (19)
+                20 -> 20         // 学校区域开始 -> 学校区域开始 (20)
+                21 -> 21         // 学校区域结束 -> 学校区域结束 (21)
+                22 -> 22         // 减速带 -> 减速带 (22)
+                23 -> 23         // LPG加气站 -> LPG加气站 (23)
+                24 -> 24         // 隧道区间 -> 隧道区间 (24)
+                25 -> 25         // 服务区 -> 服务区 (25)
+                26 -> 26         // 收费站 -> 收费站 (26)
+                27 -> 27         // 多雾路段 -> 多雾路段 (27)
+                28 -> 28         // 危险品区域 -> 危险品区域 (28)
+                29 -> 29         // 事故多发路段 -> 事故多发路段 (29)
+                30 -> 30         // 急弯路段 -> 急弯路段 (30)
+                31 -> 31         // 急弯区段1 -> 急弯区段1 (31)
+                32 -> 32         // 陡坡路段 -> 陡坡路段 (32)
+                33 -> 33         // 野生动物出没路段 -> 野生动物出没路段 (33)
+                34 -> 34         // 右侧视野不良点 -> 右侧视野不良点 (34)
+                35 -> 35         // 视野不良点 -> 视野不良点 (35)
+                36 -> 36         // 左侧视野不良点 -> 左侧视野不良点 (36)
+                37 -> 37         // 闯红灯多发 -> 闯红灯多发 (37)
+                38 -> 38         // 超速多发 -> 超速多发 (38)
+                39 -> 39         // 交通拥堵区域 -> 交通拥堵区域 (39)
+                40 -> 40         // 按方向选择车道点 -> 按方向选择车道点 (40)
+                41 -> 41         // 行人乱穿马路多发处 -> 行人乱穿马路多发处 (41)
+                42 -> 42         // 应急车道事故多发 -> 应急车道事故多发 (42)
+                43 -> 43         // 超速事故多发 -> 超速事故多发 (43)
+                44 -> 44         // 疲劳驾驶事故多发 -> 疲劳驾驶事故多发 (44)
+                45 -> 45         // 事故多发点 -> 事故多发点 (45)
+                46 -> 46         // 行人事故多发点 -> 行人事故多发点 (46)
+                47 -> 47         // 车辆盗窃多发点 -> 车辆盗窃多发点 (47)
+                48 -> 48         // 落石危险路段 -> 落石危险路段 (48)
+                49 -> 49         // 路面结冰危险 -> 路面结冰危险 (49)
+                50 -> 50         // 瓶颈路段 -> 瓶颈路段 (50)
+                51 -> 51         // 汇入道路 -> 汇入道路 (51)
+                52 -> 52         // 坠落危险路段 -> 坠落危险路段 (52)
+                53 -> 53         // 地下车道区间 -> 地下车道区间 (53)
+                54 -> 54         // 居民区（交通缓和） -> 居民区（交通缓和） (54)
+                55 -> 55         // 立交 -> 立交 (55)
+                56 -> 56         // 分岔点 -> 分岔点 (56)
+                57 -> 57         // 服务区（可加气） -> 服务区（可加气） (57)
+                58 -> 58         // 桥梁 -> 桥梁 (58)
+                59 -> 59         // 制动故障事故多发点 -> 制动故障事故多发点 (59)
+                60 -> 60         // 越线事故多发点 -> 越线事故多发点 (60)
+                61 -> 61         // 违法通行事故多发点 -> 违法通行事故多发点 (61)
+                62 -> 62         // 目的地在对面 -> 目的地在对面 (62)
+                63 -> 63         // 瞌睡停车区 -> 瞌睡停车区 (63)
+                64 -> 64         // 老旧柴油车管制 -> 老旧柴油车管制 (64)
+                65 -> 65         // 隧道内变道拍照 -> 隧道内变道拍照 (65)
+                else -> 66       // 其他未知 -> 空/忽略 (66)
             }
         }
 
@@ -393,10 +439,10 @@ class AmapBroadcastHandlers(
 
                 // 🎯 恢复：KEY_TYPE=10001 优先处理SDI信息，包含所有SDI相关字段
                 // SDI摄像头信息优先由引导信息广播(KEY_TYPE=10001)处理，包含CAMERA_TYPE、CAMERA_SPEED、CAMERA_DIST
-                nSdiType = (if (cameraType >= 0) mapAmapCameraTypeToSdi(cameraType) else carrotManFields.value.nSdiType),
-                nSdiSpeedLimit = cameraSpeed.takeIf { it > 0 } ?: carrotManFields.value.nSdiSpeedLimit,
-                nSdiDist = cameraDist.takeIf { it > 0 } ?: carrotManFields.value.nSdiDist,
-                nAmapCameraType = cameraType.takeIf { it >= 0 } ?: carrotManFields.value.nAmapCameraType, // 保存高德原始CAMERA_TYPE用于调试
+                nSdiType = if (cameraDist > 50 && cameraType >= 0) mapAmapCameraTypeToSdi(cameraType) else if (cameraDist <= 50) -1 else carrotManFields.value.nSdiType,
+                nSdiSpeedLimit = if (cameraDist > 50) cameraSpeed else if (cameraDist <= 50) 0 else carrotManFields.value.nSdiSpeedLimit,
+                nSdiDist = if (cameraDist > 50) cameraDist else if (cameraDist <= 50) 0 else carrotManFields.value.nSdiDist,
+                nAmapCameraType = if (cameraType >= 0) cameraType else carrotManFields.value.nAmapCameraType, // 保存高德原始CAMERA_TYPE用于调试
                 szSdiDescr = carrotManFields.value.szSdiDescr,
 
                 // 红绿灯数量信息
@@ -602,23 +648,76 @@ class AmapBroadcastHandlers(
 
     /**
      * 处理限速信息广播 (KEY_TYPE: 12110)
+     * 包含区间测速逻辑判断
      */
     fun handleSpeedLimit(intent: Intent) {
         Log.d(TAG, "🚦 处理限速信息广播")
         
         try {
-            val speedLimit = intent.getIntExtra("SPEED_LIMIT", 0)
+            val speedLimit = intent.getIntExtra("LIMITED_SPEED", 0)
             val roadName = intent.getStringExtra("ROAD_NAME") ?: ""
             val speedLimitType = intent.getIntExtra("SPEED_LIMIT_TYPE", -1)
             
+            // 区间测速相关字段
+            val startDistance = intent.getDoubleExtra("START_DISTANCE", 0.0)
+            val endDistance = intent.getDoubleExtra("END_DISTANCE", 0.0)
+            val intervalDistance = intent.getDoubleExtra("INTERVAL_DISTANCE", 0.0)
+            val cameraType = intent.getIntExtra("CAMERA_TYPE", -1)
+            val averageSpeed = intent.getIntExtra("AVERAGE_SPEED", 0)
+            
             Log.d(TAG, "🚦 限速信息: 限速=${speedLimit}km/h, 道路='$roadName', 类型=$speedLimitType")
-
-                carrotManFields.value = carrotManFields.value.copy(
+            Log.d(TAG, "🚦 区间测速: 开始距离=${startDistance}m, 结束距离=${endDistance}m, 区间距离=${intervalDistance}m, 摄像头类型=$cameraType, 平均速度=${averageSpeed}km/h")
+            
+            // 首先根据CAMERA_TYPE获取基础SDI类型
+            val baseSdiType = if (cameraType >= 0) mapAmapCameraTypeToSdi(cameraType) else carrotManFields.value.nSdiType
+            
+            // 然后根据距离信息判断是否在区间测速中
+            val sdiType = when {
+                // 如果CAMERA_TYPE是区间测速相关(8或9)，且满足区间测速中的条件
+                (cameraType == 8 || cameraType == 9) && 
+                startDistance > 0 && endDistance > 0 && intervalDistance > 0 -> {
+                    Log.d(TAG, "🚦 区间测速进行中状态 (基于距离信息判断)")
+                    4  // 区间测速中
+                }
+                // 否则使用CAMERA_TYPE映射的基础类型
+                else -> {
+                    Log.d(TAG, "🚦 使用CAMERA_TYPE映射: $cameraType -> $baseSdiType")
+                    baseSdiType
+                }
+            }
+            
+            // 计算区间测速距离
+            val sdiDist = when (sdiType) {
+                2 -> startDistance.toInt()  // 开始状态：使用开始距离
+                4 -> intervalDistance.toInt()  // 进行中：使用区间距离
+                3 -> 0  // 结束状态：距离为0
+                else -> carrotManFields.value.nSdiDist
+            }
+            
+            // 计算区间测速块类型
+            val sdiBlockType = when (sdiType) {
+                2 -> 1  // 开始
+                4 -> 2  // 进行中
+                3 -> 3  // 结束
+                else -> -1
+            }
+            
+            carrotManFields.value = carrotManFields.value.copy(
                 nRoadLimitSpeed = speedLimit,
                 szPosRoadName = roadName,
                 speedLimitType = speedLimitType,
-                    lastUpdateTime = System.currentTimeMillis()
-                )
+                // 区间测速相关字段
+                nSdiType = sdiType,
+                nSdiSpeedLimit = speedLimit,
+                nSdiDist = sdiDist,
+                nSdiSection = if (sdiType in 2..4) 1 else 0,  // 区间测速ID
+                nSdiBlockType = sdiBlockType,
+                nSdiBlockSpeed = speedLimit,
+                nSdiBlockDist = intervalDistance.toInt(),
+                lastUpdateTime = System.currentTimeMillis()
+            )
+            
+            Log.d(TAG, "🚦 区间测速状态更新: nSdiType=$sdiType, nSdiDist=$sdiDist, nSdiBlockType=${carrotManFields.value.nSdiBlockType}")
             
         } catch (e: Exception) {
             Log.e(TAG, "❌ 处理限速信息失败: ${e.message}", e)
@@ -638,12 +737,25 @@ class AmapBroadcastHandlers(
             
             Log.d(TAG, "📷 电子眼信息: 类型=$cameraType, 距离=${cameraDistance}m, 限速=${cameraSpeedLimit}km/h")
             
+            // 映射高德CAMERA_TYPE到Python nSdiType
+            val mappedSdiType = if (cameraType >= 0) mapAmapCameraTypeToSdi(cameraType) else carrotManFields.value.nSdiType
+            
+            // 根据距离判断是否需要清空SDI信息 - 距离小于50米时清空
+            val shouldClearSdi = cameraDistance <= 50
+            
             carrotManFields.value = carrotManFields.value.copy(
-                nAmapCameraType = cameraType,
-                nSdiDist = cameraDistance,
-                nSdiSpeedLimit = cameraSpeedLimit,
+                nAmapCameraType = if (cameraType >= 0) cameraType else carrotManFields.value.nAmapCameraType,
+                nSdiType = if (shouldClearSdi) -1 else mappedSdiType,  // 距离为0时清空SDI类型
+                nSdiDist = if (shouldClearSdi) 0 else cameraDistance,  // 距离为0时清空距离
+                nSdiSpeedLimit = if (shouldClearSdi) 0 else cameraSpeedLimit,  // 距离为0时清空限速
                 lastUpdateTime = System.currentTimeMillis()
             )
+            
+            if (shouldClearSdi) {
+                Log.d(TAG, "🧹 SDI信息已清空: 摄像头距离=${cameraDistance}m (小于50米阈值)")
+            }
+            
+            Log.d(TAG, "📷 映射结果: 高德类型=$cameraType -> Python SDI类型=$mappedSdiType")
 
         } catch (e: Exception) {
             Log.e(TAG, "❌ 处理电子眼信息失败: ${e.message}", e)
@@ -906,6 +1018,7 @@ class AmapBroadcastHandlers(
             intent.extras?.let { bundle ->
                 Log.d(TAG, "📋 未知信息13011包含的数据:")
                 for (key in bundle.keySet()) {
+                    @Suppress("DEPRECATION")
                     val value = bundle.get(key)
                     Log.d(TAG, "  $key = $value")
                 }

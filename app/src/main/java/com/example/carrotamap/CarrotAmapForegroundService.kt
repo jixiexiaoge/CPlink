@@ -90,6 +90,7 @@ class CarrotAmapForegroundService : Service() {
         isServiceRunning = false
         
         // 停止前台服务
+        @Suppress("DEPRECATION")
         stopForeground(true)
         
         Log.i(TAG, "✅ 前台服务已停止")
@@ -122,6 +123,7 @@ class CarrotAmapForegroundService : Service() {
         Log.i(TAG, "🛑 停止前台服务")
         
         try {
+            @Suppress("DEPRECATION")
             stopForeground(true)
             stopSelf()
             

@@ -134,8 +134,7 @@
 -dontnote
 -dontwarn
 
-# 混淆字段名
--useuniqueclassmembernames
+# 混淆字段名 (已移除过时选项)
 -keeppackagenames
 
 # 保护关键类不被混淆

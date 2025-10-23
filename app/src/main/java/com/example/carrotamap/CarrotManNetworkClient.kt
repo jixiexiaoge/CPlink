@@ -266,46 +266,74 @@ class CarrotManNetworkClient(
     // 解析收到的设备广播数据
     private fun parseDeviceBroadcast(broadcastData: String, deviceIP: String) {
         try {
-            //Log.i(TAG, "🔍 解析设备广播数据: $broadcastData from $deviceIP")
-            //Log.d(TAG, "📊 解析前状态: 已发现设备=${discoveredDevices.size}, 当前连接=${currentTargetDevice?.ip ?: "无"}")
+            Log.d(TAG, "🔍 解析设备广播数据: ${broadcastData.take(100)}... from $deviceIP")
 
             if (broadcastData.trim().startsWith("{")) {
                 val jsonBroadcast = JSONObject(broadcastData)
 
                 // 检查是否为OpenpPilot状态数据
                 if (isOpenpilotStatusData(jsonBroadcast)) {
-                    //Log.d(TAG, "📡 检测到OpenpPilot状态数据 from $deviceIP")
+                    Log.d(TAG, "📡 检测到OpenpPilot状态数据 from $deviceIP")
                     onOpenpilotStatusReceived?.invoke(broadcastData)
 
                     // OpenpPilot状态数据也表示设备存在，需要添加到设备列表
                     val ip = jsonBroadcast.optString("ip", deviceIP)
                     val port = jsonBroadcast.optInt("port", MAIN_DATA_PORT)
-                    val version = "openpilot"
+                    val version = jsonBroadcast.optString("Carrot2", "openpilot")
                     val device = DeviceInfo(ip, port, version)
                     addDiscoveredDevice(device)
-                    //Log.d(TAG, "从OpenpPilot状态数据中发现设备: $device")
+                    Log.i(TAG, "✅ 从OpenpPilot状态数据中发现设备: $device")
                     return
                 }
 
-                // 处理设备发现数据
-                val ip = jsonBroadcast.optString("ip", deviceIP)
+                // 处理设备发现数据 - 优先使用JSON中的IP字段
+                val jsonIP = jsonBroadcast.optString("ip", "")
+                val ip = if (jsonIP.isNotEmpty()) {
+                    Log.d(TAG, "🎯 使用JSON中的IP字段: $jsonIP")
+                    jsonIP
+                } else {
+                    Log.d(TAG, "⚠️ JSON中无IP字段，使用广播源IP: $deviceIP")
+                    deviceIP
+                }
+                
                 val port = jsonBroadcast.optInt("port", MAIN_DATA_PORT)
                 val version = jsonBroadcast.optString("version", "unknown")
-
-                val device = DeviceInfo(ip, port, version)
-                addDiscoveredDevice(device)
-                //Log.d(TAG, "JSON格式设备信息解析成功: $device")
+                
+                // 验证IP地址格式
+                if (isValidIPAddress(ip)) {
+                    val device = DeviceInfo(ip, port, version)
+                    addDiscoveredDevice(device)
+                    Log.i(TAG, "✅ JSON格式设备信息解析成功: $device")
+                } else {
+                    Log.w(TAG, "⚠️ 无效的IP地址格式: $ip，使用广播源IP: $deviceIP")
+                    val device = DeviceInfo(deviceIP, port, version)
+                    addDiscoveredDevice(device)
+                }
 
             } else {
-                //Log.d(TAG, "收到简单格式广播，使用默认配置: $deviceIP")
+                Log.d(TAG, "📡 收到简单格式广播，使用默认配置: $deviceIP")
                 val device = DeviceInfo(deviceIP, MAIN_DATA_PORT, "detected")
                 addDiscoveredDevice(device)
             }
 
         } catch (e: Exception) {
-            Log.w(TAG, "广播解析失败，回退到默认模式: $broadcastData - ${e.message}")
+            Log.w(TAG, "❌ 广播解析失败，回退到默认模式: ${broadcastData.take(50)}... - ${e.message}")
             val device = DeviceInfo(deviceIP, MAIN_DATA_PORT, "fallback")
             addDiscoveredDevice(device)
+        }
+    }
+    
+    /**
+     * 验证IP地址格式
+     */
+    private fun isValidIPAddress(ip: String): Boolean {
+        return try {
+            val parts = ip.split(".")
+            parts.size == 4 && parts.all { part ->
+                part.toIntOrNull()?.let { it in 0..255 } ?: false
+            }
+        } catch (e: Exception) {
+            false
         }
     }
 
@@ -323,50 +351,37 @@ class CarrotManNetworkClient(
     private fun addDiscoveredDevice(device: DeviceInfo) {
         val deviceKey = "${device.ip}:${device.port}"
 
-        //Log.d(TAG, "🔍 尝试添加设备: $device, 设备键: $deviceKey")
-        //Log.d(TAG, "📊 当前设备列表: ${discoveredDevices.keys}")
+        Log.d(TAG, "🔍 尝试添加设备: $device, 设备键: $deviceKey")
+        Log.d(TAG, "📊 当前设备列表: ${discoveredDevices.keys}")
 
         if (!discoveredDevices.containsKey(deviceKey)) {
             discoveredDevices[deviceKey] = device
-            //Log.i(TAG, "🎯 发现新的Comma3设备: $device")
+            Log.i(TAG, "🎯 发现新的Comma3设备: $device")
             onDeviceDiscovered?.invoke(device)
 
-            // 更新状态为发现设备
+            // 自动连接到第一个发现的设备
             if (currentTargetDevice == null) {
-                Log.i(TAG, "🔄 更新状态: 发现设备 ${device.ip}，正在连接...")
+                Log.i(TAG, "🚀 自动连接到新发现的设备: ${device.ip}")
                 onConnectionStatusChanged?.invoke(false, "发现设备 ${device.ip}，正在连接...")
-                //Log.i(TAG, "🚀 自动连接到第一个发现的设备")
                 connectToDevice(device)
             } else {
-                //Log.d(TAG, "⚠️ 已有连接设备 ${currentTargetDevice?.ip}，不自动连接新设备")
+                Log.d(TAG, "⚠️ 已有连接设备 ${currentTargetDevice?.ip}，不自动连接新设备")
             }
         } else {
+            // 更新设备活跃时间
             discoveredDevices[deviceKey] = device.copy(lastSeen = System.currentTimeMillis())
-            //Log.v(TAG, "🔄 更新设备活跃时间: $deviceKey")
+            Log.v(TAG, "🔄 更新设备活跃时间: $deviceKey")
+            
+            // 如果当前连接的设备离线，尝试连接新发现的设备
+            if (currentTargetDevice != null && !currentTargetDevice!!.isActive()) {
+                Log.i(TAG, "🔄 当前设备已离线，尝试连接新发现的设备: ${device.ip}")
+                connectToDevice(device)
+            }
         }
 
-        //Log.d(TAG, "📊 添加后状态: 已发现设备=${discoveredDevices.size}, 当前连接=${currentTargetDevice?.ip ?: "无"}")
+        Log.d(TAG, "📊 添加后状态: 已发现设备=${discoveredDevices.size}, 当前连接=${currentTargetDevice?.ip ?: "无"}")
     }
     
-    // 连接到指定的Comma3设备
-    fun connectToDevice(device: DeviceInfo) {
-        //Log.i(TAG, "🔗 开始连接到Comma3设备: $device")
-
-        currentTargetDevice = device
-        dataSendJob?.cancel()
-        
-        // 重置心跳时间，让心跳任务开始工作
-        lastHeartbeatTime = 0L
-        
-        startDataTransmission()
-
-        // 保存连接状态到SharedPreferences
-        saveNetworkStatus(true, device.toString())
-
-        //Log.i(TAG, "✅ 更新连接状态: 已连接到设备 ${device.ip}")
-        onConnectionStatusChanged?.invoke(true, "")
-        Log.i(TAG, "🎉 设备连接建立成功: ${device.ip}")
-    }
     
     // 启动数据传输任务（心跳已移至独立定时器）
     private fun startDataTransmission() {
@@ -954,11 +969,25 @@ class CarrotManNetworkClient(
     /**
      * 禁用系统调试输出
      * 减少System.out的调试信息输出
+     * 兼容Android 9及以下版本
      */
     private fun disableSystemDebugOutput() {
         try {
+            // 创建兼容Android 9的空输出流
+            val nullOutputStream = object : java.io.OutputStream() {
+                override fun write(b: Int) {
+                    // 静默处理，不输出
+                }
+                override fun write(b: ByteArray) {
+                    // 静默处理，不输出
+                }
+                override fun write(b: ByteArray, off: Int, len: Int) {
+                    // 静默处理，不输出
+                }
+            }
+            
             // 重定向System.out到空输出流
-            System.setOut(object : java.io.PrintStream(java.io.OutputStream.nullOutputStream()) {
+            System.setOut(object : java.io.PrintStream(nullOutputStream) {
                 override fun println(x: String?) {
                     // 静默处理，不输出
                 }
@@ -1470,6 +1499,102 @@ class CarrotManNetworkClient(
     }
     
     /**
+     * 连接到指定设备
+     */
+    private fun connectToDevice(device: DeviceInfo) {
+        try {
+            Log.i(TAG, "🔗 开始连接到设备: $device")
+            
+            // 如果已有连接设备，先断开
+            if (currentTargetDevice != null) {
+                Log.i(TAG, "🔄 断开当前设备连接: ${currentTargetDevice?.ip}")
+                disconnectFromCurrentDevice()
+            }
+            
+            // 验证设备连接（发送测试数据包）
+            if (validateDeviceConnection(device)) {
+                // 设置目标设备
+                currentTargetDevice = device
+                
+                // 更新连接状态
+                onConnectionStatusChanged?.invoke(true, "已连接到设备: ${device.ip}")
+                
+                // 保存网络状态
+                saveNetworkStatus(true, device.ip)
+                
+                Log.i(TAG, "✅ 设备连接成功: $device")
+            } else {
+                Log.w(TAG, "⚠️ 设备连接验证失败: $device")
+                onConnectionStatusChanged?.invoke(false, "设备连接验证失败: ${device.ip}")
+            }
+            
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ 连接设备失败: ${e.message}", e)
+            currentTargetDevice = null
+            onConnectionStatusChanged?.invoke(false, "连接失败: ${e.message}")
+        }
+    }
+    
+    /**
+     * 断开当前设备连接
+     */
+    private fun disconnectFromCurrentDevice() {
+        try {
+            currentTargetDevice?.let { device ->
+                Log.i(TAG, "🔌 断开设备连接: $device")
+                
+                // 停止数据发送
+                dataSendJob?.cancel()
+                dataSendJob = null
+                
+                // 清除目标设备
+                currentTargetDevice = null
+                
+                // 更新连接状态
+                onConnectionStatusChanged?.invoke(false, "设备已断开")
+                
+                // 保存网络状态
+                saveNetworkStatus(false, "")
+                
+                Log.i(TAG, "✅ 设备断开成功")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ 断开设备连接失败: ${e.message}", e)
+        }
+    }
+    
+    /**
+     * 验证设备连接
+     */
+    private fun validateDeviceConnection(device: DeviceInfo): Boolean {
+        return try {
+            // 发送一个简单的测试数据包来验证连接
+            val testMessage = JSONObject().apply {
+                put("test", "connection")
+                put("timestamp", System.currentTimeMillis())
+                put("source", "android_validation")
+            }
+            
+            val testData = testMessage.toString().toByteArray()
+            val packet = DatagramPacket(
+                testData,
+                testData.size,
+                InetAddress.getByName(device.ip),
+                device.port
+            )
+            
+            dataSocket?.send(packet)
+            Log.d(TAG, "📡 发送设备连接验证包到: ${device.ip}:${device.port}")
+            
+            // 简单验证：如果能发送数据包，认为连接有效
+            true
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ 设备连接验证失败: ${e.message}", e)
+            false
+        }
+    }
+    
+    /**
      * 自动选择最佳设备
      */
     private fun autoSelectBestDevice() {
@@ -1486,9 +1611,7 @@ class CarrotManNetworkClient(
         // 选择最活跃的设备（最近发现的）
         val bestDevice = activeDevices.maxByOrNull { it.lastSeen }
         if (bestDevice != null) {
-            currentTargetDevice = bestDevice
-            Log.i(TAG, "🎯 自动选择设备: $bestDevice")
-            onConnectionStatusChanged?.invoke(true, "已连接到设备: ${bestDevice.ip}")
+            connectToDevice(bestDevice)
         }
     }
 }

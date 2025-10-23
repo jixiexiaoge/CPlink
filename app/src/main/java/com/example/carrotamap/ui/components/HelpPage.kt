@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.*
 import androidx.compose.ui.window.Dialog
@@ -543,7 +544,7 @@ private fun FullscreenBrowserDialog(
                         }
                     ) {
                         Icon(
-                            imageVector = if (canGoBack) Icons.Default.ArrowBack else Icons.Default.Close,
+                            imageVector = if (canGoBack) Icons.AutoMirrored.Filled.ArrowBack else Icons.Default.Close,
                             contentDescription = if (canGoBack) "返回" else "关闭",
                             tint = Color(0xFF1E293B)
                         )
@@ -571,7 +572,7 @@ private fun FullscreenBrowserDialog(
                         enabled = canGoForward
                     ) {
                         Icon(
-                            imageVector = Icons.Default.ArrowForward,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                             contentDescription = "前进",
                             tint = if (canGoForward) Color(0xFF1E293B) else Color(0xFF94A3B8)
                         )
@@ -614,6 +615,7 @@ private fun FullscreenBrowserDialog(
                                 displayZoomControls = false
                                 cacheMode = android.webkit.WebSettings.LOAD_DEFAULT
                                 mixedContentMode = android.webkit.WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+                                @Suppress("DEPRECATION")
                                 databaseEnabled = true
                                 userAgentString = "Mozilla/5.0 (Linux; Android 10; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36"
                                 setLayerType(android.view.View.LAYER_TYPE_HARDWARE, null)
