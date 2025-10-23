@@ -41,11 +41,34 @@ class LocationSensorManager(
     private val rotationMatrix = FloatArray(9)
     private val orientationAngles = FloatArray(3)
 
+    // 错误处理相关变量
+    private var retryCount = 0
+    private val maxRetryCount = 3
+    private var consecutiveInvalidLocations = 0
+    private val maxConsecutiveInvalidLocations = 5
+    private var lastValidLocation: Location? = null
+
     // GPS位置变化监听器
     private val locationListener = object : LocationListener {
         override fun onLocationChanged(location: Location) {
             try {
                 val currentTime = System.currentTimeMillis()
+                
+                // 数据验证和错误处理
+                if (!isValidLocation(location)) {
+                    consecutiveInvalidLocations++
+                    Log.w(TAG, "⚠️ 接收到无效GPS数据 (连续${consecutiveInvalidLocations}次)")
+                    
+                    if (consecutiveInvalidLocations >= maxConsecutiveInvalidLocations) {
+                        Log.e(TAG, "❌ 连续无效GPS数据过多，停止位置更新")
+                        return
+                    }
+                    return
+                }
+                
+                // 重置错误计数
+                consecutiveInvalidLocations = 0
+                lastValidLocation = location
 
                 carrotManFields.value = carrotManFields.value.copy(
                     // 更新手机GPS坐标到所有相关字段
@@ -471,6 +494,70 @@ class LocationSensorManager(
         } catch (e: Exception) {
             Log.e(TAG, "更新方向角度失败: ${e.message}", e)
         }
+    }
+
+    /**
+     * 验证位置数据有效性
+     */
+    private fun isValidLocation(location: Location): Boolean {
+        return try {
+            // 检查坐标是否有效
+            if (location.latitude == 0.0 && location.longitude == 0.0) {
+                Log.w(TAG, "⚠️ 位置坐标为(0,0)，可能无效")
+                return false
+            }
+            
+            // 检查坐标是否在中国范围内
+            if (location.latitude < 3.0 || location.latitude > 54.0 ||
+                location.longitude < 73.0 || location.longitude > 136.0) {
+                Log.w(TAG, "⚠️ 位置坐标超出中国范围: ${location.latitude}, ${location.longitude}")
+                return false
+            }
+            
+            // 检查精度
+            if (location.accuracy > 100.0f) {
+                Log.w(TAG, "⚠️ 位置精度过低: ${location.accuracy}m")
+                return false
+            }
+            
+            // 检查时间戳
+            val currentTime = System.currentTimeMillis()
+            val locationTime = location.time
+            if (currentTime - locationTime > 30000) { // 30秒
+                Log.w(TAG, "⚠️ 位置数据过期: ${(currentTime - locationTime) / 1000}秒前")
+                return false
+            }
+            
+            true
+            
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ 位置验证异常: ${e.message}", e)
+            false
+        }
+    }
+    
+    /**
+     * 获取位置状态信息
+     */
+    fun getLocationStatus(): Map<String, Any?> {
+        return mapOf(
+            "retryCount" to retryCount,
+            "maxRetryCount" to maxRetryCount,
+            "consecutiveInvalidLocations" to consecutiveInvalidLocations,
+            "maxConsecutiveInvalidLocations" to maxConsecutiveInvalidLocations,
+            "hasError" to (retryCount >= maxRetryCount),
+            "isHealthy" to (consecutiveInvalidLocations < maxConsecutiveInvalidLocations),
+            "lastValidLocation" to lastValidLocation
+        )
+    }
+    
+    /**
+     * 重置错误状态
+     */
+    fun resetErrorState() {
+        retryCount = 0
+        consecutiveInvalidLocations = 0
+        Log.i(TAG, "🔄 位置错误状态已重置")
     }
 
     /**

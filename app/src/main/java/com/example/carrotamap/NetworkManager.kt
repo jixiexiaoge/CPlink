@@ -727,6 +727,14 @@ class NetworkManager(
 
                 Log.d(TAG, "📡 准备发送控制指令到设备: $deviceIP")
 
+                // 更新CarrotManFields中的命令字段
+                carrotManFields.value = carrotManFields.value.copy(
+                    carrotCmd = command,
+                    carrotArg = arg
+                )
+                
+                Log.d(TAG, "🔄 已更新CarrotManFields: carrotCmd=$command, carrotArg=$arg")
+
                 // 构造控制指令JSON
                 val commandMessage = JSONObject().apply {
                     put("carrotIndex", System.currentTimeMillis())
@@ -743,6 +751,13 @@ class NetworkManager(
                 // 发送UDP数据包
                 carrotNetworkClient.sendCustomDataPacket(commandMessage)
                 
+                // 🔧 立即清理CarrotManFields中的指令字段，防止重复发送
+                carrotManFields.value = carrotManFields.value.copy(
+                    carrotCmd = "",
+                    carrotArg = ""
+                )
+                
+                Log.d(TAG, "🧹 已清理CarrotManFields中的指令字段")
                 Log.i(TAG, "✅ 控制指令已发送: carrotCmd=$command, carrotArg=$arg, 设备=$deviceIP")
             } catch (e: Exception) {
                 Log.e(TAG, "❌ 发送控制指令失败: ${e.message}", e)

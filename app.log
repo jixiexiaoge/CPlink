@@ -1,515 +1,539 @@
-2025-10-23 17:35:19.590 24273-24273 CompatChangeReporter    com.example.cplink                   D  Compat change id reported: 202956589; UID 10440; state: ENABLED
-2025-10-23 17:35:19.610 24273-24273 GraphicsEnvironment     com.example.cplink                   V  Currently set values for:
-2025-10-23 17:35:19.610 24273-24273 GraphicsEnvironment     com.example.cplink                   V    angle_gl_driver_selection_pkgs=[com.android.angle, com.linecorp.b612.android, com.campmobile.snow, com.google.android.apps.tachyon]
-2025-10-23 17:35:19.610 24273-24273 GraphicsEnvironment     com.example.cplink                   V    angle_gl_driver_selection_values=[angle, native, native, native]
-2025-10-23 17:35:19.610 24273-24273 GraphicsEnvironment     com.example.cplink                   V  com.example.cplink is not listed in per-application setting
-2025-10-23 17:35:19.611 24273-24273 GraphicsEnvironment     com.example.cplink                   V  Updatable production driver is not supported on the device.
-2025-10-23 17:35:19.637 24273-24273 CompatChangeReporter    com.example.cplink                   D  Compat change id reported: 279646685; UID 10440; state: ENABLED
-2025-10-23 17:35:19.684 24273-25476 AdrenoGLES-0            com.example.cplink                   I  QUALCOMM build                   : 7867919300, Ibc171b9c87
-                                                                                                    Build Date                       : 04/25/25
-                                                                                                    OpenGL ES Shader Compiler Version: E031.41.03.62
-                                                                                                    Local Branch                     : 
-                                                                                                    Remote Branch                    : refs/tags/AU_LINUX_ANDROID_LA.VENDOR.13.2.0.11.00.00.856.062
-                                                                                                    Remote Branch                    : NONE
-                                                                                                    Reconstruct Branch               : NOTHING
-2025-10-23 17:35:19.684 24273-25476 AdrenoGLES-0            com.example.cplink                   I  Build Config                     : S P 14.1.4 AArch64
-2025-10-23 17:35:19.684 24273-25476 AdrenoGLES-0            com.example.cplink                   I  Driver Path                      : /vendor/lib64/egl/libGLESv2_adreno.so
-2025-10-23 17:35:19.684 24273-25476 AdrenoGLES-0            com.example.cplink                   I  Driver Version                   : 0676.72
-2025-10-23 17:35:19.690 24273-25476 AdrenoGLES-0            com.example.cplink                   I  PFP: 0x01200161, ME: 0x00000000
-2025-10-23 17:35:19.706 24273-25476 AdrenoUtils             com.example.cplink                   I  <ReadGpuID:407>: Reading chip ID through GSL
-2025-10-23 17:35:19.766 24273-24273 CompatChangeReporter    com.example.cplink                   D  Compat change id reported: 309578419; UID 10440; state: ENABLED
-2025-10-23 17:35:19.802 24273-24273 MainActivity            com.example.cplink                   I  🔆 已设置屏幕常亮
-2025-10-23 17:35:19.805 24273-24273 MainActivity            com.example.cplink                   I  🔋 已忽略电池优化
-2025-10-23 17:35:19.806 24273-24273 MainActivity            com.example.cplink                   I  🔳 已有悬浮窗权限
-2025-10-23 17:35:19.807 24273-24273 MainActivity            com.example.cplink                   I  🔔 已有通知权限
-2025-10-23 17:35:19.807 24273-24273 MainActivity            com.example.cplink                   I  🔔 启动前台服务...
-2025-10-23 17:35:19.809 24273-24273 MainActivity            com.example.cplink                   I  ✅ 前台服务启动成功
-2025-10-23 17:35:19.809 24273-24273 MainActivity            com.example.cplink                   I  🚀 MainActivity正在启动...
-2025-10-23 17:35:19.809 24273-24273 MainActivity            com.example.cplink                   I  🔐 早期初始化权限管理器...
-2025-10-23 17:35:19.815 24273-24273 PermissionManager       com.example.cplink                   I  🔐 初始化权限管理器...
-2025-10-23 17:35:19.815 24273-24273 PermissionManager       com.example.cplink                   I  ✅ 权限管理器初始化完成
-2025-10-23 17:35:19.816 24273-24273 MainActivity            com.example.cplink                   I  ✅ 权限管理器早期初始化成功
-2025-10-23 17:35:19.829 24273-24273 MainActivity            com.example.cplink                   I  📊 内存监控已启动（优化版：60秒间隔）
-2025-10-23 17:35:19.831 24273-24273 MainActivity            com.example.cplink                   I  ✅ 控制指令广播接收器已注册（包含模式切换）
-2025-10-23 17:35:19.831 24273-24273 MainActivity            com.example.cplink                   I  ✅ MainActivity启动完成
-2025-10-23 17:35:19.845 24273-24273 MainActivity            com.example.cplink                   I  ▶️ Activity恢复，隐藏悬浮窗
-2025-10-23 17:35:19.851 24273-24273 CompatChangeReporter    com.example.cplink                   D  Compat change id reported: 352594277; UID 10440; state: ENABLED
-2025-10-23 17:35:19.868 24273-24273 libc                    com.example.cplink                   W  Access denied finding property "persist.vivo.ltw.enabled"
-2025-10-23 17:35:19.865 24273-24273 .example.cplink         com.example.cplink                   W  type=1400 audit(0.0:3484256): avc:  denied  { read } for  name="u:object_r:microsoft_ltw_prop:s0" dev="tmpfs" ino=311 scontext=u:r:untrusted_app:s0:c184,c257,c512,c768 tcontext=u:object_r:microsoft_ltw_prop:s0 tclass=file permissive=0 app=com.example.cplink
-2025-10-23 17:35:20.229 24273-24273 ViewRootImpl            com.example.cplink                   D  AppSizeAfterRelayout, size: Point(1080, 2400), rotation: ROTATION_0
-2025-10-23 17:35:20.235 24273-24273 libc                    com.example.cplink                   W  Access denied finding property "vendor.display.enable_optimal_refresh_rate"
-2025-10-23 17:35:20.229 24273-24273 .example.cplink         com.example.cplink                   W  type=1400 audit(0.0:3484257): avc:  denied  { read } for  name="u:object_r:vendor_display_prop:s0" dev="tmpfs" ino=462 scontext=u:r:untrusted_app:s0:c184,c257,c512,c768 tcontext=u:object_r:vendor_display_prop:s0 tclass=file permissive=0 app=com.example.cplink
-2025-10-23 17:35:20.425 24273-24273 MainActivity            com.example.cplink                   I  🔍 自检查: 位置传感器管理器 - 正在初始化...
-2025-10-23 17:35:20.425 24273-24273 MainActivity            com.example.cplink                   I  🧭 初始化位置和传感器管理器...
-2025-10-23 17:35:20.425 24273-24273 LocationSensorManager   com.example.cplink                   I  🧭 初始化传感器系统...
-2025-10-23 17:35:20.442 24273-24273 LocationSensorManager   com.example.cplink                   I  ✅ 传感器系统初始化完成
-2025-10-23 17:35:20.442 24273-24273 MainActivity            com.example.cplink                   I  ✅ 位置和传感器管理器初始化成功
-2025-10-23 17:35:20.442 24273-24273 MainActivity            com.example.cplink                   I  🔍 自检查: 位置传感器管理器 - 初始化完成
-2025-10-23 17:35:20.442 24273-24273 LocationSensorManager   com.example.cplink                   D  传感器精度变化: lsm6dsox Accelerometer Non-wakeup -> 3
-2025-10-23 17:35:20.446 24273-24273 FloatingWindowService   com.example.cplink                   I  ⏹️ 停止速度数据检查
-2025-10-23 17:35:20.446 24273-24273 FloatingWindowService   com.example.cplink                   D  🔍 悬浮窗未显示或已隐藏，跳过隐藏操作
-2025-10-23 17:35:20.512 24273-24273 LocationSensorManager   com.example.cplink                   D  传感器精度变化: rotation_vector  Non-wakeup -> 3
-2025-10-23 17:35:20.512 24273-24273 LocationSensorManager   com.example.cplink                   D  传感器精度变化: mxg4300  Non-wakeup -> 3
-2025-10-23 17:35:20.513 24273-24273 ImeFocusController      com.example.cplink                   V  onWindowFocus: com.android.internal.policy.DecorView{90f9902 V.E...... R......D 0,0-1080,2400}[MainActivity] softInputMode=STATE_UNSPECIFIED|ADJUST_PAN|IS_FORWARD_NAVIGATION
-2025-10-23 17:35:20.516 24273-24273 FloatingWindowService   com.example.cplink                   I  ⏹️ 停止速度数据检查
-2025-10-23 17:35:20.516 24273-24273 FloatingWindowService   com.example.cplink                   D  🔍 悬浮窗未显示或已隐藏，跳过隐藏操作
-2025-10-23 17:35:20.516 24273-24273 FloatingWindowService   com.example.cplink                   I  🔧 悬浮窗服务销毁
-2025-10-23 17:35:20.642 24273-24273 MainActivity            com.example.cplink                   I  🔍 自检查: 权限管理器 - 正在初始化...
-2025-10-23 17:35:20.642 24273-24273 MainActivity            com.example.cplink                   I  🔐 初始化权限管理器...
-2025-10-23 17:35:20.642 24273-24273 PermissionManager       com.example.cplink                   I  ✅ LocationSensorManager引用已更新
-2025-10-23 17:35:20.642 24273-24273 MainActivity            com.example.cplink                   I  ✅ 权限管理器引用更新成功
-2025-10-23 17:35:20.642 24273-24273 MainActivity            com.example.cplink                   I  🌡️ 开始GPS预热...
-2025-10-23 17:35:20.642 24273-24273 LocationSensorManager   com.example.cplink                   I  🌡️ 启动GPS预热...
-2025-10-23 17:35:20.649 24273-24273 LocationSensorManager   com.example.cplink                   I  ✅ GPS预热已启动
-2025-10-23 17:35:20.649 24273-24273 MainActivity            com.example.cplink                   I  ✅ GPS预热已启动
-2025-10-23 17:35:20.649 24273-24273 MainActivity            com.example.cplink                   I  🔍 自检查: 权限管理器 - 初始化完成
-2025-10-23 17:35:20.839 24273-25446 .example.cplink         com.example.cplink                   I  Compiler allocated 8198KB to compile void android.view.ViewRootImpl.performTraversals()
-2025-10-23 17:35:20.850 24273-24273 MainActivity            com.example.cplink                   I  🔍 自检查: 权限和位置服务 - 正在设置...
-2025-10-23 17:35:20.850 24273-24273 MainActivity            com.example.cplink                   I  🔐 开始权限设置流程...
-2025-10-23 17:35:20.850 24273-24273 PermissionManager       com.example.cplink                   I  🧠 开始智能权限请求...
-2025-10-23 17:35:20.851 24273-24273 PermissionManager       com.example.cplink                   I  📊 核心权限状态: 5/5 已授予
-2025-10-23 17:35:20.851 24273-24273 PermissionManager       com.example.cplink                   I  ✅ 核心权限已全部授予，启动GPS功能
-2025-10-23 17:35:20.851 24273-24273 LocationSensorManager   com.example.cplink                   I  📍 启动GPS位置更新服务...
-2025-10-23 17:35:20.851 24273-24273 LocationSensorManager   com.example.cplink                   I  🔍 检查位置提供者状态:
-2025-10-23 17:35:20.852 24273-24273 LocationSensorManager   com.example.cplink                   I    📡 GPS提供者: ✅ 启用
-2025-10-23 17:35:20.852 24273-24273 LocationSensorManager   com.example.cplink                   I    🌐 网络提供者: ✅ 启用
-2025-10-23 17:35:20.852 24273-24273 LocationSensorManager   com.example.cplink                   I    📱 被动提供者: ✅ 启用
-2025-10-23 17:35:20.852 24273-24273 LocationSensorManager   com.example.cplink                   I    📋 所有提供者: [passive, network, fused, gps]
-2025-10-23 17:35:20.853 24273-24273 LocationSensorManager   com.example.cplink                   I    ✅ 启用的提供者: [passive, network, fused, gps]
-2025-10-23 17:35:20.856 24273-24273 LocationSensorManager   com.example.cplink                   I  ✅ GPS定位已启动 (最高精度模式: 0.1s/0.0m，强制后台实时)
-2025-10-23 17:35:20.860 24273-24273 LocationSensorManager   com.example.cplink                   I  ✅ 网络定位已启动 (优化模式: 1s/2m)
-2025-10-23 17:35:20.860 24273-24273 LocationSensorManager   com.example.cplink                   I  ✅ 位置更新服务启动完成
-2025-10-23 17:35:20.867 24273-24273 LocationSensorManager   com.example.cplink                   I  🎯 使用最后已知位置进行立即更新:
-2025-10-23 17:35:20.868 24273-24273 LocationSensorManager   com.example.cplink                   I    📍 坐标: lat=31.203741, lon=120.628044
-2025-10-23 17:35:20.868 24273-24273 LocationSensorManager   com.example.cplink                   I    📡 精度: 58.5m
-2025-10-23 17:35:20.868 24273-24273 LocationSensorManager   com.example.cplink                   I    🔧 提供者: network
-2025-10-23 17:35:20.868 24273-24273 LocationSensorManager   com.example.cplink                   I    ⏰ 时间: 210306ms前
-2025-10-23 17:35:20.868 24273-24273 LocationSensorManager   com.example.cplink                   I  🌍 GPS位置更新接收:
-2025-10-23 17:35:20.869 24273-24273 LocationSensorManager   com.example.cplink                   I    📍 坐标: lat=31.203741, lon=120.628044
-2025-10-23 17:35:20.869 24273-24273 LocationSensorManager   com.example.cplink                   I    🚀 速度: 无速度数据
-2025-10-23 17:35:20.869 24273-24273 LocationSensorManager   com.example.cplink                   I    🧭 方向: 无方向数据
-2025-10-23 17:35:20.869 24273-24273 LocationSensorManager   com.example.cplink                   I    📡 精度: 58.5m
-2025-10-23 17:35:20.869 24273-24273 LocationSensorManager   com.example.cplink                   I    🔧 提供者: network
-2025-10-23 17:35:20.869 24273-24273 LocationSensorManager   com.example.cplink                   I    ⏰ 时间: 210307ms前
-2025-10-23 17:35:20.869 24273-24273 LocationSensorManager   com.example.cplink                   W  ⚠️ GPS数据过期 (210306ms前)，跳过更新
-2025-10-23 17:35:20.869 24273-24273 PermissionManager       com.example.cplink                   I  📡 启动GPS状态监控...
-2025-10-23 17:35:20.870 24273-24273 PermissionManager       com.example.cplink                   I  📝 请求可选权限以获得完整功能
-2025-10-23 17:35:20.893 24273-25461 ActivityThread          com.example.cplink                   V  updateVmProcessStateForGc sceneId =1 state=196608
-2025-10-23 17:35:20.893 24273-24273 MainActivity            com.example.cplink                   I  📋 权限状态报告:
-                                                                                                    🔑 核心权限:
-                                                                                                      ✅ android.permission.ACCESS_FINE_LOCATION
-                                                                                                      ✅ android.permission.ACCESS_COARSE_LOCATION
-                                                                                                      ✅ android.permission.INTERNET
-                                                                                                      ✅ android.permission.ACCESS_NETWORK_STATE
-                                                                                                      ✅ android.permission.WAKE_LOCK
-                                                                                                    🔧 可选权限:
-                                                                                                      ✅ android.permission.FOREGROUND_SERVICE
-                                                                                                      ❌ android.permission.SYSTEM_ALERT_WINDOW
-                                                                                                    📱 Android 12+ 权限:
-                                                                                                    📱 Android 13+ 权限:
-                                                                                                      ✅ android.permission.POST_NOTIFICATIONS
-2025-10-23 17:35:20.893 24273-24273 MainActivity            com.example.cplink                   I  🔍 自检查: 权限和位置服务 - 设置完成
-2025-10-23 17:35:20.893 24273-25461 .example.cplink         com.example.cplink                   I  Close vivo delay for GC JIT .
-2025-10-23 17:35:20.938 24273-24273 MainActivity            com.example.cplink                   I  ⏸️ Activity暂停
-2025-10-23 17:35:20.940 24273-24273 MainActivity            com.example.cplink                   I  🌍 GPS位置更新在后台继续运行
-2025-10-23 17:35:21.095 24273-24273 FloatingWindowService   com.example.cplink                   D  👤 用户类型权限检查: userType=4, hasPermission=true
-2025-10-23 17:35:21.095 24273-24273 FloatingWindowService   com.example.cplink                   I  🔄 使用广播方式发送控制指令，避免端口冲突
-2025-10-23 17:35:21.095 24273-24273 FloatingWindowService   com.example.cplink                   I  ✅ 网络管理器初始化完成（广播模式）
-2025-10-23 17:35:21.099 24273-24273 CompatChangeReporter    com.example.cplink                   D  Compat change id reported: 63938206; UID 10440; state: ENABLED
-2025-10-23 17:35:21.125 24273-24273 FloatingWindowService   com.example.cplink                   I  🔄 用户类型文本已更新: 铁粉 📂
-2025-10-23 17:35:21.125 24273-24273 FloatingWindowService   com.example.cplink                   I  ✅ 悬浮窗用户类型显示更新完成
-2025-10-23 17:35:21.133 24273-24273 FloatingWindowService   com.example.cplink                   I  ✅ 智能控速按钮状态初始化: 模式=0
-2025-10-23 17:35:21.170 24273-24273 FloatingWindowService   com.example.cplink                   I  ✅ 悬浮窗显示成功
-2025-10-23 17:35:21.170 24273-24273 FloatingWindowService   com.example.cplink                   I  ⏹️ 停止速度数据检查
-2025-10-23 17:35:21.172 24273-24273 FloatingWindowService   com.example.cplink                   I  🚗 开始优化速度数据检查（高频更新）
-2025-10-23 17:35:21.174 24273-24273 ImeFocusController      com.example.cplink                   V  onWindowFocus: com.android.internal.policy.DecorView{90f9902 V.E...... R....... 0,0-1080,2400 aid=0}[MainActivity] softInputMode=STATE_UNSPECIFIED|ADJUST_PAN
-2025-10-23 17:35:21.188 24273-24273 MainActivity            com.example.cplink                   I  🔍 自检查: 网络管理器 - 正在初始化...
-2025-10-23 17:35:21.189 24273-24273 MainActivity            com.example.cplink                   I  🌐 初始化网络管理器（延迟启动网络服务）...
-2025-10-23 17:35:21.191 24273-24273 MainActivity            com.example.cplink                   I  ✅ 网络管理器初始化成功（网络服务待启动）
-2025-10-23 17:35:21.191 24273-24273 MainActivity            com.example.cplink                   I  🔍 自检查: 网络管理器 - 初始化完成
-2025-10-23 17:35:21.192 24273-24273 PermissionManager       com.example.cplink                   I  🔍 权限请求结果:
-2025-10-23 17:35:21.192 24273-24273 PermissionManager       com.example.cplink                   I    ❌ android.permission.SYSTEM_ALERT_WINDOW: 被拒绝
-2025-10-23 17:35:21.192 24273-24273 PermissionManager       com.example.cplink                   I  📊 权限统计: 0/1 已授予
-2025-10-23 17:35:21.192 24273-24273 PermissionManager       com.example.cplink                   W  ⚠️ 部分权限未获取，功能可能受限
-2025-10-23 17:35:21.192 24273-24273 PermissionManager       com.example.cplink                   W  ❌ 被拒绝的权限: android.permission.SYSTEM_ALERT_WINDOW
-2025-10-23 17:35:21.193 24273-24273 PermissionManager       com.example.cplink                   I  ✅ 核心权限已获取，启动位置更新
-2025-10-23 17:35:21.193 24273-24273 LocationSensorManager   com.example.cplink                   I  📍 启动GPS位置更新服务...
-2025-10-23 17:35:21.193 24273-24273 LocationSensorManager   com.example.cplink                   I  🔍 检查位置提供者状态:
-2025-10-23 17:35:21.194 24273-24273 LocationSensorManager   com.example.cplink                   I    📡 GPS提供者: ✅ 启用
-2025-10-23 17:35:21.194 24273-24273 LocationSensorManager   com.example.cplink                   I    🌐 网络提供者: ✅ 启用
-2025-10-23 17:35:21.195 24273-24273 LocationSensorManager   com.example.cplink                   I    📱 被动提供者: ✅ 启用
-2025-10-23 17:35:21.195 24273-24273 LocationSensorManager   com.example.cplink                   I    📋 所有提供者: [passive, network, fused, gps]
-2025-10-23 17:35:21.195 24273-24273 LocationSensorManager   com.example.cplink                   I    ✅ 启用的提供者: [passive, network, fused, gps]
-2025-10-23 17:35:21.200 24273-24273 LocationSensorManager   com.example.cplink                   I  ✅ GPS定位已启动 (最高精度模式: 0.1s/0.0m，强制后台实时)
-2025-10-23 17:35:21.204 24273-24273 LocationSensorManager   com.example.cplink                   I  ✅ 网络定位已启动 (优化模式: 1s/2m)
-2025-10-23 17:35:21.204 24273-24273 LocationSensorManager   com.example.cplink                   I  ✅ 位置更新服务启动完成
-2025-10-23 17:35:21.211 24273-24273 LocationSensorManager   com.example.cplink                   I  🎯 使用最后已知位置进行立即更新:
-2025-10-23 17:35:21.211 24273-24273 LocationSensorManager   com.example.cplink                   I    📍 坐标: lat=31.203741, lon=120.628044
-2025-10-23 17:35:21.211 24273-24273 LocationSensorManager   com.example.cplink                   I    📡 精度: 58.5m
-2025-10-23 17:35:21.211 24273-24273 LocationSensorManager   com.example.cplink                   I    🔧 提供者: network
-2025-10-23 17:35:21.211 24273-24273 LocationSensorManager   com.example.cplink                   I    ⏰ 时间: 1952ms前
-2025-10-23 17:35:21.212 24273-24273 LocationSensorManager   com.example.cplink                   I  🌍 GPS位置更新接收:
-2025-10-23 17:35:21.212 24273-24273 LocationSensorManager   com.example.cplink                   I    📍 坐标: lat=31.203741, lon=120.628044
-2025-10-23 17:35:21.212 24273-24273 LocationSensorManager   com.example.cplink                   I    🚀 速度: 无速度数据
-2025-10-23 17:35:21.212 24273-24273 LocationSensorManager   com.example.cplink                   I    🧭 方向: 无方向数据
-2025-10-23 17:35:21.212 24273-24273 LocationSensorManager   com.example.cplink                   I    📡 精度: 58.5m
-2025-10-23 17:35:21.212 24273-24273 LocationSensorManager   com.example.cplink                   I    🔧 提供者: network
-2025-10-23 17:35:21.212 24273-24273 LocationSensorManager   com.example.cplink                   I    ⏰ 时间: 1953ms前
-2025-10-23 17:35:21.212 24273-24273 LocationSensorManager   com.example.cplink                   W  ⚠️ GPS精度过低 (58.5m)，数据可能不可靠
-2025-10-23 17:35:21.212 24273-24273 LocationSensorManager   com.example.cplink                   I  ✅ GPS字段更新完成 (实时性优化):
-2025-10-23 17:35:21.212 24273-24273 LocationSensorManager   com.example.cplink                   D    📍 坐标: lat=31.203741, lon=120.628044
-2025-10-23 17:35:21.213 24273-24273 LocationSensorManager   com.example.cplink                   D    🚀 速度: 无速度数据
-2025-10-23 17:35:21.213 24273-24273 LocationSensorManager   com.example.cplink                   D    🧭 方向: 无方向数据
-2025-10-23 17:35:21.213 24273-24273 LocationSensorManager   com.example.cplink                   D    📡 精度: 58.5m
-2025-10-23 17:35:21.213 24273-24273 LocationSensorManager   com.example.cplink                   D    🔧 提供者: network
-2025-10-23 17:35:21.213 24273-24273 LocationSensorManager   com.example.cplink                   D    ⏰ 数据年龄: 1952ms
-2025-10-23 17:35:21.213 24273-24273 LocationSensorManager   com.example.cplink                   D    🎯 实时性: 良好
-2025-10-23 17:35:21.213 24273-24273 PermissionManager       com.example.cplink                   I  📡 启动GPS状态监控...
-2025-10-23 17:35:21.213 24273-24273 MainActivity            com.example.cplink                   I  ▶️ Activity恢复，隐藏悬浮窗
-2025-10-23 17:35:21.218 24273-24273 LocationSensorManager   com.example.cplink                   I  🌍 GPS位置更新接收:
-2025-10-23 17:35:21.219 24273-24273 LocationSensorManager   com.example.cplink                   I    📍 坐标: lat=31.203741, lon=120.628044
-2025-10-23 17:35:21.219 24273-24273 LocationSensorManager   com.example.cplink                   I    🚀 速度: 无速度数据
-2025-10-23 17:35:21.219 24273-24273 LocationSensorManager   com.example.cplink                   I    🧭 方向: 无方向数据
-2025-10-23 17:35:21.219 24273-24273 LocationSensorManager   com.example.cplink                   I    📡 精度: 58.5m
-2025-10-23 17:35:21.219 24273-24273 LocationSensorManager   com.example.cplink                   I    🔧 提供者: network
-2025-10-23 17:35:21.219 24273-24273 LocationSensorManager   com.example.cplink                   I    ⏰ 时间: 1960ms前
-2025-10-23 17:35:21.219 24273-24273 LocationSensorManager   com.example.cplink                   W  ⚠️ GPS精度过低 (58.5m)，数据可能不可靠
-2025-10-23 17:35:21.219 24273-24273 LocationSensorManager   com.example.cplink                   I  ✅ GPS字段更新完成 (实时性优化):
-2025-10-23 17:35:21.219 24273-24273 LocationSensorManager   com.example.cplink                   D    📍 坐标: lat=31.203741, lon=120.628044
-2025-10-23 17:35:21.219 24273-24273 LocationSensorManager   com.example.cplink                   D    🚀 速度: 无速度数据
-2025-10-23 17:35:21.219 24273-24273 LocationSensorManager   com.example.cplink                   D    🧭 方向: 无方向数据
-2025-10-23 17:35:21.220 24273-24273 LocationSensorManager   com.example.cplink                   D    📡 精度: 58.5m
-2025-10-23 17:35:21.220 24273-24273 LocationSensorManager   com.example.cplink                   D    🔧 提供者: network
-2025-10-23 17:35:21.220 24273-24273 LocationSensorManager   com.example.cplink                   D    ⏰ 数据年龄: 1959ms
-2025-10-23 17:35:21.220 24273-24273 LocationSensorManager   com.example.cplink                   D    🎯 实时性: 良好
-2025-10-23 17:35:21.263 24273-24273 ViewRootImpl            com.example.cplink                   D  AppSizeAfterRelayout, size: Point(674, 455), rotation: ROTATION_0
-2025-10-23 17:35:21.264 24273-24273 libc                    com.example.cplink                   W  Access denied finding property "vendor.display.enable_optimal_refresh_rate"
-2025-10-23 17:35:21.261 24273-24273 .example.cplink         com.example.cplink                   W  type=1400 audit(0.0:3484259): avc:  denied  { read } for  name="u:object_r:vendor_display_prop:s0" dev="tmpfs" ino=462 scontext=u:r:untrusted_app:s0:c184,c257,c512,c768 tcontext=u:object_r:vendor_display_prop:s0 tclass=file permissive=0 app=com.example.cplink
-2025-10-23 17:35:21.311 24273-24273 FloatingWindowService   com.example.cplink                   I  ⏹️ 停止速度数据检查
-2025-10-23 17:35:21.312 24273-24273 FloatingWindowService   com.example.cplink                   I  ✅ 悬浮窗隐藏成功
-2025-10-23 17:35:21.313 24273-25542 FloatingWindowService   com.example.cplink                   E  ❌ 速度数据检查异常: StandaloneCoroutine was cancelled
-                                                                                                    kotlinx.coroutines.JobCancellationException: StandaloneCoroutine was cancelled; job=StandaloneCoroutine{Cancelling}@4ff1723
-2025-10-23 17:35:21.438 24273-24273 WindowOnBackDispatcher  com.example.cplink                   W  sendCancelIfRunning: isInProgress=false callback=android.view.ViewRootImpl$$ExternalSyntheticLambda11@d3255c0
-2025-10-23 17:35:21.456 24273-24273 FloatingWindowService   com.example.cplink                   I  ⏹️ 停止速度数据检查
-2025-10-23 17:35:21.456 24273-24273 FloatingWindowService   com.example.cplink                   D  🔍 悬浮窗未显示或已隐藏，跳过隐藏操作
-2025-10-23 17:35:21.456 24273-24273 FloatingWindowService   com.example.cplink                   I  🔧 悬浮窗服务销毁
-2025-10-23 17:35:21.459 24273-24273 MainActivity            com.example.cplink                   I  🔍 自检查: 系统管理器 - 正在并行初始化...
-2025-10-23 17:35:21.462 24273-25542 MainActivity            com.example.cplink                   I  🗺️ 初始化高德地图管理器...
-2025-10-23 17:35:21.468 24273-25542 MainActivity            com.example.cplink                   I  ✅ 高德地图管理器初始化成功
-2025-10-23 17:35:21.468 24273-25543 MainActivity            com.example.cplink                   I  📡 初始化广播管理器...
-2025-10-23 17:35:21.468 24273-25549 MainActivity            com.example.cplink                   I  📱 初始化设备管理器...
-2025-10-23 17:35:21.475 24273-25549 DeviceManager           com.example.cplink                   I  📱 使用已存在的设备ID: FB0184A6B311
-2025-10-23 17:35:21.478 24273-25543 AmapBroadcastManager    com.example.cplink                   I  ✅ 增强版广播接收器注册成功
-2025-10-23 17:35:21.478 24273-25543 AmapBroadcastManager    com.example.cplink                   D  📡 注册的广播Action列表:
-2025-10-23 17:35:21.478 24273-25543 AmapBroadcastManager    com.example.cplink                   D    - AMAP_NAVI_ACTION_UPDATE
-2025-10-23 17:35:21.479 24273-25543 AmapBroadcastManager    com.example.cplink                   D    - AMAP_NAVI_ACTION_TURN
-2025-10-23 17:35:21.479 24273-25543 AmapBroadcastManager    com.example.cplink                   D    - com.autonavi.minimap.broadcast
-2025-10-23 17:35:21.479 24273-25543 AmapBroadcastManager    com.example.cplink                   D    - AMAP_NAVI_ACTION_LOCATION
-2025-10-23 17:35:21.479 24273-25543 AmapBroadcastManager    com.example.cplink                   D    - AUTONAVI_BROADCAST_SEND
-2025-10-23 17:35:21.479 24273-25543 AmapBroadcastManager    com.example.cplink                   D    - AMAP_NAVI_ACTION_ROUTE
-2025-10-23 17:35:21.479 24273-25543 AmapBroadcastManager    com.example.cplink                   D    - AMAP_BROADCAST_SEND
-2025-10-23 17:35:21.479 24273-25544 AmapBroadcastManager    com.example.cplink                   I  🚀 启动广播处理协程
-2025-10-23 17:35:21.479 24273-25543 AmapBroadcastManager    com.example.cplink                   D    - com.autonavi.minimap.navigation.broadcast
-2025-10-23 17:35:21.479 24273-25543 AmapBroadcastManager    com.example.cplink                   D    - AUTONAVI_STANDARD_BROADCAST_RECV
-2025-10-23 17:35:21.479 24273-25543 AmapBroadcastManager    com.example.cplink                   D    - AUTONAVI_STANDARD_BROADCAST_SEND
-2025-10-23 17:35:21.479 24273-25549 DeviceManager           com.example.cplink                   I  📊 记录应用启动，使用次数: 21，保存成功: true
-2025-10-23 17:35:21.479 24273-25549 MainActivity            com.example.cplink                   I  ✅ 设备管理器初始化成功，设备ID: FB0184A6B311
-2025-10-23 17:35:21.479 24273-25543 MainActivity            com.example.cplink                   I  ✅ 广播管理器初始化成功
-2025-10-23 17:35:21.572 24273-25446 .example.cplink         com.example.cplink                   I  Compiler allocated 4420KB to compile void android.widget.TextView.<init>(android.content.Context, android.util.AttributeSet, int, int)
-2025-10-23 17:35:21.592 24273-24273 MainActivity            com.example.cplink                   I  🔍 自检查: 系统管理器 - 并行初始化完成
-2025-10-23 17:35:21.795 24273-24273 MainActivity            com.example.cplink                   I  🔍 自检查: 用户类型 - 正在获取...
-2025-10-23 17:35:21.797 24273-25549 MainActivity            com.example.cplink                   D  📱 缓存命中: 类型=4, 年龄=6677秒
-2025-10-23 17:35:21.797 24273-25549 MainActivity            com.example.cplink                   I  📱 使用缓存的用户类型: 4
-2025-10-23 17:35:21.837 24273-24273 MainActivity            com.example.cplink                   I  🔍 自检查: 用户类型 - 获取完成: 铁粉
-2025-10-23 17:35:22.034 24273-24273 MainActivity            com.example.cplink                   I  🔍 自检查: 使用统计 - 后台更新中...
-2025-10-23 17:35:22.035 24273-25549 DeviceManager           com.example.cplink                   D  📊 获取使用统计: 次数=21, 时长=23分钟, 距离=1039.8433km
-2025-10-23 17:35:22.073 24273-24273 MainActivity            com.example.cplink                   I  🔍 自检查: 使用统计 - 更新完成
-2025-10-23 17:35:22.074 24273-25549 MainActivity            com.example.cplink                   I  📊 自动更新使用统计数据: 次数=21, 时长=23分钟, 距离=1039.8433km
-2025-10-23 17:35:22.077 24273-25549 DpmTcmClient            com.example.cplink                   I  RegisterTcmMonitor from: $Proxy2
-2025-10-23 17:35:22.094 24273-25549 TrafficStats            com.example.cplink                   D  tagSocket(145) with statsTag=0xffffffff, statsUid=-1
-2025-10-23 17:35:22.095 24273-25549 Linux                   com.example.cplink                   D  [Posix_connect Debug]Process com.example.cplink :443 
-2025-10-23 17:35:22.205 24273-24273 MainActivity            com.example.cplink                   I  🔍 自检查: 位置更新 - 正在执行...
-2025-10-23 17:35:22.205 24273-24273 MainActivity            com.example.cplink                   I  🚀 执行初始位置更新...
-2025-10-23 17:35:22.205 24273-24273 MainActivity            com.example.cplink                   I  🔍 自检查: 位置更新 - 执行完成
-2025-10-23 17:35:22.207 24273-24273 MainActivity            com.example.cplink                   I  📍 更新位置用于距离统计: lat=31.203741, lon=120.628044
-2025-10-23 17:35:22.207 24273-24273 DeviceManager           com.example.cplink                   I  ⏰ 启动倒计时: 850秒
-2025-10-23 17:35:22.207 24273-24273 DeviceManager           com.example.cplink                   I  ⏹️ 停止倒计时
-2025-10-23 17:35:22.408 24273-24273 MainActivity            com.example.cplink                   I  🔍 自检查: 静态接收器 - 正在处理...
-2025-10-23 17:35:22.408 24273-24273 MainActivity            com.example.cplink                   I  🔍 自检查: 静态接收器 - 处理完成
-2025-10-23 17:35:22.609 24273-24273 MainActivity            com.example.cplink                   I  🔍 自检查: 网络服务 - 正在启动...
-2025-10-23 17:35:22.609 24273-24273 MainActivity            com.example.cplink                   I  🌐 启动网络服务...
-2025-10-23 17:35:22.609 24273-24273 NetworkManager          com.example.cplink                   I  🌐 初始化CarrotMan网络客户端...
-2025-10-23 17:35:22.612 24273-24273 CarrotManNetwork        com.example.cplink                   D  设备发现回调已设置
-2025-10-23 17:35:22.612 24273-24273 CarrotManNetwork        com.example.cplink                   D  连接状态回调已设置
-2025-10-23 17:35:22.612 24273-24273 CarrotManNetwork        com.example.cplink                   D  数据发送回调已设置
-2025-10-23 17:35:22.612 24273-24273 CarrotManNetwork        com.example.cplink                   D  OpenpPilot状态接收回调已设置
-2025-10-23 17:35:22.612 24273-24273 CarrotManNetwork        com.example.cplink                   I  启动 CarrotMan 网络客户端服务
-2025-10-23 17:35:22.612 24273-24273 CarrotManNetwork        com.example.cplink                   D  开始初始化UDP Socket连接...
-2025-10-23 17:35:22.612 24273-24273 TrafficStats            com.example.cplink                   D  tagSocket(138) with statsTag=0xffffffff, statsUid=-1
-2025-10-23 17:35:22.613 24273-24273 CarrotManNetwork        com.example.cplink                   D  监听Socket已创建，端口: 7705，超时: 1000ms
-2025-10-23 17:35:22.613 24273-24273 TrafficStats            com.example.cplink                   D  tagSocket(142) with statsTag=0xffffffff, statsUid=-1
-2025-10-23 17:35:22.613 24273-24273 CarrotManNetwork        com.example.cplink                   D  数据发送Socket已创建，端口: 37980
-2025-10-23 17:35:22.613 24273-24273 CarrotManNetwork        com.example.cplink                   I  Socket初始化成功 - 监听端口: 7705 (广播模式)
-2025-10-23 17:35:22.614 24273-25544 CarrotManNetwork        com.example.cplink                   I  ✅ 启动设备广播监听服务 - 端口: 7705
-2025-10-23 17:35:22.614 24273-24273 CarrotManNetwork        com.example.cplink                   I  🔍 启动设备发现服务...
-2025-10-23 17:35:22.615 24273-25543 CarrotManNetwork        com.example.cplink                   I  启动设备健康检查服务，检查间隔: 2000ms
-2025-10-23 17:35:22.616 24273-24273 CarrotManNetwork        com.example.cplink                   I  CarrotMan 网络服务启动成功
-2025-10-23 17:35:22.616 24273-24273 CarrotManNetwork        com.example.cplink                   I  📡 启动自动数据发送任务(客户端)…
-2025-10-23 17:35:22.617 24273-24273 NetworkManager          com.example.cplink                   I  🔄 网络状态定期更新已启动
-2025-10-23 17:35:22.617 24273-25542 CarrotManNetwork        com.example.cplink                   W  ⚠️ 发送CarrotMan数据 - 服务未运行或无连接设备
-2025-10-23 17:35:22.617 24273-24273 NetworkManager          com.example.cplink                   I  ✅ CarrotMan网络客户端初始化成功
-2025-10-23 17:35:22.617 24273-24273 MainActivity            com.example.cplink                   I  ✅ 网络服务启动成功
-2025-10-23 17:35:22.617 24273-25542 CarrotManNetwork        com.example.cplink                   D  状态检查 - 运行状态: true, 连接设备: null
-2025-10-23 17:35:22.618 24273-24273 MainActivity            com.example.cplink                   I  🔍 自检查: 网络服务 - 启动完成
-2025-10-23 17:35:22.618 24273-25570 CarrotManNetwork        com.example.cplink                   I  💓 启动心跳任务
-2025-10-23 17:35:22.620 24273-25543 CarrotManNetwork        com.example.cplink                   D  📡 发送设备发现广播
-2025-10-23 17:35:22.620 24273-25543 CarrotManNetwork        com.example.cplink                   D  📭 没有发现活跃设备
-2025-10-23 17:35:22.620 24273-25544 CarrotManNetwork        com.example.cplink                   I  🔄 更新状态: 发现设备 192.168.31.103，正在连接...
-2025-10-23 17:35:22.621 24273-24273 NetworkManager          com.example.cplink                   I  🌐 网络状态变化: connected=false, device=
-2025-10-23 17:35:22.621 24273-24273 NetworkManager          com.example.cplink                   I  🌐 网络状态变化: connected=false, device=
-2025-10-23 17:35:22.621 24273-25544 CarrotManNetwork        com.example.cplink                   D  网络状态已保存: running=true, device=192.168.31.103:7706 (vdetected)
-2025-10-23 17:35:22.621 24273-25574 CarrotManNetwork        com.example.cplink                   I  ✅ 启动数据传输任务 - 设备: 192.168.31.103
-2025-10-23 17:35:22.621 24273-25544 CarrotManNetwork        com.example.cplink                   I  🎉 设备连接建立成功: 192.168.31.103
-2025-10-23 17:35:22.621 24273-24273 NetworkManager          com.example.cplink                   I  🎯 发现Comma3设备: 192.168.31.103:7706 (vdetected)
-2025-10-23 17:35:22.623 24273-24273 NetworkManager          com.example.cplink                   I  🌐 网络状态变化: connected=false, device=
-2025-10-23 17:35:22.623 24273-24273 NetworkManager          com.example.cplink                   I  🌐 网络状态变化: connected=true, device=192.168.31.103:7706 (vdetected)
-2025-10-23 17:35:22.721 24273-25574 CarrotManNetwork        com.example.cplink                   D  📡 发送UDP数据包到 192.168.31.103:7706, 大小: 130 bytes
-2025-10-23 17:35:22.729 24273-24273 NetworkManager          com.example.cplink                   I  🎯 发现Comma3设备: 192.168.31.118:7706 (vopenpilot)
-2025-10-23 17:35:22.731 24273-25574 CarrotManNetwork        com.example.cplink                   D  ✅ UDP数据包发送成功
-2025-10-23 17:35:22.820 24273-24273 MainActivity            com.example.cplink                   I  🔍 自检查: 用户界面 - 正在设置...
-2025-10-23 17:35:22.821 24273-24273 MainActivity            com.example.cplink                   I  🔍 自检查: 用户界面 - 设置完成
-2025-10-23 17:35:22.822 24273-25574 CarrotManNetwork        com.example.cplink                   D  📤 准备自动发送数据包:
-2025-10-23 17:35:22.822 24273-25574 CarrotManNetwork        com.example.cplink                   D     位置: lat=31.203741, lon=120.628044
-2025-10-23 17:35:22.822 24273-25574 CarrotManNetwork        com.example.cplink                   D    🛣️ 道路: 
-2025-10-23 17:35:22.822 24273-25574 CarrotManNetwork        com.example.cplink                   D    🚦 限速: 0km/h
-2025-10-23 17:35:22.822 24273-25574 CarrotManNetwork        com.example.cplink                   D    🎯 目标: 
-2025-10-23 17:35:22.822 24273-25574 CarrotManNetwork        com.example.cplink                   D    🧭 导航状态: false
-2025-10-23 17:35:22.822 24273-25574 CarrotManNetwork        com.example.cplink                   D    🔄 转向信息: 类型=-1, 距离=0m, 指令=
-2025-10-23 17:35:22.822 24273-25574 CarrotManNetwork        com.example.cplink                   D    🔄 下一转向: 类型=-1, 距离=0m
-2025-10-23 17:35:22.822 24273-25574 CarrotManNetwork        com.example.cplink                   D    📏 X系列距离: 转弯=0.0m, 下一转弯=0m
-2025-10-23 17:35:22.823 24273-25574 CarrotManNetwork        com.example.cplink                   D  📈 网络质量良好 (100%)，提高错误阈值
-2025-10-23 17:35:22.827 24273-25543 CarrotManNetwork        com.example.cplink                   D  📡 发送UDP数据包到 192.168.31.103:7706, 大小: 739 bytes
-2025-10-23 17:35:22.828 24273-25543 CarrotManNetwork        com.example.cplink                   D  ✅ UDP数据包发送成功
-2025-10-23 17:35:23.024 24273-24273 MainActivity            com.example.cplink                   I  🔍 自检查: 系统检查 - 所有检查完成
-2025-10-23 17:35:23.024 24273-24273 MainActivity            com.example.cplink                   I  🎯 根据用户类型执行操作: 4
-2025-10-23 17:35:23.024 24273-24273 MainActivity            com.example.cplink                   I  💎 赞助者/铁粉，直接打开高德地图
-2025-10-23 17:35:23.029 24273-25543 CarrotManNetwork        com.example.cplink                   D  📤 准备自动发送数据包:
-2025-10-23 17:35:23.029 24273-25543 CarrotManNetwork        com.example.cplink                   D     位置: lat=31.203741, lon=120.628044
-2025-10-23 17:35:23.029 24273-25543 CarrotManNetwork        com.example.cplink                   D    🛣️ 道路: 
-2025-10-23 17:35:23.029 24273-25543 CarrotManNetwork        com.example.cplink                   D    🚦 限速: 0km/h
-2025-10-23 17:35:23.029 24273-25543 CarrotManNetwork        com.example.cplink                   D    🎯 目标: 
-2025-10-23 17:35:23.029 24273-25543 CarrotManNetwork        com.example.cplink                   D    🧭 导航状态: false
-2025-10-23 17:35:23.030 24273-25543 CarrotManNetwork        com.example.cplink                   D    🔄 转向信息: 类型=-1, 距离=0m, 指令=
-2025-10-23 17:35:23.030 24273-25543 CarrotManNetwork        com.example.cplink                   D    🔄 下一转向: 类型=-1, 距离=0m
-2025-10-23 17:35:23.030 24273-25543 CarrotManNetwork        com.example.cplink                   D    📏 X系列距离: 转弯=0.0m, 下一转弯=0m
-2025-10-23 17:35:23.033 24273-25574 CarrotManNetwork        com.example.cplink                   D  📡 发送UDP数据包到 192.168.31.103:7706, 大小: 739 bytes
-2025-10-23 17:35:23.034 24273-25574 CarrotManNetwork        com.example.cplink                   D  ✅ UDP数据包发送成功
-2025-10-23 17:35:23.041 24273-24273 MainActivity            com.example.cplink                   I  已启动高德地图车机版
-2025-10-23 17:35:23.075 24273-24273 MainActivity            com.example.cplink                   I  ⏸️ Activity暂停
-2025-10-23 17:35:23.075 24273-24273 DeviceManager           com.example.cplink                   W  ⚠️ 使用时长太短，未记录: 0分钟
-2025-10-23 17:35:23.078 24273-24273 MainActivity            com.example.cplink                   I  🌍 GPS位置更新在后台继续运行
-2025-10-23 17:35:23.120 24273-24273 FloatingWindowService   com.example.cplink                   D  👤 用户类型权限检查: userType=4, hasPermission=true
-2025-10-23 17:35:23.120 24273-24273 FloatingWindowService   com.example.cplink                   I  🔄 使用广播方式发送控制指令，避免端口冲突
-2025-10-23 17:35:23.120 24273-24273 FloatingWindowService   com.example.cplink                   I  ✅ 网络管理器初始化完成（广播模式）
-2025-10-23 17:35:23.131 24273-24273 FloatingWindowService   com.example.cplink                   I  🔄 用户类型文本已更新: 铁粉 📂
-2025-10-23 17:35:23.131 24273-24273 FloatingWindowService   com.example.cplink                   I  ✅ 悬浮窗用户类型显示更新完成
-2025-10-23 17:35:23.131 24273-24273 FloatingWindowService   com.example.cplink                   I  ✅ 智能控速按钮状态初始化: 模式=0
-2025-10-23 17:35:23.159 24273-24273 FloatingWindowService   com.example.cplink                   I  ✅ 悬浮窗显示成功
-2025-10-23 17:35:23.159 24273-24273 FloatingWindowService   com.example.cplink                   I  ⏹️ 停止速度数据检查
-2025-10-23 17:35:23.160 24273-24273 FloatingWindowService   com.example.cplink                   I  🚗 开始优化速度数据检查（高频更新）
-2025-10-23 17:35:23.179 24273-24273 ViewRootImpl            com.example.cplink                   D  AppSizeAfterRelayout, size: Point(674, 455), rotation: ROTATION_0
-2025-10-23 17:35:23.180 24273-24273 libc                    com.example.cplink                   W  Access denied finding property "vendor.display.enable_optimal_refresh_rate"
-2025-10-23 17:35:23.194 24273-25574 AmapBroadcastManager    com.example.cplink                   V  🔄 同步缓冲区到UI: 1 条数据
-2025-10-23 17:35:23.204 24273-24273 ViewRootImpl            com.example.cplink                   D  AppSizeAfterRelayout, size: Point(693, 455), rotation: ROTATION_0
-2025-10-23 17:35:23.239 24273-25543 CarrotManNetwork        com.example.cplink                   D  📤 准备自动发送数据包:
-2025-10-23 17:35:23.240 24273-25543 CarrotManNetwork        com.example.cplink                   D     位置: lat=31.203741, lon=120.628044
-2025-10-23 17:35:23.240 24273-25543 CarrotManNetwork        com.example.cplink                   D    🛣️ 道路: 
-2025-10-23 17:35:23.240 24273-25543 CarrotManNetwork        com.example.cplink                   D    🚦 限速: 0km/h
-2025-10-23 17:35:23.240 24273-25543 CarrotManNetwork        com.example.cplink                   D    🎯 目标: 
-2025-10-23 17:35:23.240 24273-25543 CarrotManNetwork        com.example.cplink                   D    🧭 导航状态: false
-2025-10-23 17:35:23.240 24273-25543 CarrotManNetwork        com.example.cplink                   D    🔄 转向信息: 类型=-1, 距离=0m, 指令=
-2025-10-23 17:35:23.240 24273-25543 CarrotManNetwork        com.example.cplink                   D    🔄 下一转向: 类型=-1, 距离=0m
-2025-10-23 17:35:23.240 24273-25543 CarrotManNetwork        com.example.cplink                   D    📏 X系列距离: 转弯=0.0m, 下一转弯=0m
-2025-10-23 17:35:23.241 24273-25573 CarrotManNetwork        com.example.cplink                   D  📡 发送UDP数据包到 192.168.31.103:7706, 大小: 739 bytes
-2025-10-23 17:35:23.242 24273-25573 CarrotManNetwork        com.example.cplink                   D  ✅ UDP数据包发送成功
-2025-10-23 17:35:23.441 24273-25572 CarrotManNetwork        com.example.cplink                   D  📤 准备自动发送数据包:
-2025-10-23 17:35:23.441 24273-25572 CarrotManNetwork        com.example.cplink                   D     位置: lat=31.203741, lon=120.628044
-2025-10-23 17:35:23.441 24273-25572 CarrotManNetwork        com.example.cplink                   D    🛣️ 道路: 
-2025-10-23 17:35:23.441 24273-25572 CarrotManNetwork        com.example.cplink                   D    🚦 限速: 0km/h
-2025-10-23 17:35:23.441 24273-25572 CarrotManNetwork        com.example.cplink                   D    🎯 目标: 
-2025-10-23 17:35:23.441 24273-25572 CarrotManNetwork        com.example.cplink                   D    🧭 导航状态: false
-2025-10-23 17:35:23.441 24273-25572 CarrotManNetwork        com.example.cplink                   D    🔄 转向信息: 类型=-1, 距离=0m, 指令=
-2025-10-23 17:35:23.441 24273-25572 CarrotManNetwork        com.example.cplink                   D    🔄 下一转向: 类型=-1, 距离=0m
-2025-10-23 17:35:23.441 24273-25572 CarrotManNetwork        com.example.cplink                   D    📏 X系列距离: 转弯=0.0m, 下一转弯=0m
-2025-10-23 17:35:23.443 24273-25574 CarrotManNetwork        com.example.cplink                   D  📡 发送UDP数据包到 192.168.31.103:7706, 大小: 739 bytes
-2025-10-23 17:35:23.444 24273-25574 CarrotManNetwork        com.example.cplink                   D  ✅ UDP数据包发送成功
-2025-10-23 17:35:23.644 24273-25572 CarrotManNetwork        com.example.cplink                   D  📤 准备自动发送数据包:
-2025-10-23 17:35:23.644 24273-25572 CarrotManNetwork        com.example.cplink                   D     位置: lat=31.203741, lon=120.628044
-2025-10-23 17:35:23.645 24273-25572 CarrotManNetwork        com.example.cplink                   D    🛣️ 道路: 
-2025-10-23 17:35:23.645 24273-25572 CarrotManNetwork        com.example.cplink                   D    🚦 限速: 0km/h
-2025-10-23 17:35:23.645 24273-25572 CarrotManNetwork        com.example.cplink                   D    🎯 目标: 
-2025-10-23 17:35:23.645 24273-25572 CarrotManNetwork        com.example.cplink                   D    🧭 导航状态: false
-2025-10-23 17:35:23.645 24273-25572 CarrotManNetwork        com.example.cplink                   D    🔄 转向信息: 类型=-1, 距离=0m, 指令=
-2025-10-23 17:35:23.645 24273-25572 CarrotManNetwork        com.example.cplink                   D    🔄 下一转向: 类型=-1, 距离=0m
-2025-10-23 17:35:23.645 24273-25572 CarrotManNetwork        com.example.cplink                   D    📏 X系列距离: 转弯=0.0m, 下一转弯=0m
-2025-10-23 17:35:23.646 24273-25574 CarrotManNetwork        com.example.cplink                   D  📡 发送UDP数据包到 192.168.31.103:7706, 大小: 739 bytes
-2025-10-23 17:35:23.647 24273-25574 CarrotManNetwork        com.example.cplink                   D  ✅ UDP数据包发送成功
-2025-10-23 17:35:23.737 24273-24273 VRI[MainActivity]       com.example.cplink                   D  visibilityChanged oldVisibility=true newVisibility=false
-2025-10-23 17:35:23.750 24273-25572 CarrotManNetwork        com.example.cplink                   D  📡 发送UDP数据包到 192.168.31.103:7706, 大小: 130 bytes
-2025-10-23 17:35:23.755 24273-25572 CarrotManNetwork        com.example.cplink                   D  ✅ UDP数据包发送成功
-2025-10-23 17:35:23.757 24273-24273 ViewRootImpl            com.example.cplink                   D  AppSizeAfterRelayout, size: Point(1080, 2400), rotation: ROTATION_0
-2025-10-23 17:35:23.847 24273-25571 CarrotManNetwork        com.example.cplink                   D  📤 准备自动发送数据包:
-2025-10-23 17:35:23.847 24273-25571 CarrotManNetwork        com.example.cplink                   D     位置: lat=31.203741, lon=120.628044
-2025-10-23 17:35:23.847 24273-25571 CarrotManNetwork        com.example.cplink                   D    🛣️ 道路: 
-2025-10-23 17:35:23.847 24273-25571 CarrotManNetwork        com.example.cplink                   D    🚦 限速: 0km/h
-2025-10-23 17:35:23.847 24273-25571 CarrotManNetwork        com.example.cplink                   D    🎯 目标: 
-2025-10-23 17:35:23.848 24273-25571 CarrotManNetwork        com.example.cplink                   D    🧭 导航状态: false
-2025-10-23 17:35:23.848 24273-25571 CarrotManNetwork        com.example.cplink                   D    🔄 转向信息: 类型=-1, 距离=0m, 指令=
-2025-10-23 17:35:23.848 24273-25571 CarrotManNetwork        com.example.cplink                   D    🔄 下一转向: 类型=-1, 距离=0m
-2025-10-23 17:35:23.848 24273-25571 CarrotManNetwork        com.example.cplink                   D    📏 X系列距离: 转弯=0.0m, 下一转弯=0m
-2025-10-23 17:35:23.853 24273-25571 CarrotManNetwork        com.example.cplink                   D  📡 发送UDP数据包到 192.168.31.103:7706, 大小: 739 bytes
-2025-10-23 17:35:23.855 24273-25571 CarrotManNetwork        com.example.cplink                   D  ✅ UDP数据包发送成功
-2025-10-23 17:35:24.053 24273-25574 CarrotManNetwork        com.example.cplink                   D  📤 准备自动发送数据包:
-2025-10-23 17:35:24.053 24273-25574 CarrotManNetwork        com.example.cplink                   D     位置: lat=31.203741, lon=120.628044
-2025-10-23 17:35:24.054 24273-25574 CarrotManNetwork        com.example.cplink                   D    🛣️ 道路: 
-2025-10-23 17:35:24.054 24273-25574 CarrotManNetwork        com.example.cplink                   D    🚦 限速: 0km/h
-2025-10-23 17:35:24.054 24273-25574 CarrotManNetwork        com.example.cplink                   D    🎯 目标: 
-2025-10-23 17:35:24.054 24273-25574 CarrotManNetwork        com.example.cplink                   D    🧭 导航状态: false
-2025-10-23 17:35:24.054 24273-25574 CarrotManNetwork        com.example.cplink                   D    🔄 转向信息: 类型=-1, 距离=0m, 指令=
-2025-10-23 17:35:24.054 24273-25574 CarrotManNetwork        com.example.cplink                   D    🔄 下一转向: 类型=-1, 距离=0m
-2025-10-23 17:35:24.054 24273-25574 CarrotManNetwork        com.example.cplink                   D    📏 X系列距离: 转弯=0.0m, 下一转弯=0m
-2025-10-23 17:35:24.060 24273-25571 CarrotManNetwork        com.example.cplink                   D  📡 发送UDP数据包到 192.168.31.103:7706, 大小: 739 bytes
-2025-10-23 17:35:24.063 24273-25571 CarrotManNetwork        com.example.cplink                   D  ✅ UDP数据包发送成功
-2025-10-23 17:35:24.146 24273-25549 MainActivity            com.example.cplink                   D  📋 用户当前数据: 车型=马自达cX-5, 微信名=机械小鸽, 赞助金额=1.0, 用户类型=4
-2025-10-23 17:35:24.147 24273-25549 MainActivity            com.example.cplink                   D  📤 发送使用统计更新请求: {"device_id":"FB0184A6B311","car_model":"马自达cX-5","wechat_name":"机械小鸽","sponsor_amount":1,"user_type":4,"usage_count":21,"usage_duration":0.38333333333333336,"total_distance":1039.8433}
-2025-10-23 17:35:24.259 24273-25574 CarrotManNetwork        com.example.cplink                   D  📤 准备自动发送数据包:
-2025-10-23 17:35:24.259 24273-25574 CarrotManNetwork        com.example.cplink                   D     位置: lat=31.203741, lon=120.628044
-2025-10-23 17:35:24.260 24273-25574 CarrotManNetwork        com.example.cplink                   D    🛣️ 道路: 
-2025-10-23 17:35:24.260 24273-25574 CarrotManNetwork        com.example.cplink                   D    🚦 限速: 0km/h
-2025-10-23 17:35:24.260 24273-25574 CarrotManNetwork        com.example.cplink                   D    🎯 目标: 
-2025-10-23 17:35:24.261 24273-25574 CarrotManNetwork        com.example.cplink                   D    🧭 导航状态: false
-2025-10-23 17:35:24.261 24273-25574 CarrotManNetwork        com.example.cplink                   D    🔄 转向信息: 类型=-1, 距离=0m, 指令=
-2025-10-23 17:35:24.261 24273-25574 CarrotManNetwork        com.example.cplink                   D    🔄 下一转向: 类型=-1, 距离=0m
-2025-10-23 17:35:24.261 24273-25574 CarrotManNetwork        com.example.cplink                   D    📏 X系列距离: 转弯=0.0m, 下一转弯=0m
-2025-10-23 17:35:24.269 24273-25573 CarrotManNetwork        com.example.cplink                   D  📡 发送UDP数据包到 192.168.31.103:7706, 大小: 740 bytes
-2025-10-23 17:35:24.272 24273-25573 CarrotManNetwork        com.example.cplink                   D  ✅ UDP数据包发送成功
-2025-10-23 17:35:24.429 24273-25549 MainActivity            com.example.cplink                   D  📥 使用统计更新响应码: 200
-2025-10-23 17:35:24.430 24273-25549 MainActivity            com.example.cplink                   D  📥 使用统计更新响应: {
-                                                                                                      "data": {
-                                                                                                        "car_model": "\u9a6c\u81ea\u8fbecX-5",
-                                                                                                        "device_id": "FB0184A6B311",
-                                                                                                        "modify_time": "2025-10-23T09:35:23.550185",
-                                                                                                        "sponsor_amount": 1.0,
-                                                                                                        "total_distance": 1039.8433,
-                                                                                                        "usage_count": 21,
-                                                                                                        "usage_duration": 0.38333333333333336,
-                                                                                                        "user_type": 4,
-                                                                                                        "wechat_name": "\u673a\u68b0\u5c0f\u9e3d"
-                                                                                                      },
-                                                                                                      "message": "\u7528\u6237\u6570\u636e\u66f4\u65b0\u6210\u529f",
-                                                                                                      "success": true
-                                                                                                    }
-2025-10-23 17:35:24.430 24273-25549 MainActivity            com.example.cplink                   I  ✅ 使用统计数据更新成功: 次数=21, 时长=0.38333333333333336小时, 距离=1039.8433km
-2025-10-23 17:35:24.470 24273-25573 CarrotManNetwork        com.example.cplink                   D  📤 准备自动发送数据包:
-2025-10-23 17:35:24.471 24273-25573 CarrotManNetwork        com.example.cplink                   D     位置: lat=31.203741, lon=120.628044
-2025-10-23 17:35:24.471 24273-25573 CarrotManNetwork        com.example.cplink                   D    🛣️ 道路: 
-2025-10-23 17:35:24.471 24273-25573 CarrotManNetwork        com.example.cplink                   D    🚦 限速: 0km/h
-2025-10-23 17:35:24.471 24273-25573 CarrotManNetwork        com.example.cplink                   D    🎯 目标: 
-2025-10-23 17:35:24.472 24273-25573 CarrotManNetwork        com.example.cplink                   D    🧭 导航状态: false
-2025-10-23 17:35:24.472 24273-25573 CarrotManNetwork        com.example.cplink                   D    🔄 转向信息: 类型=-1, 距离=0m, 指令=
-2025-10-23 17:35:24.473 24273-25573 CarrotManNetwork        com.example.cplink                   D    🔄 下一转向: 类型=-1, 距离=0m
-2025-10-23 17:35:24.474 24273-25573 CarrotManNetwork        com.example.cplink                   D    📏 X系列距离: 转弯=0.0m, 下一转弯=0m
-2025-10-23 17:35:24.483 24273-25572 CarrotManNetwork        com.example.cplink                   D  📡 发送UDP数据包到 192.168.31.103:7706, 大小: 740 bytes
-2025-10-23 17:35:24.487 24273-25572 CarrotManNetwork        com.example.cplink                   D  ✅ UDP数据包发送成功
-2025-10-23 17:35:24.681 24273-25573 CarrotManNetwork        com.example.cplink                   D  📤 准备自动发送数据包:
-2025-10-23 17:35:24.681 24273-25573 CarrotManNetwork        com.example.cplink                   D     位置: lat=31.203741, lon=120.628044
-2025-10-23 17:35:24.681 24273-25573 CarrotManNetwork        com.example.cplink                   D    🛣️ 道路: 
-2025-10-23 17:35:24.681 24273-25573 CarrotManNetwork        com.example.cplink                   D    🚦 限速: 0km/h
-2025-10-23 17:35:24.682 24273-25573 CarrotManNetwork        com.example.cplink                   D    🎯 目标: 
-2025-10-23 17:35:24.682 24273-25573 CarrotManNetwork        com.example.cplink                   D    🧭 导航状态: false
-2025-10-23 17:35:24.682 24273-25573 CarrotManNetwork        com.example.cplink                   D    🔄 转向信息: 类型=-1, 距离=0m, 指令=
-2025-10-23 17:35:24.682 24273-25573 CarrotManNetwork        com.example.cplink                   D    🔄 下一转向: 类型=-1, 距离=0m
-2025-10-23 17:35:24.682 24273-25573 CarrotManNetwork        com.example.cplink                   D    📏 X系列距离: 转弯=0.0m, 下一转弯=0m
-2025-10-23 17:35:24.691 24273-25574 CarrotManNetwork        com.example.cplink                   D  📡 发送UDP数据包到 192.168.31.103:7706, 大小: 740 bytes
-2025-10-23 17:35:24.694 24273-25574 CarrotManNetwork        com.example.cplink                   D  ✅ UDP数据包发送成功
-2025-10-23 17:35:24.782 24273-25549 CarrotManNetwork        com.example.cplink                   D  📡 发送UDP数据包到 192.168.31.103:7706, 大小: 131 bytes
-2025-10-23 17:35:24.786 24273-25549 CarrotManNetwork        com.example.cplink                   D  ✅ UDP数据包发送成功
-2025-10-23 17:35:24.887 24273-25549 CarrotManNetwork        com.example.cplink                   D  📤 准备自动发送数据包:
-2025-10-23 17:35:24.889 24273-25549 CarrotManNetwork        com.example.cplink                   D     位置: lat=31.203741, lon=120.628044
-2025-10-23 17:35:24.889 24273-25549 CarrotManNetwork        com.example.cplink                   D    🛣️ 道路: 
-2025-10-23 17:35:24.889 24273-25549 CarrotManNetwork        com.example.cplink                   D    🚦 限速: 0km/h
-2025-10-23 17:35:24.889 24273-25549 CarrotManNetwork        com.example.cplink                   D    🎯 目标: 
-2025-10-23 17:35:24.889 24273-25549 CarrotManNetwork        com.example.cplink                   D    🧭 导航状态: false
-2025-10-23 17:35:24.889 24273-25549 CarrotManNetwork        com.example.cplink                   D    🔄 转向信息: 类型=-1, 距离=0m, 指令=
-2025-10-23 17:35:24.889 24273-25549 CarrotManNetwork        com.example.cplink                   D    🔄 下一转向: 类型=-1, 距离=0m
-2025-10-23 17:35:24.890 24273-25549 CarrotManNetwork        com.example.cplink                   D    📏 X系列距离: 转弯=0.0m, 下一转弯=0m
-2025-10-23 17:35:24.894 24273-25574 CarrotManNetwork        com.example.cplink                   D  📡 发送UDP数据包到 192.168.31.103:7706, 大小: 740 bytes
-2025-10-23 17:35:24.896 24273-25574 CarrotManNetwork        com.example.cplink                   D  ✅ UDP数据包发送成功
-2025-10-23 17:35:25.094 24273-25574 CarrotManNetwork        com.example.cplink                   D  📤 准备自动发送数据包:
-2025-10-23 17:35:25.095 24273-25574 CarrotManNetwork        com.example.cplink                   D     位置: lat=31.203741, lon=120.628044
-2025-10-23 17:35:25.095 24273-25574 CarrotManNetwork        com.example.cplink                   D    🛣️ 道路: 
-2025-10-23 17:35:25.095 24273-25574 CarrotManNetwork        com.example.cplink                   D    🚦 限速: 0km/h
-2025-10-23 17:35:25.095 24273-25574 CarrotManNetwork        com.example.cplink                   D    🎯 目标: 
-2025-10-23 17:35:25.095 24273-25574 CarrotManNetwork        com.example.cplink                   D    🧭 导航状态: false
-2025-10-23 17:35:25.096 24273-25574 CarrotManNetwork        com.example.cplink                   D    🔄 转向信息: 类型=-1, 距离=0m, 指令=
-2025-10-23 17:35:25.096 24273-25574 CarrotManNetwork        com.example.cplink                   D    🔄 下一转向: 类型=-1, 距离=0m
-2025-10-23 17:35:25.096 24273-25574 CarrotManNetwork        com.example.cplink                   D    📏 X系列距离: 转弯=0.0m, 下一转弯=0m
-2025-10-23 17:35:25.100 24273-25573 CarrotManNetwork        com.example.cplink                   D  📡 发送UDP数据包到 192.168.31.103:7706, 大小: 740 bytes
-2025-10-23 17:35:25.103 24273-25573 CarrotManNetwork        com.example.cplink                   D  ✅ UDP数据包发送成功
-2025-10-23 17:35:25.301 24273-25573 CarrotManNetwork        com.example.cplink                   D  📤 准备自动发送数据包:
-2025-10-23 17:35:25.301 24273-25573 CarrotManNetwork        com.example.cplink                   D     位置: lat=31.203741, lon=120.628044
-2025-10-23 17:35:25.301 24273-25573 CarrotManNetwork        com.example.cplink                   D    🛣️ 道路: 
-2025-10-23 17:35:25.302 24273-25573 CarrotManNetwork        com.example.cplink                   D    🚦 限速: 0km/h
-2025-10-23 17:35:25.302 24273-25573 CarrotManNetwork        com.example.cplink                   D    🎯 目标: 
-2025-10-23 17:35:25.302 24273-25573 CarrotManNetwork        com.example.cplink                   D    🧭 导航状态: false
-2025-10-23 17:35:25.302 24273-25573 CarrotManNetwork        com.example.cplink                   D    🔄 转向信息: 类型=-1, 距离=0m, 指令=
-2025-10-23 17:35:25.302 24273-25573 CarrotManNetwork        com.example.cplink                   D    🔄 下一转向: 类型=-1, 距离=0m
-2025-10-23 17:35:25.302 24273-25573 CarrotManNetwork        com.example.cplink                   D    📏 X系列距离: 转弯=0.0m, 下一转弯=0m
-2025-10-23 17:35:25.310 24273-25573 CarrotManNetwork        com.example.cplink                   D  📡 发送UDP数据包到 192.168.31.103:7706, 大小: 740 bytes
-2025-10-23 17:35:25.313 24273-25573 CarrotManNetwork        com.example.cplink                   D  ✅ UDP数据包发送成功
-2025-10-23 17:35:25.514 24273-25573 CarrotManNetwork        com.example.cplink                   D  📤 准备自动发送数据包:
-2025-10-23 17:35:25.514 24273-25573 CarrotManNetwork        com.example.cplink                   D     位置: lat=31.203741, lon=120.628044
-2025-10-23 17:35:25.514 24273-25573 CarrotManNetwork        com.example.cplink                   D    🛣️ 道路: 
-2025-10-23 17:35:25.514 24273-25573 CarrotManNetwork        com.example.cplink                   D    🚦 限速: 0km/h
-2025-10-23 17:35:25.514 24273-25573 CarrotManNetwork        com.example.cplink                   D    🎯 目标: 
-2025-10-23 17:35:25.514 24273-25573 CarrotManNetwork        com.example.cplink                   D    🧭 导航状态: false
-2025-10-23 17:35:25.514 24273-25573 CarrotManNetwork        com.example.cplink                   D    🔄 转向信息: 类型=-1, 距离=0m, 指令=
-2025-10-23 17:35:25.514 24273-25573 CarrotManNetwork        com.example.cplink                   D    🔄 下一转向: 类型=-1, 距离=0m
-2025-10-23 17:35:25.514 24273-25573 CarrotManNetwork        com.example.cplink                   D    📏 X系列距离: 转弯=0.0m, 下一转弯=0m
-2025-10-23 17:35:25.523 24273-25572 CarrotManNetwork        com.example.cplink                   D  📡 发送UDP数据包到 192.168.31.103:7706, 大小: 740 bytes
-2025-10-23 17:35:25.525 24273-25572 CarrotManNetwork        com.example.cplink                   D  ✅ UDP数据包发送成功
-2025-10-23 17:35:25.651 24273-25611 ProfileInstaller        com.example.cplink                   D  Installing profile for com.example.cplink
-2025-10-23 17:35:25.717 24273-25572 CarrotManNetwork        com.example.cplink                   D  📤 准备自动发送数据包:
-2025-10-23 17:35:25.717 24273-25572 CarrotManNetwork        com.example.cplink                   D     位置: lat=31.203741, lon=120.628044
-2025-10-23 17:35:25.717 24273-25572 CarrotManNetwork        com.example.cplink                   D    🛣️ 道路: 
-2025-10-23 17:35:25.717 24273-25572 CarrotManNetwork        com.example.cplink                   D    🚦 限速: 0km/h
-2025-10-23 17:35:25.717 24273-25572 CarrotManNetwork        com.example.cplink                   D    🎯 目标: 
-2025-10-23 17:35:25.718 24273-25572 CarrotManNetwork        com.example.cplink                   D    🧭 导航状态: false
-2025-10-23 17:35:25.718 24273-25572 CarrotManNetwork        com.example.cplink                   D    🔄 转向信息: 类型=-1, 距离=0m, 指令=
-2025-10-23 17:35:25.718 24273-25572 CarrotManNetwork        com.example.cplink                   D    🔄 下一转向: 类型=-1, 距离=0m
-2025-10-23 17:35:25.718 24273-25572 CarrotManNetwork        com.example.cplink                   D    📏 X系列距离: 转弯=0.0m, 下一转弯=0m
-2025-10-23 17:35:25.720 24273-25573 CarrotManNetwork        com.example.cplink                   D  📡 发送UDP数据包到 192.168.31.103:7706, 大小: 740 bytes
-2025-10-23 17:35:25.722 24273-25573 CarrotManNetwork        com.example.cplink                   D  ✅ UDP数据包发送成功
-2025-10-23 17:35:25.826 24273-25543 CarrotManNetwork        com.example.cplink                   D  📡 发送UDP数据包到 192.168.31.103:7706, 大小: 131 bytes
-2025-10-23 17:35:25.832 24273-25543 CarrotManNetwork        com.example.cplink                   D  ✅ UDP数据包发送成功
-2025-10-23 17:35:25.921 24273-25543 CarrotManNetwork        com.example.cplink                   D  📤 准备自动发送数据包:
-2025-10-23 17:35:25.921 24273-25543 CarrotManNetwork        com.example.cplink                   D     位置: lat=31.203741, lon=120.628044
-2025-10-23 17:35:25.921 24273-25543 CarrotManNetwork        com.example.cplink                   D    🛣️ 道路: 
-2025-10-23 17:35:25.921 24273-25543 CarrotManNetwork        com.example.cplink                   D    🚦 限速: 0km/h
-2025-10-23 17:35:25.921 24273-25543 CarrotManNetwork        com.example.cplink                   D    🎯 目标: 
-2025-10-23 17:35:25.921 24273-25543 CarrotManNetwork        com.example.cplink                   D    🧭 导航状态: false
-2025-10-23 17:35:25.921 24273-25543 CarrotManNetwork        com.example.cplink                   D    🔄 转向信息: 类型=-1, 距离=0m, 指令=
-2025-10-23 17:35:25.921 24273-25543 CarrotManNetwork        com.example.cplink                   D    🔄 下一转向: 类型=-1, 距离=0m
-2025-10-23 17:35:25.921 24273-25543 CarrotManNetwork        com.example.cplink                   D    📏 X系列距离: 转弯=0.0m, 下一转弯=0m
-2025-10-23 17:35:25.925 24273-25573 CarrotManNetwork        com.example.cplink                   D  📡 发送UDP数据包到 192.168.31.103:7706, 大小: 740 bytes
-2025-10-23 17:35:25.928 24273-25573 CarrotManNetwork        com.example.cplink                   D  ✅ UDP数据包发送成功
-2025-10-23 17:35:26.126 24273-25544 CarrotManNetwork        com.example.cplink                   D  📤 准备自动发送数据包:
-2025-10-23 17:35:26.127 24273-25544 CarrotManNetwork        com.example.cplink                   D     位置: lat=31.203741, lon=120.628044
-2025-10-23 17:35:26.127 24273-25544 CarrotManNetwork        com.example.cplink                   D    🛣️ 道路: 
-2025-10-23 17:35:26.127 24273-25544 CarrotManNetwork        com.example.cplink                   D    🚦 限速: 0km/h
-2025-10-23 17:35:26.127 24273-25544 CarrotManNetwork        com.example.cplink                   D    🎯 目标: 
-2025-10-23 17:35:26.127 24273-25544 CarrotManNetwork        com.example.cplink                   D    🧭 导航状态: false
-2025-10-23 17:35:26.128 24273-25544 CarrotManNetwork        com.example.cplink                   D    🔄 转向信息: 类型=-1, 距离=0m, 指令=
-2025-10-23 17:35:26.128 24273-25544 CarrotManNetwork        com.example.cplink                   D    🔄 下一转向: 类型=-1, 距离=0m
-2025-10-23 17:35:26.128 24273-25544 CarrotManNetwork        com.example.cplink                   D    📏 X系列距离: 转弯=0.0m, 下一转弯=0m
-2025-10-23 17:35:26.133 24273-25543 CarrotManNetwork        com.example.cplink                   D  📡 发送UDP数据包到 192.168.31.103:7706, 大小: 740 bytes
+=== Comma3 模拟器导航数据导出 ===
+导出时间: 2025-10-23 18:21:24
+总消息数: 78
+数据速率: 297.4 msg/s
+
+=== 消息类型分布 ===
+转弯引导: 58
+其他数据: 20
+
+=== 接收到的原始数据 ===
+
+--- 消息 1 ---
+时间戳: 1761214872.0667062
+来源: 192.168.31.103:41821
+数据大小: 1012 字节
+数据内容: {'carrotIndex': 773, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'LANECHANGE', 'carrotArg': 'RIGHT'}
+
+--- 消息 2 ---
+时间戳: 1761214872.2395048
+来源: 192.168.31.103:41821
+数据大小: 1012 字节
+数据内容: {'carrotIndex': 774, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'LANECHANGE', 'carrotArg': 'RIGHT'}
+
+--- 消息 3 ---
+时间戳: 1761214872.292737
+来源: 192.168.31.103:41821
+数据大小: 188 字节
+数据内容: {'carrotIndex': 1761214874649, 'epochTime': 1761214874, 'timezone': 'Asia/Shanghai', 'carrotCmd': 'SPEED', 'carrotArg': 'UP', 'source': 'android_main_activity', 'remote': '192.168.31.118'}
+
+--- 消息 4 ---
+时间戳: 1761214872.4507399
+来源: 192.168.31.103:41821
+数据大小: 1004 字节
+数据内容: {'carrotIndex': 775, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'SPEED', 'carrotArg': 'UP'}
+
+--- 消息 5 ---
+时间戳: 1761214872.6575048
+来源: 192.168.31.103:41821
+数据大小: 142 字节
+数据内容: {'carrotIndex': 776, 'epochTime': 1761214874, 'timezone': 'Asia/Shanghai', 'carrotCmd': 'heartbeat', 'carrotArg': '', 'source': 'android_app'}
+
+--- 消息 6 ---
+时间戳: 1761214872.6650107
+来源: 192.168.31.103:41821
+数据大小: 1004 字节
+数据内容: {'carrotIndex': 777, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'SPEED', 'carrotArg': 'UP'}
+
+--- 消息 7 ---
+时间戳: 1761214872.711811
+来源: 192.168.31.103:41821
+数据大小: 190 字节
+数据内容: {'carrotIndex': 1761214875066, 'epochTime': 1761214875, 'timezone': 'Asia/Shanghai', 'carrotCmd': 'SPEED', 'carrotArg': 'DOWN', 'source': 'android_main_activity', 'remote': '192.168.31.118'}
+
+--- 消息 8 ---
+时间戳: 1761214872.8795228
+来源: 192.168.31.103:41821
+数据大小: 1006 字节
+数据内容: {'carrotIndex': 778, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'SPEED', 'carrotArg': 'DOWN'}
+
+--- 消息 9 ---
+时间戳: 1761214873.0790222
+来源: 192.168.31.103:41821
+数据大小: 1006 字节
+数据内容: {'carrotIndex': 779, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'SPEED', 'carrotArg': 'DOWN'}
+
+--- 消息 10 ---
+时间戳: 1761214873.196692
+来源: 192.168.31.103:41821
+数据大小: 195 字节
+数据内容: {'carrotIndex': 1761214875532, 'epochTime': 1761214875, 'timezone': 'Asia/Shanghai', 'carrotCmd': 'LANECHANGE', 'carrotArg': 'LEFT', 'source': 'android_main_activity', 'remote': '192.168.31.118'}
+
+--- 消息 11 ---
+时间戳: 1761214873.2602673
+来源: 192.168.31.103:41821
+数据大小: 1011 字节
+数据内容: {'carrotIndex': 780, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'LANECHANGE', 'carrotArg': 'LEFT'}
+
+--- 消息 12 ---
+时间戳: 1761214873.4897966
+来源: 192.168.31.103:41821
+数据大小: 1011 字节
+数据内容: {'carrotIndex': 781, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'LANECHANGE', 'carrotArg': 'LEFT'}
+
+--- 消息 13 ---
+时间戳: 1761214873.6755486
+来源: 192.168.31.103:41821
+数据大小: 142 字节
+数据内容: {'carrotIndex': 782, 'epochTime': 1761214876, 'timezone': 'Asia/Shanghai', 'carrotCmd': 'heartbeat', 'carrotArg': '', 'source': 'android_app'}
+
+--- 消息 14 ---
+时间戳: 1761214873.6853986
+来源: 192.168.31.103:41821
+数据大小: 1011 字节
+数据内容: {'carrotIndex': 783, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'LANECHANGE', 'carrotArg': 'LEFT'}
+
+--- 消息 15 ---
+时间戳: 1761214873.7094796
+来源: 192.168.31.103:41821
+数据大小: 196 字节
+数据内容: {'carrotIndex': 1761214876056, 'epochTime': 1761214876, 'timezone': 'Asia/Shanghai', 'carrotCmd': 'LANECHANGE', 'carrotArg': 'RIGHT', 'source': 'android_main_activity', 'remote': '192.168.31.118'}
+
+--- 消息 16 ---
+时间戳: 1761214873.964004
+来源: 192.168.31.103:41821
+数据大小: 1012 字节
+数据内容: {'carrotIndex': 784, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'LANECHANGE', 'carrotArg': 'RIGHT'}
+
+--- 消息 17 ---
+时间戳: 1761214874.1027694
+来源: 192.168.31.103:41821
+数据大小: 1012 字节
+数据内容: {'carrotIndex': 785, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'LANECHANGE', 'carrotArg': 'RIGHT'}
+
+--- 消息 18 ---
+时间戳: 1761214874.279765
+来源: 192.168.31.103:41821
+数据大小: 1012 字节
+数据内容: {'carrotIndex': 786, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'LANECHANGE', 'carrotArg': 'RIGHT'}
+
+--- 消息 19 ---
+时间戳: 1761214874.4918497
+来源: 192.168.31.103:41821
+数据大小: 1012 字节
+数据内容: {'carrotIndex': 787, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'LANECHANGE', 'carrotArg': 'RIGHT'}
+
+--- 消息 20 ---
+时间戳: 1761214874.6953733
+来源: 192.168.31.103:41821
+数据大小: 142 字节
+数据内容: {'carrotIndex': 788, 'epochTime': 1761214877, 'timezone': 'Asia/Shanghai', 'carrotCmd': 'heartbeat', 'carrotArg': '', 'source': 'android_app'}
+
+--- 消息 21 ---
+时间戳: 1761214874.7050326
+来源: 192.168.31.103:41821
+数据大小: 1012 字节
+数据内容: {'carrotIndex': 789, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'LANECHANGE', 'carrotArg': 'RIGHT'}
+
+--- 消息 22 ---
+时间戳: 1761214874.9004993
+来源: 192.168.31.103:41821
+数据大小: 1012 字节
+数据内容: {'carrotIndex': 790, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'LANECHANGE', 'carrotArg': 'RIGHT'}
+
+--- 消息 23 ---
+时间戳: 1761214874.9274948
+来源: 192.168.31.103:41821
+数据大小: 196 字节
+数据内容: {'carrotIndex': 1761214877269, 'epochTime': 1761214877, 'timezone': 'Asia/Shanghai', 'carrotCmd': 'LANECHANGE', 'carrotArg': 'RIGHT', 'source': 'android_main_activity', 'remote': '192.168.31.118'}
+
+--- 消息 24 ---
+时间戳: 1761214875.0950797
+来源: 192.168.31.103:41821
+数据大小: 1012 字节
+数据内容: {'carrotIndex': 791, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'LANECHANGE', 'carrotArg': 'RIGHT'}
+
+--- 消息 25 ---
+时间戳: 1761214875.2943614
+来源: 192.168.31.103:41821
+数据大小: 1012 字节
+数据内容: {'carrotIndex': 792, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'LANECHANGE', 'carrotArg': 'RIGHT'}
+
+--- 消息 26 ---
+时间戳: 1761214875.3185213
+来源: 192.168.31.103:41821
+数据大小: 195 字节
+数据内容: {'carrotIndex': 1761214877662, 'epochTime': 1761214877, 'timezone': 'Asia/Shanghai', 'carrotCmd': 'LANECHANGE', 'carrotArg': 'LEFT', 'source': 'android_main_activity', 'remote': '192.168.31.118'}
+
+--- 消息 27 ---
+时间戳: 1761214875.5206666
+来源: 192.168.31.103:41821
+数据大小: 1011 字节
+数据内容: {'carrotIndex': 793, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'LANECHANGE', 'carrotArg': 'LEFT'}
+
+--- 消息 28 ---
+时间戳: 1761214875.6610649
+来源: 192.168.31.103:41821
+数据大小: 190 字节
+数据内容: {'carrotIndex': 1761214877999, 'epochTime': 1761214877, 'timezone': 'Asia/Shanghai', 'carrotCmd': 'SPEED', 'carrotArg': 'DOWN', 'source': 'android_main_activity', 'remote': '192.168.31.118'}
+
+--- 消息 29 ---
+时间戳: 1761214875.7020311
+来源: 192.168.31.103:41821
+数据大小: 1006 字节
+数据内容: {'carrotIndex': 794, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'SPEED', 'carrotArg': 'DOWN'}
+
+--- 消息 30 ---
+时间戳: 1761214875.712715
+来源: 192.168.31.103:41821
+数据大小: 142 字节
+数据内容: {'carrotIndex': 795, 'epochTime': 1761214878, 'timezone': 'Asia/Shanghai', 'carrotCmd': 'heartbeat', 'carrotArg': '', 'source': 'android_app'}
+
+--- 消息 31 ---
+时间戳: 1761214875.9224145
+来源: 192.168.31.103:41821
+数据大小: 1006 字节
+数据内容: {'carrotIndex': 796, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'SPEED', 'carrotArg': 'DOWN'}
+
+--- 消息 32 ---
+时间戳: 1761214875.9639719
+来源: 192.168.31.103:41821
+数据大小: 188 字节
+数据内容: {'carrotIndex': 1761214878319, 'epochTime': 1761214878, 'timezone': 'Asia/Shanghai', 'carrotCmd': 'SPEED', 'carrotArg': 'UP', 'source': 'android_main_activity', 'remote': '192.168.31.118'}
+
+--- 消息 33 ---
+时间戳: 1761214876.1270635
+来源: 192.168.31.103:41821
+数据大小: 1004 字节
+数据内容: {'carrotIndex': 797, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'SPEED', 'carrotArg': 'UP'}
+
+--- 消息 34 ---
+时间戳: 1761214876.311491
+来源: 192.168.31.103:41821
+数据大小: 1004 字节
+数据内容: {'carrotIndex': 798, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'SPEED', 'carrotArg': 'UP'}
+
+--- 消息 35 ---
+时间戳: 1761214876.391655
+来源: 192.168.31.103:41821
+数据大小: 196 字节
+数据内容: {'carrotIndex': 1761214878747, 'epochTime': 1761214878, 'timezone': 'Asia/Shanghai', 'carrotCmd': 'LANECHANGE', 'carrotArg': 'RIGHT', 'source': 'android_main_activity', 'remote': '192.168.31.118'}
+
+--- 消息 36 ---
+时间戳: 1761214876.522791
+来源: 192.168.31.103:41821
+数据大小: 1012 字节
+数据内容: {'carrotIndex': 799, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'LANECHANGE', 'carrotArg': 'RIGHT'}
+
+--- 消息 37 ---
+时间戳: 1761214876.7379684
+来源: 192.168.31.103:41821
+数据大小: 1012 字节
+数据内容: {'carrotIndex': 800, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'LANECHANGE', 'carrotArg': 'RIGHT'}
+
+--- 消息 38 ---
+时间戳: 1761214876.7481465
+来源: 192.168.31.103:41821
+数据大小: 142 字节
+数据内容: {'carrotIndex': 801, 'epochTime': 1761214879, 'timezone': 'Asia/Shanghai', 'carrotCmd': 'heartbeat', 'carrotArg': '', 'source': 'android_app'}
+
+--- 消息 39 ---
+时间戳: 1761214876.937231
+来源: 192.168.31.103:41821
+数据大小: 1012 字节
+数据内容: {'carrotIndex': 802, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'LANECHANGE', 'carrotArg': 'RIGHT'}
+
+--- 消息 40 ---
+时间戳: 1761214877.1412582
+来源: 192.168.31.103:41821
+数据大小: 1012 字节
+数据内容: {'carrotIndex': 803, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'LANECHANGE', 'carrotArg': 'RIGHT'}
+
+--- 消息 41 ---
+时间戳: 1761214877.3263557
+来源: 192.168.31.103:41821
+数据大小: 1012 字节
+数据内容: {'carrotIndex': 804, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'LANECHANGE', 'carrotArg': 'RIGHT'}
+
+--- 消息 42 ---
+时间戳: 1761214877.5470834
+来源: 192.168.31.103:41821
+数据大小: 1012 字节
+数据内容: {'carrotIndex': 805, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'LANECHANGE', 'carrotArg': 'RIGHT'}
+
+--- 消息 43 ---
+时间戳: 1761214877.755012
+来源: 192.168.31.103:41821
+数据大小: 1012 字节
+数据内容: {'carrotIndex': 806, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'LANECHANGE', 'carrotArg': 'RIGHT'}
+
+--- 消息 44 ---
+时间戳: 1761214877.76779
+来源: 192.168.31.103:41821
+数据大小: 142 字节
+数据内容: {'carrotIndex': 807, 'epochTime': 1761214880, 'timezone': 'Asia/Shanghai', 'carrotCmd': 'heartbeat', 'carrotArg': '', 'source': 'android_app'}
+
+--- 消息 45 ---
+时间戳: 1761214877.960911
+来源: 192.168.31.103:41821
+数据大小: 1012 字节
+数据内容: {'carrotIndex': 808, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'LANECHANGE', 'carrotArg': 'RIGHT'}
+
+--- 消息 46 ---
+时间戳: 1761214878.1651137
+来源: 192.168.31.103:41821
+数据大小: 1012 字节
+数据内容: {'carrotIndex': 809, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'LANECHANGE', 'carrotArg': 'RIGHT'}
+
+--- 消息 47 ---
+时间戳: 1761214878.343895
+来源: 192.168.31.103:41821
+数据大小: 1012 字节
+数据内容: {'carrotIndex': 810, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'LANECHANGE', 'carrotArg': 'RIGHT'}
+
+--- 消息 48 ---
+时间戳: 1761214878.5725455
+来源: 192.168.31.103:41821
+数据大小: 1012 字节
+数据内容: {'carrotIndex': 811, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'LANECHANGE', 'carrotArg': 'RIGHT'}
+
+--- 消息 49 ---
+时间戳: 1761214878.7777226
+来源: 192.168.31.103:41821
+数据大小: 1012 字节
+数据内容: {'carrotIndex': 812, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'LANECHANGE', 'carrotArg': 'RIGHT'}
+
+--- 消息 50 ---
+时间戳: 1761214878.788248
+来源: 192.168.31.103:41821
+数据大小: 142 字节
+数据内容: {'carrotIndex': 813, 'epochTime': 1761214881, 'timezone': 'Asia/Shanghai', 'carrotCmd': 'heartbeat', 'carrotArg': '', 'source': 'android_app'}
+
+--- 消息 51 ---
+时间戳: 1761214878.9802022
+来源: 192.168.31.103:41821
+数据大小: 1012 字节
+数据内容: {'carrotIndex': 814, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'LANECHANGE', 'carrotArg': 'RIGHT'}
+
+--- 消息 52 ---
+时间戳: 1761214879.186216
+来源: 192.168.31.103:41821
+数据大小: 1012 字节
+数据内容: {'carrotIndex': 815, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'LANECHANGE', 'carrotArg': 'RIGHT'}
+
+--- 消息 53 ---
+时间戳: 1761214879.373586
+来源: 192.168.31.103:41821
+数据大小: 1012 字节
+数据内容: {'carrotIndex': 816, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'LANECHANGE', 'carrotArg': 'RIGHT'}
+
+--- 消息 54 ---
+时间戳: 1761214879.5958707
+来源: 192.168.31.103:41821
+数据大小: 1012 字节
+数据内容: {'carrotIndex': 817, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'LANECHANGE', 'carrotArg': 'RIGHT'}
+
+--- 消息 55 ---
+时间戳: 1761214879.8211162
+来源: 192.168.31.103:41821
+数据大小: 1012 字节
+数据内容: {'carrotIndex': 818, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'LANECHANGE', 'carrotArg': 'RIGHT'}
+
+--- 消息 56 ---
+时间戳: 1761214879.910694
+来源: 192.168.31.103:41821
+数据大小: 142 字节
+数据内容: {'carrotIndex': 819, 'epochTime': 1761214882, 'timezone': 'Asia/Shanghai', 'carrotCmd': 'heartbeat', 'carrotArg': '', 'source': 'android_app'}
+
+--- 消息 57 ---
+时间戳: 1761214880.0085332
+来源: 192.168.31.103:41821
+数据大小: 1012 字节
+数据内容: {'carrotIndex': 820, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'LANECHANGE', 'carrotArg': 'RIGHT'}
+
+--- 消息 58 ---
+时间戳: 1761214880.2087107
+来源: 192.168.31.103:41821
+数据大小: 1012 字节
+数据内容: {'carrotIndex': 821, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'LANECHANGE', 'carrotArg': 'RIGHT'}
+
+--- 消息 59 ---
+时间戳: 1761214880.3890524
+来源: 192.168.31.103:41821
+数据大小: 1012 字节
+数据内容: {'carrotIndex': 822, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'LANECHANGE', 'carrotArg': 'RIGHT'}
+
+--- 消息 60 ---
+时间戳: 1761214880.619605
+来源: 192.168.31.103:41821
+数据大小: 1012 字节
+数据内容: {'carrotIndex': 823, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'LANECHANGE', 'carrotArg': 'RIGHT'}
+
+--- 消息 61 ---
+时间戳: 1761214880.824637
+来源: 192.168.31.103:41821
+数据大小: 1012 字节
+数据内容: {'carrotIndex': 824, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'LANECHANGE', 'carrotArg': 'RIGHT'}
+
+--- 消息 62 ---
+时间戳: 1761214880.835777
+来源: 192.168.31.103:41821
+数据大小: 142 字节
+数据内容: {'carrotIndex': 825, 'epochTime': 1761214883, 'timezone': 'Asia/Shanghai', 'carrotCmd': 'heartbeat', 'carrotArg': '', 'source': 'android_app'}
+
+--- 消息 63 ---
+时间戳: 1761214881.0290504
+来源: 192.168.31.103:41821
+数据大小: 1012 字节
+数据内容: {'carrotIndex': 826, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'LANECHANGE', 'carrotArg': 'RIGHT'}
+
+--- 消息 64 ---
+时间戳: 1761214881.2187946
+来源: 192.168.31.103:41821
+数据大小: 1012 字节
+数据内容: {'carrotIndex': 827, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'LANECHANGE', 'carrotArg': 'RIGHT'}
+
+--- 消息 65 ---
+时间戳: 1761214881.4274201
+来源: 192.168.31.103:41821
+数据大小: 1012 字节
+数据内容: {'carrotIndex': 828, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'LANECHANGE', 'carrotArg': 'RIGHT'}
+
+--- 消息 66 ---
+时间戳: 1761214881.644194
+来源: 192.168.31.103:41821
+数据大小: 1012 字节
+数据内容: {'carrotIndex': 829, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'LANECHANGE', 'carrotArg': 'RIGHT'}
+
+--- 消息 67 ---
+时间戳: 1761214881.8485506
+来源: 192.168.31.103:41821
+数据大小: 1012 字节
+数据内容: {'carrotIndex': 830, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'LANECHANGE', 'carrotArg': 'RIGHT'}
+
+--- 消息 68 ---
+时间戳: 1761214881.8601701
+来源: 192.168.31.103:41821
+数据大小: 142 字节
+数据内容: {'carrotIndex': 831, 'epochTime': 1761214884, 'timezone': 'Asia/Shanghai', 'carrotCmd': 'heartbeat', 'carrotArg': '', 'source': 'android_app'}
+
+--- 消息 69 ---
+时间戳: 1761214882.0531912
+来源: 192.168.31.103:41821
+数据大小: 1012 字节
+数据内容: {'carrotIndex': 832, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'LANECHANGE', 'carrotArg': 'RIGHT'}
+
+--- 消息 70 ---
+时间戳: 1761214882.2360232
+来源: 192.168.31.103:41821
+数据大小: 1012 字节
+数据内容: {'carrotIndex': 833, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'LANECHANGE', 'carrotArg': 'RIGHT'}
+
+--- 消息 71 ---
+时间戳: 1761214882.462593
+来源: 192.168.31.103:41821
+数据大小: 1012 字节
+数据内容: {'carrotIndex': 834, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'LANECHANGE', 'carrotArg': 'RIGHT'}
+
+--- 消息 72 ---
+时间戳: 1761214882.6675072
+来源: 192.168.31.103:41821
+数据大小: 1012 字节
+数据内容: {'carrotIndex': 835, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'LANECHANGE', 'carrotArg': 'RIGHT'}
+
+--- 消息 73 ---
+时间戳: 1761214882.8753674
+来源: 192.168.31.103:41821
+数据大小: 1012 字节
+数据内容: {'carrotIndex': 836, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'LANECHANGE', 'carrotArg': 'RIGHT'}
+
+--- 消息 74 ---
+时间戳: 1761214882.90042
+来源: 192.168.31.103:41821
+数据大小: 142 字节
+数据内容: {'carrotIndex': 837, 'epochTime': 1761214885, 'timezone': 'Asia/Shanghai', 'carrotCmd': 'heartbeat', 'carrotArg': '', 'source': 'android_app'}
+
+--- 消息 75 ---
+时间戳: 1761214883.0783
+来源: 192.168.31.103:41821
+数据大小: 1012 字节
+数据内容: {'carrotIndex': 838, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'LANECHANGE', 'carrotArg': 'RIGHT'}
+
+--- 消息 76 ---
+时间戳: 1761214883.259025
+来源: 192.168.31.103:41821
+数据大小: 1012 字节
+数据内容: {'carrotIndex': 839, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'LANECHANGE', 'carrotArg': 'RIGHT'}
+
+--- 消息 77 ---
+时间戳: 1761214883.4754412
+来源: 192.168.31.103:41821
+数据大小: 1012 字节
+数据内容: {'carrotIndex': 840, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'LANECHANGE', 'carrotArg': 'RIGHT'}
+
+--- 消息 78 ---
+时间戳: 1761214883.6907864
+来源: 192.168.31.103:41821
+数据大小: 1012 字节
+数据内容: {'carrotIndex': 841, 'epochTime': 1761214738, 'timezone': 'Asia/Shanghai', 'latitude': 31.203741, 'longitude': 120.628044, 'heading': 0, 'accuracy': 58.5, 'gps_speed': 0, 'vpPosPointLat': 31.203741, 'vpPosPointLon': 120.628044, 'nPosAngle': 0, 'nPosSpeed': 0, 'goalPosX': 120.73184296488759, 'goalPosY': 31.35797854410409, 'szGoalName': '福斯流体控制(苏州)有限公司阀门事业部(唯新路)', 'nRoadLimitSpeed': 0, 'roadcate': 6, 'szPosRoadName': '无名道路', 'nSdiType': -1, 'nSdiSpeedLimit': 0, 'nSdiDist': 0, 'nSdiSection': 0, 'nSdiBlockType': -1, 'nSdiBlockSpeed': 0, 'nSdiBlockDist': 0, 'nSdiPlusType': -1, 'nSdiPlusSpeedLimit': 0, 'nSdiPlusDist': 0, 'nSdiPlusBlockType': -1, 'nSdiPlusBlockSpeed': 0, 'nSdiPlusBlockDist': 0, 'nTBTDist': 0, 'nTBTTurnType': 55, 'szTBTMainText': '直行进入秋湖街，5米', 'szNearDirName': '秋湖街', 'szFarDirName': '', 'nTBTNextRoadWidth': 0, 'nTBTDistNext': 0, 'nTBTTurnTypeNext': 51, 'szTBTMainTextNext': '直行', 'nGoPosDist': 28617, 'nGoPosTime': 3180, 'isNavigating': True, 'carrotCmd': 'LANECHANGE', 'carrotArg': 'RIGHT'}
+
+=== 当前导航数据 ===
+Carrot2: Comma3 Simulator v1.0
+IsOnroad: False
+CarrotRouteActive: False
+ip: 192.168.31.118
+port: 7706
+log_carrot: 
+v_cruise_kph: 0
+v_ego_kph: 0
+tbt_dist: 627
+sdi_dist: 0
+active: False
+xState: 0
+trafficState: 0
+carrotIndex: 841
+vpPosPointLat: 31.203741
+vpPosPointLon: 120.628044
+nPosAngle: 0
+nPosSpeed: 0
+nRoadLimitSpeed: 30
+szPosRoadName: 无名道路
+nSdiType: -1
+nSdiSpeedLimit: 0
+nSdiDist: 0
+nTBTDist: 0
+nTBTTurnType: 55
+szTBTMainText: 直行进入秋湖街，5米
+nGoPosDist: 28617
+nGoPosTime: 3180
+carrotCmd: LANECHANGE
+carrotArg: RIGHT
+activeCarrot: 2
+xSpdType: -1
+xSpdLimit: 0
+xSpdDist: 0
+xSpdCountDown: 100
+xTurnInfo: 0
+xDistToTurn: 627
+xTurnCountDown: 100
+atcType: 
+vTurnSpeed: 0
+desiredSpeed: 0
+desiredSource: 
+carrotCmdIndex: 840
+xPosSpeed: 0
+xPosAngle: 0.0
+xPosLat: 31.203741
+xPosLon: 120.628044
+szSdiDescr: 
+leftSec: 100
+carrot_active_carrot: 2
+carrot_active_count: 78
+carrot_active_sdi_count: 198
+carrot_active_sdi_count_max: 200
+carrot_active_kisa_count: 0
+carrot_traffic_light_q: []
+carrot_traffic_light_count: -1
+carrot_left_spd_sec: 100
+carrot_left_tbt_sec: 100
+carrot_left_sec: 100

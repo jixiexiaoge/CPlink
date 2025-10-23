@@ -539,10 +539,34 @@ class CarrotManNetworkClient(
         }
     }
     
+    // 数据变化检测变量
+    private var lastRoadLimitSpeed = 0
+    private var lastSdiType = -1
+    private var lastSdiDist = 0
+    private var lastTbtType = -1
+    private var lastTbtDist = 0
+    private var lastLatitude = 0.0
+    private var lastLongitude = 0.0
+    private var lastHeading = 0.0
+    private var lastUpdateTime = 0L
+    
     // 转换CarrotManFields为JSON协议格式
     private fun convertCarrotFieldsToJson(fields: CarrotManFields): JSONObject {
         // 获取远程IP地址 (基于Python update_navi逻辑)
         val remoteIP = currentTargetDevice?.ip ?: ""
+        
+        // 数据验证和变化检测
+        val hasSignificantChanges = checkForSignificantChanges(fields)
+        val currentTime = System.currentTimeMillis()
+        
+        // 如果数据没有显著变化且距离上次发送时间不足1秒，跳过发送
+        if (!hasSignificantChanges && (currentTime - lastUpdateTime) < 1000) {
+            Log.v(TAG, "⏸️ 数据无显著变化，跳过发送")
+            return JSONObject() // 返回空JSON，调用方会跳过发送
+        }
+        
+        // 更新最后发送时间
+        lastUpdateTime = currentTime
 
         return JSONObject().apply {
             // ========== 基础通信字段 ==========
@@ -550,18 +574,20 @@ class CarrotManNetworkClient(
             put("epochTime", if (fields.epochTime > 0) fields.epochTime else System.currentTimeMillis() / 1000)
             put("timezone", fields.timezone.ifEmpty { "Asia/Shanghai" })
 
-            // ========== GPS定位字段（已移除） ==========
-            // 🔍 根据用户要求，移除以下5个GPS字段：
-            // - latitude (GPS纬度)
-            // - longitude (GPS经度) 
-            // - heading (方向角)
-            // - accuracy (GPS精度)
-            // - gps_speed (GPS速度)
+            // ========== GPS定位字段（必需） ==========
+            // 🔍 根据Python代码分析，这些字段是Comma3设备必需的：
+            if (fields.latitude != 0.0 && fields.longitude != 0.0) {
+                put("latitude", fields.latitude)               // GPS纬度 (WGS84)
+                put("longitude", fields.longitude)             // GPS经度 (WGS84)
+                put("heading", fields.heading)                 // 方向角 (0-360度)
+                put("accuracy", fields.accuracy)               // GPS精度 (米)
+                put("gps_speed", fields.gps_speed)             // GPS速度 (m/s)
+            }
 
             // ========== 导航位置字段（兼容字段） ==========
-            // 🔍 根据文档，这些字段用于导航系统位置
-            put("vpPosPointLat", fields.vpPosPointLatNavi)   // 导航纬度
-            put("vpPosPointLon", fields.vpPosPointLonNavi)   // 导航经度
+            // 🔍 根据Python代码期望的字段名，修正映射：
+            put("vpPosPointLat", fields.vpPosPointLatNavi)   // 导航纬度 (Python期望此字段名)
+            put("vpPosPointLon", fields.vpPosPointLonNavi)   // 导航经度 (Python期望此字段名)
             put("nPosAngle", fields.nPosAngle)               // 导航方向角
             put("nPosSpeed", fields.nPosSpeed)               // 导航速度
 
@@ -619,13 +645,91 @@ class CarrotManNetworkClient(
             put("carrotCmd", fields.carrotCmd)               // 命令类型
             put("carrotArg", fields.carrotArg)               // 命令参数
 
-            // 🔍 GPS字段已移除，不再记录GPS数据日志
+            // 🔍 GPS字段已恢复，记录GPS数据日志
+            if (fields.latitude != 0.0 && fields.longitude != 0.0) {
+                Log.v(TAG, "📤 发送GPS数据: lat=${String.format("%.6f", fields.latitude)}, lon=${String.format("%.6f", fields.longitude)}")
+            }
         }
+    }
+    
+    /**
+     * 检查数据是否有显著变化
+     */
+    private fun checkForSignificantChanges(fields: CarrotManFields): Boolean {
+        val currentTime = System.currentTimeMillis()
+        
+        // 检查关键字段变化
+        val roadLimitChanged = fields.nRoadLimitSpeed != lastRoadLimitSpeed
+        val sdiChanged = fields.nSdiType != lastSdiType || fields.nSdiDist != lastSdiDist
+        val tbtChanged = fields.nTBTTurnType != lastTbtType || fields.nTBTDist != lastTbtDist
+        val gpsChanged = kotlin.math.abs(fields.latitude - lastLatitude) > 0.0001 || 
+                         kotlin.math.abs(fields.longitude - lastLongitude) > 0.0001 ||
+                         kotlin.math.abs(fields.heading - lastHeading) > 1.0
+        
+        // 检查导航状态变化
+        val navigationChanged = fields.isNavigating != (lastUpdateTime > 0)
+        
+        // 检查目的地信息变化
+        val destinationChanged = fields.goalPosX != 0.0 || fields.goalPosY != 0.0
+        
+        // 检查命令变化
+        val commandChanged = fields.carrotCmd.isNotEmpty() || fields.carrotArg.isNotEmpty()
+        
+        // 如果任何关键字段发生变化，标记为需要发送
+        val hasChanges = roadLimitChanged || sdiChanged || tbtChanged || gpsChanged || 
+                        navigationChanged || destinationChanged || commandChanged
+        
+        if (hasChanges) {
+            Log.d(TAG, "🔄 检测到数据变化: 道路限速=$roadLimitChanged, SDI=$sdiChanged, TBT=$tbtChanged, GPS=$gpsChanged")
+            
+            // 更新缓存值
+            lastRoadLimitSpeed = fields.nRoadLimitSpeed
+            lastSdiType = fields.nSdiType
+            lastSdiDist = fields.nSdiDist
+            lastTbtType = fields.nTBTTurnType
+            lastTbtDist = fields.nTBTDist
+            lastLatitude = fields.latitude
+            lastLongitude = fields.longitude
+            lastHeading = fields.heading
+        }
+        
+        return hasChanges
+    }
+    
+    /**
+     * 验证GPS数据有效性
+     */
+    private fun validateGpsData(fields: CarrotManFields): Boolean {
+        // 检查坐标有效性
+        if (fields.latitude == 0.0 && fields.longitude == 0.0) {
+            Log.w(TAG, "⚠️ GPS坐标无效 (0,0)")
+            return false
+        }
+        
+        // 检查坐标范围
+        if (fields.latitude < -90.0 || fields.latitude > 90.0 || 
+            fields.longitude < -180.0 || fields.longitude > 180.0) {
+            Log.w(TAG, "⚠️ GPS坐标超出有效范围: lat=${fields.latitude}, lon=${fields.longitude}")
+            return false
+        }
+        
+        // 检查精度
+        if (fields.accuracy > 100.0) {
+            Log.w(TAG, "⚠️ GPS精度过低: ${fields.accuracy}m")
+            return false
+        }
+        
+        return true
     }
     
     // 发送UDP数据包到目标设备
     private suspend fun sendDataPacket(jsonData: JSONObject) = withContext(Dispatchers.IO) {
         val device = currentTargetDevice ?: return@withContext
+        
+        // 如果JSON为空（数据无变化），跳过发送
+        if (jsonData.length() == 0) {
+            return@withContext
+        }
         
         // 如果正在网络恢复中，跳过发送
         if (isNetworkRecovering) {
