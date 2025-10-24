@@ -22,9 +22,15 @@ class CarrotAmapUnitTest {
 
     @Test
     fun validateDestination_validCoordinates_returnsTrue() {
-        // 测试有效的中国坐标
-        val result = validateDestination(116.397128, 39.916527, "北京天安门")
-        assertTrue("有效的北京坐标应该返回true", result)
+        // 测试有效的全球坐标
+        val result1 = validateDestination(116.397128, 39.916527, "北京天安门")
+        assertTrue("有效的北京坐标应该返回true", result1)
+        
+        val result2 = validateDestination(-74.0059, 40.7128, "纽约时代广场")
+        assertTrue("有效的纽约坐标应该返回true", result2)
+        
+        val result3 = validateDestination(2.3522, 48.8566, "巴黎埃菲尔铁塔")
+        assertTrue("有效的巴黎坐标应该返回true", result3)
     }
 
     @Test
@@ -34,7 +40,7 @@ class CarrotAmapUnitTest {
         assertFalse("零坐标应该返回false", result1)
 
         val result2 = validateDestination(200.0, 100.0, "超出范围")
-        assertFalse("超出中国范围的坐标应该返回false", result2)
+        assertFalse("超出全球范围的坐标应该返回false", result2)
 
         val result3 = validateDestination(116.397128, 39.916527, "")
         assertFalse("空名称应该返回false", result3)
