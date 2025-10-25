@@ -41,6 +41,19 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
+        // 禁用System.out输出，避免UDP发送时的调试日志
+        System.setOut(object : java.io.PrintStream(System.out) {
+            override fun println(x: String?) {
+                // 过滤掉DatagramSocket相关的调试输出
+                if (x?.contains("DatagramSocket") == true && 
+                    x.contains("DatagramPacket") && 
+                    x.contains("ipAddress")) {
+                    return // 不输出这些调试信息
+                }
+                super.println(x)
+            }
+        })
+
         Log.i(TAG, "🚀 MainActivity启动 - 协调器模式")
 
         // 初始化核心组件

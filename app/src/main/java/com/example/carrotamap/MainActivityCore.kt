@@ -474,19 +474,11 @@ class MainActivityCore(
     }
 
     /**
-     * 获取用户类型
+     * 获取用户类型 - 直接调用API，不使用缓存
      */
     suspend fun fetchUserType(deviceId: String): Int = withContext(Dispatchers.IO) {
         try {
-            // 1. 先检查本地缓存
-            val cachedType = getUserTypeFromCache(deviceId)
-            if (cachedType != -1) {
-                Log.i(TAG, "📱 使用缓存的用户类型: $cachedType")
-                return@withContext cachedType
-            }
-            
-            // 2. 缓存未命中，从服务器获取
-            Log.i(TAG, "👤 获取用户类型: $deviceId")
+            Log.i(TAG, "👤 直接获取用户类型: $deviceId")
             
             val url = URL("https://app.mspa.shop/api/user/$deviceId")
             val connection = url.openConnection() as HttpURLConnection
@@ -509,9 +501,6 @@ class MainActivityCore(
                     val type = data.optInt("user_type", 0)
                     Log.i(TAG, "✅ 用户类型获取成功: $type")
                     
-                    // 3. 保存到缓存
-                    saveUserTypeToCache(deviceId, type)
-                    
                     type
                 } else {
                     Log.w(TAG, "⚠️ API返回失败，使用默认用户类型0")
@@ -530,45 +519,6 @@ class MainActivityCore(
         }
     }
 
-    /**
-     * 从缓存获取用户类型
-     */
-    private fun getUserTypeFromCache(deviceId: String): Int {
-        return try {
-            val prefs = activity.getSharedPreferences("user_cache", Context.MODE_PRIVATE)
-            val cachedType = prefs.getInt("user_type_$deviceId", -1)
-            val cacheTime = prefs.getLong("user_type_time_$deviceId", 0)
-            val cacheAge = System.currentTimeMillis() - cacheTime
-            
-            // 缓存有效期：24小时
-            if (cachedType != -1 && cacheAge < 24 * 60 * 60 * 1000) {
-                Log.d(TAG, "📱 缓存命中: 类型=$cachedType, 年龄=${cacheAge / 1000}秒")
-                cachedType
-            } else {
-                Log.d(TAG, "📱 缓存过期或不存在: 年龄=${cacheAge / 1000}秒")
-                -1
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "❌ 读取用户类型缓存失败: ${e.message}", e)
-            -1
-        }
-    }
-
-    /**
-     * 保存用户类型到缓存
-     */
-    private fun saveUserTypeToCache(deviceId: String, userType: Int) {
-        try {
-            val prefs = activity.getSharedPreferences("user_cache", Context.MODE_PRIVATE)
-            prefs.edit()
-                .putInt("user_type_$deviceId", userType)
-                .putLong("user_type_time_$deviceId", System.currentTimeMillis())
-                .apply()
-            Log.d(TAG, "💾 用户类型已缓存: $userType")
-        } catch (e: Exception) {
-            Log.e(TAG, "❌ 保存用户类型缓存失败: ${e.message}", e)
-        }
-    }
 
     // ===============================
     // 命令发送方法

@@ -98,6 +98,7 @@ class AmapBroadcastHandlers(
         // 🎯 注意：CarrotMan命令处理功能已移至Python端
         // Android只负责发送数据，不处理来自Comma3的命令
 
+
         /**
          * 统一映射：高德 CAMERA_TYPE → Python nSdiType
          * 基于Python代码中的SDI类型定义进行修正
@@ -259,6 +260,16 @@ class AmapBroadcastHandlers(
 
             //Log.i(TAG, "✅ 已更新CarrotMan字段：导航状态=false，转弯类型=201(到达目的地)")
         }
+        
+        // 🚀 关键修复：地图状态变化时也立即发送数据
+        networkManager?.let { manager ->
+            try {
+                manager.sendCarrotManDataToComma3()
+                Log.d(TAG, "📤 地图状态数据已发送到Comma3设备")
+            } catch (e: Exception) {
+                Log.e(TAG, "❌ 发送地图状态数据失败: ${e.message}", e)
+            }
+        }
     }
 
     // ===============================
@@ -382,9 +393,8 @@ class AmapBroadcastHandlers(
                 totalDistance = routeAllDis,
 
                 // 转向和导航段信息
-                // 🎯 临时注释：只使用转向信息广播(KEY_TYPE: 10006)的数据
-                // nTBTDist = segRemainDis,
-                // nTBTDistNext = nextSegRemainDis,
+                nTBTDist = segRemainDis,
+                nTBTDistNext = nextSegRemainDis,
                 nTBTTurnType = carrotTurnType,
                 nTBTTurnTypeNext = carrotNextTurnType,
                 
@@ -464,6 +474,17 @@ class AmapBroadcastHandlers(
             carrotManFields.value = carrotManFields.value.copy(
                 debugText = Companion.generateDebugText(carrotManFields.value)
             )
+
+            // 🚀 关键修复：立即发送数据到Comma3设备
+            networkManager?.let { manager ->
+                try {
+                    // 发送CarrotMan数据到Comma3设备
+                    manager.sendCarrotManDataToComma3()
+                    Log.d(TAG, "📤 引导信息数据已发送到Comma3设备")
+                } catch (e: Exception) {
+                    Log.e(TAG, "❌ 发送引导信息数据失败: ${e.message}", e)
+                }
+            }
 
             //Log.i(TAG, "✅ 引导信息已更新到CarrotMan字段")
 

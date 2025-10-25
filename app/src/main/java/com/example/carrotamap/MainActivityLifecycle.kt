@@ -88,9 +88,11 @@ class MainActivityLifecycle(
     fun onPause() {
         Log.i(TAG, "⏸️ Activity暂停")
         
-        // 记录使用时长
+        // 记录使用时长（检查是否已初始化）
         try {
             core.deviceManager.recordAppUsage()
+        } catch (e: UninitializedPropertyAccessException) {
+            Log.d(TAG, "📝 deviceManager未初始化，跳过使用统计记录")
         } catch (e: Exception) {
             Log.w(TAG, "⚠️ 记录使用时长失败: ${e.message}")
         }
@@ -99,6 +101,16 @@ class MainActivityLifecycle(
         if (core.userType.value !in listOf(3, 4)) {
             Log.i(TAG, "🔒 用户类型${core.userType.value}不支持悬浮窗功能，仅限赞助者和铁粉")
             return
+        }
+        
+        // 设置网络管理器为后台模式，调整网络策略
+        try {
+            core.networkManager.setBackgroundState(true)
+            Log.i(TAG, "🔄 网络管理器已切换到后台模式")
+        } catch (e: UninitializedPropertyAccessException) {
+            Log.d(TAG, "📝 networkManager未初始化，跳过后台状态设置")
+        } catch (e: Exception) {
+            Log.w(TAG, "⚠️ 设置后台状态失败: ${e.message}")
         }
         
         // 启动悬浮窗服务
@@ -119,6 +131,16 @@ class MainActivityLifecycle(
     fun onResume() {
         Log.i(TAG, "▶️ Activity恢复，隐藏悬浮窗")
         
+        // 设置网络管理器为前台模式，恢复正常网络策略
+        try {
+            core.networkManager.setBackgroundState(false)
+            Log.i(TAG, "🔄 网络管理器已切换到前台模式")
+        } catch (e: UninitializedPropertyAccessException) {
+            Log.d(TAG, "📝 networkManager未初始化，跳过前台状态设置")
+        } catch (e: Exception) {
+            Log.w(TAG, "⚠️ 设置前台状态失败: ${e.message}")
+        }
+        
         // 隐藏悬浮窗
         val intent = Intent(activity, FloatingWindowService::class.java).apply {
             action = FloatingWindowService.ACTION_STOP_FLOATING
@@ -128,9 +150,11 @@ class MainActivityLifecycle(
         // 重新设置屏幕常亮，确保不会被清除
         activity.window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         
-        // 更新使用统计
+        // 更新使用统计（检查是否已初始化）
         try {
             core.usageStats.value = core.deviceManager.getUsageStats()
+        } catch (e: UninitializedPropertyAccessException) {
+            Log.d(TAG, "📝 deviceManager未初始化，跳过使用统计更新")
         } catch (e: Exception) {
             Log.w(TAG, "⚠️ 更新使用统计失败: ${e.message}")
         }
@@ -149,9 +173,11 @@ class MainActivityLifecycle(
             // 停止内存监控
             core.stopMemoryMonitoring()
             
-            // 记录应用使用时长（在清理前）
+            // 记录应用使用时长（在清理前，检查是否已初始化）
             try {
                 core.deviceManager.recordAppUsage()
+            } catch (e: UninitializedPropertyAccessException) {
+                Log.d(TAG, "📝 deviceManager未初始化，跳过使用统计记录")
             } catch (e: Exception) {
                 Log.w(TAG, "⚠️ 记录使用时长失败: ${e.message}")
             }
@@ -188,6 +214,8 @@ class MainActivityLifecycle(
             
             try {
                 core.deviceManager.cleanup()
+            } catch (e: UninitializedPropertyAccessException) {
+                Log.d(TAG, "📝 deviceManager未初始化，跳过清理")
             } catch (e: Exception) {
                 Log.w(TAG, "⚠️ 清理设备管理器失败: ${e.message}")
             }
@@ -424,24 +452,32 @@ class MainActivityLifecycle(
 
                 Log.i(TAG, "📍 更新位置用于距离统计: lat=$latitude, lon=$longitude")
 
-                // 更新位置并计算距离
-                core.deviceManager.updateLocationAndDistance(latitude, longitude)
+                // 更新位置并计算距离（检查是否已初始化）
+                try {
+                    core.deviceManager.updateLocationAndDistance(latitude, longitude)
 
-                // 启动默认倒计时
-                core.deviceManager.startCountdown(
-                    initialSeconds = 850,
-                    onUpdate = { seconds: Int -> core.remainingSeconds.value = seconds },
-                    onFinished = { activity.finishAffinity() }
-                )
+                    // 启动默认倒计时
+                    core.deviceManager.startCountdown(
+                        initialSeconds = 850,
+                        onUpdate = { seconds: Int -> core.remainingSeconds.value = seconds },
+                        onFinished = { activity.finishAffinity() }
+                    )
+                } catch (e: UninitializedPropertyAccessException) {
+                    Log.w(TAG, "⚠️ deviceManager未初始化，跳过位置更新和倒计时")
+                }
 
             } catch (e: Exception) {
                 Log.e(TAG, "❌ 初始位置更新失败: ${e.message}", e)
-                // 失败时启动默认倒计时
-                core.deviceManager.startCountdown(
-                    initialSeconds = 850,
-                    onUpdate = { seconds: Int -> core.remainingSeconds.value = seconds },
-                    onFinished = { activity.finishAffinity() }
-                )
+                // 失败时启动默认倒计时（检查是否已初始化）
+                try {
+                    core.deviceManager.startCountdown(
+                        initialSeconds = 850,
+                        onUpdate = { seconds: Int -> core.remainingSeconds.value = seconds },
+                        onFinished = { activity.finishAffinity() }
+                    )
+                } catch (e: UninitializedPropertyAccessException) {
+                    Log.w(TAG, "⚠️ deviceManager未初始化，无法启动倒计时")
+                }
             }
         }
     }
@@ -451,37 +487,52 @@ class MainActivityLifecycle(
     // ===============================
     
     /**
-     * 开始自检查流程
+     * 开始自检查流程 - 优化版：异步初始化
      */
     private fun startSelfCheckProcess() {
-        CoroutineScope(Dispatchers.Main).launch {
+        // 使用IO调度器在后台线程执行初始化，避免阻塞主线程
+        CoroutineScope(Dispatchers.IO).launch {
             try {
-                // 1. 位置和传感器管理器初始化
-                updateSelfCheckStatus("位置传感器管理器", "正在初始化...", false)
-                initializeLocationSensorManager()
-                updateSelfCheckStatus("位置传感器管理器", "初始化完成", true)
-                delay(200) // 减少延迟时间
+                Log.i(TAG, "🚀 开始异步自检查流程...")
+                
+                // 1. 位置和传感器管理器初始化（主线程）
+                updateSelfCheckStatusAsync("位置传感器管理器", "正在初始化...", false)
+                withContext(Dispatchers.Main) { // LocationManager requires main thread
+                    initializeLocationSensorManager()
+                }
+                updateSelfCheckStatusAsync("位置传感器管理器", "初始化完成", true)
+                delay(100) // 减少延迟时间
 
-                // 2. 权限管理器初始化
-                updateSelfCheckStatus("权限管理器", "正在初始化...", false)
-                initializePermissionManager()
-                updateSelfCheckStatus("权限管理器", "初始化完成", true)
-                delay(200)
+                // 2. 权限管理器初始化（主线程）
+                updateSelfCheckStatusAsync("权限管理器", "正在初始化...", false)
+                withContext(Dispatchers.Main) { // PermissionManager might interact with UI/LocationManager
+                    initializePermissionManager()
+                }
+                updateSelfCheckStatusAsync("权限管理器", "初始化完成", true)
+                delay(100)
 
-                // 3. 权限管理和位置服务初始化
-                updateSelfCheckStatus("权限和位置服务", "正在设置...", false)
-                setupPermissionsAndLocation()
-                updateSelfCheckStatus("权限和位置服务", "设置完成", true)
-                delay(200)
+                // 3. 权限管理和位置服务初始化（主线程）
+                updateSelfCheckStatusAsync("权限和位置服务", "正在设置...", false)
+                withContext(Dispatchers.Main) { // LocationManager requires main thread
+                    setupPermissionsAndLocation()
+                }
+                updateSelfCheckStatusAsync("权限和位置服务", "设置完成", true)
+                delay(100)
 
-                // 4. 网络管理器初始化（仅初始化，不启动网络服务）
-                updateSelfCheckStatus("网络管理器", "正在初始化...", false)
+                // 4. 网络管理器初始化（后台线程）
+                updateSelfCheckStatusAsync("网络管理器", "正在初始化...", false)
                 initializeNetworkManagerOnly()
-                updateSelfCheckStatus("网络管理器", "初始化完成", true)
-                delay(200)
+                updateSelfCheckStatusAsync("网络管理器", "初始化完成", true)
+                delay(100)
 
-                // 5-7. 并行初始化高德地图、广播和设备管理器
-                updateSelfCheckStatus("系统管理器", "正在并行初始化...", false)
+                // 5. 启动网络服务（提前启动，后台线程）
+                updateSelfCheckStatusAsync("网络服务", "正在启动...", false)
+                startNetworkService()
+                updateSelfCheckStatusAsync("网络服务", "启动完成", true)
+                delay(100)
+
+                // 6-8. 并行初始化高德地图、广播和设备管理器（后台线程）
+                updateSelfCheckStatusAsync("系统管理器", "正在并行初始化...", false)
                 
                 // 并行执行三个管理器的初始化
                 val amapJob = CoroutineScope(Dispatchers.IO).launch {
@@ -499,11 +550,11 @@ class MainActivityLifecycle(
                 broadcastJob.join()
                 deviceJob.join()
                 
-                updateSelfCheckStatus("系统管理器", "并行初始化完成", true)
-                delay(200)
+                updateSelfCheckStatusAsync("系统管理器", "并行初始化完成", true)
+                delay(100)
 
-                // 8. 用户类型获取（快速完成，使用缓存）
-                updateSelfCheckStatus("用户类型", "正在获取...", false)
+                // 9. 用户类型获取（直接调用API）
+                updateSelfCheckStatusAsync("用户类型", "正在获取...", false)
                 val fetchedUserType = core.fetchUserType(core.deviceId.value)
                 core.userType.value = fetchedUserType
                 
@@ -519,16 +570,16 @@ class MainActivityLifecycle(
                     4 -> "铁粉"
                     else -> "未知类型($fetchedUserType)"
                 }
-                updateSelfCheckStatus("用户类型", "获取完成: $userTypeText", true)
-                delay(100) // 减少延迟
+                updateSelfCheckStatusAsync("用户类型", "获取完成: $userTypeText", true)
+                delay(50) // 进一步减少延迟
 
-                // 8.5. 异步更新使用统计（不阻塞启动）
+                // 9.5. 异步更新使用统计（不阻塞启动）
                 if (fetchedUserType in 2..4) {
-                    updateSelfCheckStatus("使用统计", "后台更新中...", false)
+                    updateSelfCheckStatusAsync("使用统计", "后台更新中...", false)
                     // 异步执行使用统计更新，不阻塞启动流程
                     CoroutineScope(Dispatchers.IO).launch {
                         try {
-                            // 获取最新的使用统计数据
+                            // 获取最新的使用统计数据（检查是否已初始化）
                             val latestUsageStats = core.deviceManager.getUsageStats()
                             
                             // 更新UI状态
@@ -538,6 +589,11 @@ class MainActivityLifecycle(
                             }
                             
                             core.autoUpdateUsageStats(core.deviceId.value, latestUsageStats)
+                        } catch (e: UninitializedPropertyAccessException) {
+                            Log.d(TAG, "📝 deviceManager未初始化，跳过使用统计更新")
+                            withContext(Dispatchers.Main) {
+                                updateSelfCheckStatus("使用统计", "设备管理器未初始化", false)
+                            }
                         } catch (e: Exception) {
                             Log.e(TAG, "❌ 自动更新使用统计失败: ${e.message}", e)
                             withContext(Dispatchers.Main) {
@@ -546,41 +602,45 @@ class MainActivityLifecycle(
                         }
                     }
                 }
-                delay(100) // 减少延迟
+                delay(50) // 进一步减少延迟
 
-                // 9. 执行初始位置更新
-                updateSelfCheckStatus("位置更新", "正在执行...", false)
-                performInitialLocationUpdate()
-                updateSelfCheckStatus("位置更新", "执行完成", true)
-                delay(200)
+                // 10. 执行初始位置更新（主线程）
+                updateSelfCheckStatusAsync("位置更新", "正在执行...", false)
+                withContext(Dispatchers.Main) { // LocationManager requires main thread
+                    performInitialLocationUpdate()
+                }
+                updateSelfCheckStatusAsync("位置更新", "执行完成", true)
+                delay(100)
 
-                // 10. 处理静态接收器Intent
-                updateSelfCheckStatus("静态接收器", "正在处理...", false)
+                // 11. 处理静态接收器Intent（后台线程）
+                updateSelfCheckStatusAsync("静态接收器", "正在处理...", false)
                 core.handleIntentFromStaticReceiver(activity.intent)
-                updateSelfCheckStatus("静态接收器", "处理完成", true)
-                delay(200)
+                updateSelfCheckStatusAsync("静态接收器", "处理完成", true)
+                delay(50)
 
-                // 11. 启动网络服务（延迟启动）
-                updateSelfCheckStatus("网络服务", "正在启动...", false)
-                startNetworkService()
-                updateSelfCheckStatus("网络服务", "启动完成", true)
-                delay(200)
+                // 网络服务已在步骤5启动，跳过重复启动
 
-                // 12. 设置UI界面
-                updateSelfCheckStatus("用户界面", "正在设置...", false)
-                updateSelfCheckStatus("用户界面", "设置完成", true)
-                delay(200)
+                // 12. 设置UI界面（后台线程）
+                updateSelfCheckStatusAsync("用户界面", "正在设置...", false)
+                updateSelfCheckStatusAsync("用户界面", "设置完成", true)
+                delay(50)
 
                 // 所有检查完成
-                updateSelfCheckStatus("系统检查", "所有检查完成", true)
-                core.selfCheckStatus.value = core.selfCheckStatus.value.copy(isCompleted = true)
+                updateSelfCheckStatusAsync("系统检查", "所有检查完成", true)
+                withContext(Dispatchers.Main) {
+                    core.selfCheckStatus.value = core.selfCheckStatus.value.copy(isCompleted = true)
+                }
 
-                // 根据用户类型进行不同操作
+                // 根据用户类型进行不同操作（后台线程）
                 core.handleUserTypeAction(fetchedUserType)
+                
+                Log.i(TAG, "✅ 异步自检查流程完成")
 
             } catch (e: Exception) {
-                Log.e(TAG, "❌ 自检查流程失败: ${e.message}", e)
-                updateSelfCheckStatus("系统检查", "检查失败: ${e.message}", false)
+                Log.e(TAG, "❌ 异步自检查流程失败: ${e.message}", e)
+                withContext(Dispatchers.Main) {
+                    updateSelfCheckStatus("系统检查", "检查失败: ${e.message}", false)
+                }
             }
         }
     }
@@ -602,6 +662,15 @@ class MainActivityLifecycle(
         )
         core.selfCheckStatus.value = newStatus
         Log.i(TAG, "🔍 自检查: $component - $message")
+    }
+
+    /**
+     * 异步更新自检查状态（从后台线程调用）
+     */
+    private suspend fun updateSelfCheckStatusAsync(component: String, message: String, isCompleted: Boolean) {
+        withContext(Dispatchers.Main) {
+            updateSelfCheckStatus(component, message, isCompleted)
+        }
     }
 
     // ===============================

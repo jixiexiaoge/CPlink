@@ -48,10 +48,27 @@ class NetworkManager(
     // 自动发送状态跟踪 - 避免重复发送
     private var lastAutoSendState = false
     
+    // 后台状态追踪 - 用于调整网络策略
+    private var isInBackground = false
+    
     // 网络状态更新定时器
     private var networkStatusUpdateJob: Job? = null
 
     // 导航确认服务已移除
+
+    /**
+     * 设置后台状态
+     * @param inBackground 是否在后台运行
+     */
+    fun setBackgroundState(inBackground: Boolean) {
+        isInBackground = inBackground
+        Log.d(TAG, "🔄 网络管理器后台状态更新: $inBackground")
+        
+        // 通知网络客户端后台状态变化
+        if (::carrotNetworkClient.isInitialized) {
+            carrotNetworkClient.setBackgroundState(inBackground)
+        }
+    }
 
     /**
      * 初始化网络客户端
@@ -376,6 +393,68 @@ class NetworkManager(
             carrotNetworkClient.getCurrentDevice()?.ip
         } else {
             null
+        }
+    }
+
+    /**
+     * 发送CarrotMan数据到Comma3设备（实时发送）
+     * 当接收到高德地图广播时立即发送数据
+     */
+    fun sendCarrotManDataToComma3() {
+        if (::carrotNetworkClient.isInitialized) {
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    val fields = carrotManFields.value
+                    
+                    // 构建CarrotMan数据包
+                    val carrotData = CarrotManData(
+                        // 导航信息
+                        nTBTTurnType = fields.nTBTTurnType,
+                        nTBTDist = fields.nTBTDist,
+                        szTBTMainText = fields.szTBTMainText,
+                        szNearDirName = fields.szNearDirName,
+                        szFarDirName = fields.szFarDirName,
+                        
+                        // 位置信息
+                        vpPosPointLat = fields.vpPosPointLat,
+                        vpPosPointLon = fields.vpPosPointLon,
+                        vpPosPointLatNavi = fields.vpPosPointLatNavi,
+                        vpPosPointLonNavi = fields.vpPosPointLonNavi,
+                        
+                        // 目的地信息
+                        goalPosX = fields.goalPosX,
+                        goalPosY = fields.goalPosY,
+                        szGoalName = fields.szGoalName,
+                        
+                        // 道路信息
+                        roadcate = fields.roadcate,
+                        nRoadLimitSpeed = fields.nRoadLimitSpeed,
+                        
+                        // SDI信息
+                        nSdiType = fields.nSdiType,
+                        nSdiSpeedLimit = fields.nSdiSpeedLimit,
+                        nSdiDist = fields.nSdiDist,
+                        
+                        // 系统状态
+                        active_carrot = fields.active_carrot,
+                        isNavigating = fields.isNavigating,
+                        carrotIndex = fields.carrotIndex,
+                        
+                        // 时间戳
+                        lastUpdateTime = fields.lastUpdateTime
+                    )
+                    
+                    // 发送数据到Comma3设备
+                    carrotNetworkClient.sendCarrotManData(carrotData)
+                    
+                    Log.d(TAG, "📤 CarrotMan数据已发送: 转弯类型=${fields.nTBTTurnType}, 距离=${fields.nTBTDist}m")
+                    
+                } catch (e: Exception) {
+                    Log.e(TAG, "❌ 发送CarrotMan数据失败: ${e.message}", e)
+                }
+            }
+        } else {
+            Log.w(TAG, "⚠️ 网络客户端未初始化，无法发送CarrotMan数据")
         }
     }
 
@@ -705,7 +784,7 @@ class NetworkManager(
     }
 
     /**
-     * 发送控制指令到comma3设备
+     * 发送控制指令到comma3设备 - 支持SPEED和LANECHANGE命令
      * @param command 指令类型 (SPEED, LANECHANGE)
      * @param arg 指令参数 (UP, DOWN, LEFT, RIGHT)
      */
@@ -727,7 +806,7 @@ class NetworkManager(
 
                 Log.d(TAG, "📡 准备发送控制指令到设备: $deviceIP")
 
-                // 更新CarrotManFields中的命令字段
+                // 更新CarrotManFields中的命令字段，确保carrotCmdIndex递增
                 carrotManFields.value = carrotManFields.value.copy(
                     carrotCmd = command,
                     carrotArg = arg
@@ -735,9 +814,9 @@ class NetworkManager(
                 
                 Log.d(TAG, "🔄 已更新CarrotManFields: carrotCmd=$command, carrotArg=$arg")
 
-                // 构造控制指令JSON
+                // 构造控制指令JSON，确保carrotCmdIndex正确递增
                 val commandMessage = JSONObject().apply {
-                    put("carrotIndex", System.currentTimeMillis())
+                    put("carrotIndex", System.currentTimeMillis()) // 使用时间戳确保唯一性
                     put("epochTime", System.currentTimeMillis() / 1000)
                     put("timezone", "Asia/Shanghai")
                     put("carrotCmd", command)
@@ -751,7 +830,7 @@ class NetworkManager(
                 // 发送UDP数据包
                 carrotNetworkClient.sendCustomDataPacket(commandMessage)
                 
-                // 🔧 立即清理CarrotManFields中的指令字段，防止重复发送
+                // 立即清理CarrotManFields中的指令字段，防止重复发送
                 carrotManFields.value = carrotManFields.value.copy(
                     carrotCmd = "",
                     carrotArg = ""

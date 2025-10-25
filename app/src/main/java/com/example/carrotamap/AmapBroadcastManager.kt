@@ -299,6 +299,18 @@ class AmapBroadcastManager(
                 AppConstants.AmapBroadcast.Navigation.TURN_INFO -> handleTurnInfo(intent)
                 AppConstants.AmapBroadcast.Navigation.NAVIGATION_STATUS -> handleNavigationStatus(intent)
                 AppConstants.AmapBroadcast.Navigation.ROUTE_INFO -> handleRouteInfo(intent)
+                
+                // 🚀 关键修复：使用通用广播处理方法确保所有广播都能触发数据发送
+                10056 -> {
+                    Log.d(TAG, "🛣️ 处理路线信息广播 (KEY_TYPE: 10056)")
+                    // 路线信息变化时发送数据
+                    networkManager?.sendCarrotManDataToComma3()
+                }
+                13022 -> {
+                    Log.d(TAG, "🧭 处理导航状态广播 (KEY_TYPE: 13022)")
+                    // 导航状态变化时发送数据
+                    networkManager?.sendCarrotManDataToComma3()
+                }
                 // 🎯 临时注释：只使用引导信息广播(KEY_TYPE: 10001)的限速数据
                 // AppConstants.AmapBroadcast.SpeedCamera.SPEED_LIMIT -> handleSpeedLimit(intent)
                 // 新增：区间测速(12110) 专用处理
@@ -315,6 +327,11 @@ class AmapBroadcastManager(
                 AppConstants.AmapBroadcast.MapLocation.TRAFFIC_LIGHT -> handleTrafficLightInfo(intent)
                 AppConstants.AmapBroadcast.MapLocation.GEOLOCATION_INFO -> handleGeolocationInfo(intent)
                 AppConstants.AmapBroadcast.LaneInfo.DRIVE_WAY_INFO -> handleDriveWayInfo(intent)
+                else -> {
+                    // 对于其他类型的广播，也尝试发送数据
+                    Log.d(TAG, "📡 处理通用广播: KEY_TYPE=$keyType")
+                    networkManager?.sendCarrotManDataToComma3()
+                }
             }
         } catch (e: Exception) {
             Log.e(TAG, "处理KEY_TYPE $keyType 失败: ${e.message}", e)

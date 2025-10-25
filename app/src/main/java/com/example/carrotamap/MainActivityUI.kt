@@ -345,7 +345,9 @@ class MainActivityUI(
                     }
                 }
                 
-                // 底部控制按钮区域
+                // 底部控制按钮区域 - 添加底部间距避免被导航栏遮挡
+                Spacer(modifier = Modifier.height(16.dp))
+                
                 VehicleControlButtons(
                     onPageChange = { page -> 
                         // 这里需要访问MainActivity的currentPage状态
@@ -355,6 +357,9 @@ class MainActivityUI(
                     onSendCommand = onSendCommand,
                     onSendRoadLimitSpeed = onSendRoadLimitSpeed
                 )
+                
+                // 添加底部安全间距
+                Spacer(modifier = Modifier.height(80.dp))
             }
         }
     }
@@ -501,7 +506,7 @@ class MainActivityUI(
     }
 
     /**
-     * 车辆控制按钮组件 - 从悬浮窗迁移过来的5个关键按钮
+     * 车辆控制按钮组件 - 恢复SPEED和LANECHANGE按钮，参考AdvancedOperationDialog.kt
      */
     @Composable
     private fun VehicleControlButtons(
@@ -517,7 +522,7 @@ class MainActivityUI(
             elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
             shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp)
         ) {
-            // 控制按钮行
+            // 控制按钮行 - 恢复SPEED和LANECHANGE按钮
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -568,7 +573,7 @@ class MainActivityUI(
                     }
                 )
                 
-                // 设置按钮（原帮助按钮，现在用于设置当前限速）
+                // 设置按钮（发送配置到comma3设备）
                 ControlButton(
                     icon = "",
                     label = "设置",
