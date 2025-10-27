@@ -203,8 +203,13 @@ class AmapDestinationManager(
     /**
      * 验证目的地坐标和信息的有效性
      */
-    private fun validateDestination(longitude: Double, latitude: Double, name: String): Boolean =
-        com.example.carrotamap.validateDestination(longitude, latitude, name)
+    private fun validateDestination(longitude: Double, latitude: Double, name: String): Boolean {
+        val isValidLongitude = longitude in -180.0..180.0
+        val isValidLatitude = latitude in -90.0..90.0
+        val isValidName = name.isNotEmpty() && name.length <= 100
+        val isNonZeroCoordinates = longitude != 0.0 && latitude != 0.0
+        return isValidLongitude && isValidLatitude && isValidName && isNonZeroCoordinates
+    }
 
     /**
      * 检查是否需要更新目的地信息
@@ -212,7 +217,22 @@ class AmapDestinationManager(
     private fun shouldUpdateDestination(
         currentLon: Double, currentLat: Double, currentName: String,
         newLon: Double, newLat: Double, newName: String
-    ): Boolean = com.example.carrotamap.shouldUpdateDestination(
-        currentLon, currentLat, currentName, newLon, newLat, newName
-    )
+    ): Boolean {
+        val distance = haversineDistance(currentLat, currentLon, newLat, newLon)
+        return currentName != newName || distance > 100.0 || (currentLon == 0.0 && currentLat == 0.0)
+    }
+
+    /**
+     * 计算两点间距离（哈弗辛公式），单位：米
+     */
+    private fun haversineDistance(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
+        val R = 6371000.0 // 地球半径（米）
+        val dLat = Math.toRadians(lat2 - lat1)
+        val dLon = Math.toRadians(lon2 - lon1)
+        val a = kotlin.math.sin(dLat / 2) * kotlin.math.sin(dLat / 2) +
+                kotlin.math.cos(Math.toRadians(lat1)) * kotlin.math.cos(Math.toRadians(lat2)) *
+                kotlin.math.sin(dLon / 2) * kotlin.math.sin(dLon / 2)
+        val c = 2 * kotlin.math.atan2(kotlin.math.sqrt(a), kotlin.math.sqrt(1 - a))
+        return R * c
+    }
 }

@@ -261,15 +261,7 @@ class AmapBroadcastHandlers(
             //Log.i(TAG, "✅ 已更新CarrotMan字段：导航状态=false，转弯类型=201(到达目的地)")
         }
         
-        // 🚀 关键修复：地图状态变化时也立即发送数据
-        networkManager?.let { manager ->
-            try {
-                manager.sendCarrotManDataToComma3()
-                Log.d(TAG, "📤 地图状态数据已发送到Comma3设备")
-            } catch (e: Exception) {
-                Log.e(TAG, "❌ 发送地图状态数据失败: ${e.message}", e)
-            }
-        }
+        // 🚀 修复：移除立即发送，由NetworkManager统一200ms间隔发送避免闪烁
     }
 
     // ===============================
@@ -312,10 +304,11 @@ class AmapBroadcastHandlers(
             val carLatitude = intent.getDoubleExtra("CAR_LATITUDE", 0.0)
             val carLongitude = intent.getDoubleExtra("CAR_LONGITUDE", 0.0)
 
-            // 当GPS坐标为0.0时，使用手机GPS或其他可用的位置信息
+            // 🚀 关键修复：使用effectiveLatitude策略，确保始终有有效的GPS数据
+            // 当高德GPS为0时，使用手机GPS作为后备方案
             val effectiveLatitude = if (carLatitude != 0.0) carLatitude else carrotManFields.value.vpPosPointLat
             val effectiveLongitude = if (carLongitude != 0.0) carLongitude else carrotManFields.value.vpPosPointLon
-
+            
             // 记录GPS坐标映射情况
             if (carLatitude == 0.0 && carLongitude == 0.0) {
                 Log.d(TAG, "📍 GPS坐标为0，使用手机GPS: lat=$effectiveLatitude, lon=$effectiveLongitude")
@@ -430,6 +423,7 @@ class AmapBroadcastHandlers(
                 // 导航路径数据 (基于当前位置和目标)
                 naviPaths = carrotManFields.value.naviPaths,
 
+                // 🚀 关键修复：使用effectiveLatitude/effectiveLongitude确保始终有GPS数据
                 // 位置信息 - 高德导航坐标专用于Navi字段，使用有效坐标
                 vpPosPointLatNavi = effectiveLatitude,
                 vpPosPointLonNavi = effectiveLongitude,
@@ -474,17 +468,13 @@ class AmapBroadcastHandlers(
             carrotManFields.value = carrotManFields.value.copy(
                 debugText = Companion.generateDebugText(carrotManFields.value)
             )
+            
+            // 🔍 验证Navi GPS字段（由LocationSensorManager持续更新主要字段）
+            val updatedFields = carrotManFields.value
+            Log.v(TAG, "🔍 引导信息处理后GPS状态:")
+            Log.v(TAG, "  使用effectiveLatitude策略: vpPosPointLat=${updatedFields.vpPosPointLat}, vpPosPointLatNavi=${updatedFields.vpPosPointLatNavi}")
 
-            // 🚀 关键修复：立即发送数据到Comma3设备
-            networkManager?.let { manager ->
-                try {
-                    // 发送CarrotMan数据到Comma3设备
-                    manager.sendCarrotManDataToComma3()
-                    Log.d(TAG, "📤 引导信息数据已发送到Comma3设备")
-                } catch (e: Exception) {
-                    Log.e(TAG, "❌ 发送引导信息数据失败: ${e.message}", e)
-                }
-            }
+            // 🚀 修复：移除立即发送，由NetworkManager统一200ms间隔发送避免闪烁
 
             //Log.i(TAG, "✅ 引导信息已更新到CarrotMan字段")
 
@@ -555,17 +545,16 @@ class AmapBroadcastHandlers(
             val bearing = intent.getFloatExtra("BEARING", 0.0f).toDouble()
             
             if (latitude != 0.0 && longitude != 0.0) {
-                //Log.i(TAG, "定位信息: lat=$latitude, lon=$longitude, speed=${speed}km/h, bearing=${bearing}°")
+                Log.d(TAG, "📍 高德定位广播: lat=$latitude, lon=$longitude, speed=${speed}km/h, bearing=${bearing}°")
                 
                 // 简化的时间更新
                 val currentTime = System.currentTimeMillis()
                 
+                // 🚀 关键修复：只更新Navi GPS和方向速度信息，不要覆盖LocationSensorManager的主要GPS字段
                 carrotManFields.value = carrotManFields.value.copy(
-                    vpPosPointLatNavi = latitude,
-                    vpPosPointLonNavi = longitude,
-                    // 协议标准位置字段同步
-                    xPosLat = latitude,
-                    xPosLon = longitude,
+                    vpPosPointLatNavi = latitude,       // 导航GPS纬度（高德提供）
+                    vpPosPointLonNavi = longitude,      // 导航GPS经度（高德提供）
+                    // 协议标准位置字段同步（方向和速度）
                     xPosAngle = bearing,
                     xPosSpeed = speed,
                     nPosSpeed = speed,
@@ -575,7 +564,9 @@ class AmapBroadcastHandlers(
                     lastUpdateTime = currentTime
                 )
                 
-                //Log.i(TAG, "✅ 定位信息已更新到CarrotMan字段")
+                Log.d(TAG, "✅ 定位信息（Navi字段）已更新，主要GPS字段由LocationSensorManager持续更新")
+                
+                // 🚀 修复：移除立即发送，由NetworkManager统一200ms间隔发送避免闪烁
             } else {
                 Log.w(TAG, "⚠️ 定位信息无效: lat=$latitude, lon=$longitude")
             }

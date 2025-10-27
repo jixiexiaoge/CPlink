@@ -2,6 +2,7 @@ package com.example.carrotamap
 
 import android.content.Context
 import android.content.Intent
+import android.net.wifi.WifiManager
 import android.os.Bundle
 import android.util.Log
 import android.view.WindowManager
@@ -357,7 +358,13 @@ class MainActivityLifecycle(
         try {
             core.locationSensorManager = LocationSensorManager(activity, core.carrotManFields)
             core.locationSensorManager.initializeSensors()
-            Log.i(TAG, "✅ 位置和传感器管理器初始化成功")
+            
+            // 🚀 关键修复：立即启动GPS位置更新服务
+            // 这样可以确保手机GPS数据能够实时更新到carrotManFields中
+            Log.i(TAG, "📍 正在启动GPS位置更新服务...")
+            core.locationSensorManager.startLocationUpdates()
+            
+            Log.i(TAG, "✅ 位置和传感器管理器初始化成功（GPS已启动）")
         } catch (e: Exception) {
             Log.e(TAG, "❌ 位置和传感器管理器初始化失败: ${e.message}", e)
         }
@@ -531,6 +538,29 @@ class MainActivityLifecycle(
                 updateSelfCheckStatusAsync("网络服务", "启动完成", true)
                 delay(100)
 
+                // 5.5. 获取和显示IP地址信息（后台线程）
+                updateSelfCheckStatusAsync("IP地址信息", "正在获取...", false)
+                
+                // 延迟一下，确保网络服务完全启动
+                delay(1000)
+                
+                // 尝试获取IP地址，如果失败则重试
+                var phoneIP = getPhoneIPAddress()
+                var deviceIP = getDeviceIPAddress()
+                
+                // 如果手机IP获取失败，再延迟重试一次
+                if (phoneIP == "网络管理器未初始化" || phoneIP == "获取失败") {
+                    Log.w(TAG, "⚠️ 首次获取手机IP失败，延迟重试...")
+                    delay(1000)
+                    phoneIP = getPhoneIPAddress()
+                }
+                
+                val ipInfo = "手机: $phoneIP, 设备: ${deviceIP ?: "未连接"}"
+                
+                Log.i(TAG, "📱 IP地址信息: $ipInfo")
+                updateSelfCheckStatusAsync("IP地址信息", ipInfo, true)
+                delay(100)
+
                 // 6-8. 并行初始化高德地图、广播和设备管理器（后台线程）
                 updateSelfCheckStatusAsync("系统管理器", "正在并行初始化...", false)
                 
@@ -646,6 +676,42 @@ class MainActivityLifecycle(
     }
 
     /**
+     * 获取手机IP地址
+     */
+    private fun getPhoneIPAddress(): String {
+        return try {
+            // 直接尝试访问networkManager，如果未初始化会抛出异常
+            val phoneIP = core.networkManager.getPhoneIP()
+            Log.i(TAG, "📱 获取到手机IP: $phoneIP")
+            phoneIP
+        } catch (e: UninitializedPropertyAccessException) {
+            Log.w(TAG, "⚠️ 网络管理器未初始化，无法获取手机IP")
+            "网络管理器未初始化"
+        } catch (e: Exception) {
+            Log.w(TAG, "⚠️ 获取手机IP地址失败: ${e.message}")
+            "获取失败"
+        }
+    }
+
+    /**
+     * 获取comma3设备IP地址
+     */
+    private fun getDeviceIPAddress(): String? {
+        return try {
+            // 直接尝试访问networkManager，如果未初始化会抛出异常
+            val deviceIP = core.networkManager.getCurrentDeviceIP()
+            Log.i(TAG, "🔗 获取到设备IP: $deviceIP")
+            deviceIP
+        } catch (e: UninitializedPropertyAccessException) {
+            Log.w(TAG, "⚠️ 网络管理器未初始化，无法获取设备IP")
+            null
+        } catch (e: Exception) {
+            Log.w(TAG, "⚠️ 获取设备IP地址失败: ${e.message}")
+            null
+        }
+    }
+
+    /**
      * 更新自检查状态
      */
     private fun updateSelfCheckStatus(component: String, message: String, isCompleted: Boolean) {
@@ -658,6 +724,11 @@ class MainActivityLifecycle(
                 currentStatus.completedComponents + component
             } else {
                 currentStatus.completedComponents
+            },
+            completedMessages = if (isCompleted) {
+                currentStatus.completedMessages + (component to message)
+            } else {
+                currentStatus.completedMessages
             }
         )
         core.selfCheckStatus.value = newStatus

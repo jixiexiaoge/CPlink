@@ -35,7 +35,8 @@ data class SelfCheckStatus(
     val currentComponent: String = "",
     val currentMessage: String = "",
     val isCompleted: Boolean = false,
-    val completedComponents: List<String> = emptyList()
+    val completedComponents: List<String> = emptyList(),
+    val completedMessages: Map<String, String> = emptyMap() // 存储组件名称和对应的消息内容
 )
 
 /**

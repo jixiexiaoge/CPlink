@@ -151,6 +151,14 @@ class LocationSensorManager(
                 Log.d(TAG, "  🔧 提供者: ${location.provider}")
                 Log.d(TAG, "  ⏰ 数据年龄: ${locationAge}ms")
                 Log.d(TAG, "  🎯 实时性: ${if (locationAge < 1000) "优秀" else if (locationAge < 3000) "良好" else "一般"}")
+                
+                // 🔍 验证CarrotManFields中的GPS字段是否正确更新
+                val updatedFields = carrotManFields.value
+                Log.v(TAG, "🔍 验证GPS字段同步:")
+                Log.v(TAG, "  vpPosPointLat: ${updatedFields.vpPosPointLat}")
+                Log.v(TAG, "  vpPosPointLon: ${updatedFields.vpPosPointLon}")
+                Log.v(TAG, "  latitude: ${updatedFields.latitude}")
+                Log.v(TAG, "  longitude: ${updatedFields.longitude}")
 
             } catch (e: Exception) {
                 Log.e(TAG, "GPS位置更新失败: ${e.message}", e)

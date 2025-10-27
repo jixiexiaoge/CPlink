@@ -40,9 +40,9 @@ class AmapBroadcastManager(
     val totalBroadcastCount = mutableIntStateOf(0)
     val lastUpdateTime = mutableLongStateOf(0L)
     
-    // 优化：减少UI同步频率
+    // 🚀 性能优化：减少UI同步延迟，提升实时性
     private var lastSyncTime = 0L
-    private val syncInterval = 5000L // 5秒同步一次，而不是每10条数据
+    private val syncInterval = 1000L // 1秒同步一次，提升实时性
 
     // 协程作用域
     private val receiverScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
@@ -50,8 +50,8 @@ class AmapBroadcastManager(
     // 广播处理Channel - 避免为每个广播创建新协程
     private val broadcastChannel = Channel<Pair<Intent, Int>>(Channel.UNLIMITED)
     
-    // 数据限流器 - 控制处理频率
-    private val throttler = DataThrottler(50L) // 最小50ms间隔
+    // 🚀 性能优化：移除数据限流器，确保实时处理所有广播
+    // private val throttler = DataThrottler(50L) // 已移除，改为实时处理
 
     // 广播处理器 (传入Context用于地图切换)
     private val amapDataProcessor = AmapDataProcessor(context, carrotManFields)
@@ -236,10 +236,11 @@ class AmapBroadcastManager(
     private fun handleAmapSendBroadcast(intent: Intent) {
         val keyType = intent.getIntExtra("KEY_TYPE", -1)
         
-        // 应用限流 - 避免过于频繁的处理
-        if (!throttler.shouldProcess()) {
-            return
-        }
+        // 🚀 性能优化：移除限流机制，确保所有广播都被实时处理
+        // 注释掉原来的限流检查，改为实时处理所有数据
+        // if (!throttler.shouldProcess()) {
+        //     return
+        // }
         
         // 🎯 根据KEY_TYPE决定日志输出级别
         val isBriefLog = when (keyType) {
@@ -300,16 +301,14 @@ class AmapBroadcastManager(
                 AppConstants.AmapBroadcast.Navigation.NAVIGATION_STATUS -> handleNavigationStatus(intent)
                 AppConstants.AmapBroadcast.Navigation.ROUTE_INFO -> handleRouteInfo(intent)
                 
-                // 🚀 关键修复：使用通用广播处理方法确保所有广播都能触发数据发送
+                // 🚀 修复：移除立即发送，由NetworkManager统一200ms间隔发送避免闪烁
                 10056 -> {
                     Log.d(TAG, "🛣️ 处理路线信息广播 (KEY_TYPE: 10056)")
-                    // 路线信息变化时发送数据
-                    networkManager?.sendCarrotManDataToComma3()
+                    // 数据已更新到CarrotMan字段，由自动发送任务统一发送
                 }
                 13022 -> {
                     Log.d(TAG, "🧭 处理导航状态广播 (KEY_TYPE: 13022)")
-                    // 导航状态变化时发送数据
-                    networkManager?.sendCarrotManDataToComma3()
+                    // 数据已更新到CarrotMan字段，由自动发送任务统一发送
                 }
                 // 🎯 临时注释：只使用引导信息广播(KEY_TYPE: 10001)的限速数据
                 // AppConstants.AmapBroadcast.SpeedCamera.SPEED_LIMIT -> handleSpeedLimit(intent)
@@ -328,11 +327,16 @@ class AmapBroadcastManager(
                 AppConstants.AmapBroadcast.MapLocation.GEOLOCATION_INFO -> handleGeolocationInfo(intent)
                 AppConstants.AmapBroadcast.LaneInfo.DRIVE_WAY_INFO -> handleDriveWayInfo(intent)
                 else -> {
-                    // 对于其他类型的广播，也尝试发送数据
+                    // 🚀 修复：移除立即发送，由NetworkManager统一200ms间隔发送避免闪烁
                     Log.d(TAG, "📡 处理通用广播: KEY_TYPE=$keyType")
-                    networkManager?.sendCarrotManDataToComma3()
+                    // 数据已更新到CarrotMan字段，由自动发送任务统一发送
                 }
             }
+            
+            // 🚀 修复闪烁：移除通用发送调用，避免重复发送
+            // 各个handler（如handleGuideInfo）内部已经有立即发送的逻辑
+            // 在这里再次发送会导致每个广播发送2次，造成UI闪烁
+            // networkManager?.sendCarrotManDataToComma3()  // 已移除
         } catch (e: Exception) {
             Log.e(TAG, "处理KEY_TYPE $keyType 失败: ${e.message}", e)
         }

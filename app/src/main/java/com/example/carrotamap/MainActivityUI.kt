@@ -1,6 +1,7 @@
 package com.example.carrotamap
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
@@ -66,6 +67,8 @@ class MainActivityUI(
                                 remainingSeconds = core.remainingSeconds.value,
                                 selfCheckStatus = core.selfCheckStatus.value,
                                 userType = core.userType.value,
+                                carrotManFields = core.carrotManFields.value,
+                                dataFieldManager = core.dataFieldManager,
                                 onSendCommand = { command, arg -> core.sendCarrotCommand(command, arg) },
                                 onSendRoadLimitSpeed = { core.sendCurrentRoadLimitSpeed() }
                             )
@@ -194,6 +197,8 @@ class MainActivityUI(
         remainingSeconds: Int,
         selfCheckStatus: SelfCheckStatus,
         userType: Int,
+        carrotManFields: CarrotManFields,
+        dataFieldManager: DataFieldManager,
         onSendCommand: (String, String) -> Unit,
         onSendRoadLimitSpeed: () -> Unit
     ) {
@@ -215,6 +220,17 @@ class MainActivityUI(
             Column(
                 modifier = Modifier.fillMaxSize()
             ) {
+                // 顶部控制按钮区域
+                VehicleControlButtons(
+                    onPageChange = { page -> 
+                        // 这里需要访问MainActivity的currentPage状态
+                        // 暂时用Log记录，后续可以通过其他方式实现
+                        android.util.Log.i("MainActivity", "页面切换请求: $page")
+                    },
+                    onSendCommand = onSendCommand,
+                    onSendRoadLimitSpeed = onSendRoadLimitSpeed
+                )
+                
                 // 可滚动的内容区域
                 Column(
                     modifier = Modifier
@@ -332,7 +348,13 @@ class MainActivityUI(
                                                 }
                                                 systemInfo
                                             } else {
-                                                component
+                                                // 显示组件名称和消息内容
+                                                val message = selfCheckStatus.completedMessages[component] ?: ""
+                                                if (message.isNotEmpty()) {
+                                                    "$component: $message"
+                                                } else {
+                                                    component
+                                                }
                                             },
                                             fontSize = 14.sp,
                                             color = Color(0xFF16A34A),
@@ -345,21 +367,15 @@ class MainActivityUI(
                     }
                 }
                 
-                // 底部控制按钮区域 - 添加底部间距避免被导航栏遮挡
+                // Comma3数据表格（可折叠）
                 Spacer(modifier = Modifier.height(16.dp))
-                
-                VehicleControlButtons(
-                    onPageChange = { page -> 
-                        // 这里需要访问MainActivity的currentPage状态
-                        // 暂时用Log记录，后续可以通过其他方式实现
-                        android.util.Log.i("MainActivity", "页面切换请求: $page")
-                    },
-                    onSendCommand = onSendCommand,
-                    onSendRoadLimitSpeed = onSendRoadLimitSpeed
+                Comma3DataTable(
+                    carrotManFields = carrotManFields,
+                    dataFieldManager = dataFieldManager
                 )
                 
                 // 添加底部安全间距
-                Spacer(modifier = Modifier.height(80.dp))
+                Spacer(modifier = Modifier.height(6.dp))
             }
         }
     }
@@ -787,6 +803,124 @@ class MainActivityUI(
                                     lineHeight = 18.sp
                                 )
                             }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Comma3数据表格组件（可折叠）
+     */
+    @Composable
+    private fun Comma3DataTable(
+        carrotManFields: CarrotManFields,
+        dataFieldManager: DataFieldManager
+    ) {
+        var isExpanded by remember { mutableStateOf(false) }
+        
+        Card(
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                // 标题行（可点击）
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { isExpanded = !isExpanded },
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = "📥",
+                            fontSize = 20.sp
+                        )
+                        Text(
+                            text = "Comma3实时数据",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF1D4ED8)
+                        )
+                    }
+                    
+                    Icon(
+                        imageVector = if (isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                        contentDescription = if (isExpanded) "折叠" else "展开",
+                        tint = Color(0xFF64748B)
+                    )
+                }
+                
+                // 数据表格（可折叠）
+                if (isExpanded) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    
+                    // 表格头部
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color(0xFFF8FAFC))
+                            .padding(vertical = 8.dp, horizontal = 12.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = "字段",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF64748B),
+                            modifier = Modifier.weight(1f)
+                        )
+                        Text(
+                            text = "描述",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF64748B),
+                            modifier = Modifier.weight(1f)
+                        )
+                        Text(
+                            text = "值",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF64748B),
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                    
+                    // 数据行
+                    dataFieldManager.getOpenpilotReceiveFields(carrotManFields).forEach { fieldData ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 6.dp, horizontal = 12.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = fieldData.first,
+                                fontSize = 11.sp,
+                                color = Color(0xFF374151),
+                                modifier = Modifier.weight(1f)
+                            )
+                            Text(
+                                text = fieldData.second,
+                                fontSize = 11.sp,
+                                color = Color(0xFF6B7280),
+                                modifier = Modifier.weight(1f)
+                            )
+                            Text(
+                                text = fieldData.third,
+                                fontSize = 11.sp,
+                                color = Color(0xFF059669),
+                                fontWeight = FontWeight.Medium,
+                                modifier = Modifier.weight(1f)
+                            )
                         }
                     }
                 }

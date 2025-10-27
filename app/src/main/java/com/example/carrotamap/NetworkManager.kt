@@ -40,7 +40,7 @@ class NetworkManager(
     private val networkStatistics = mutableStateOf(mapOf<String, Any>())
     private val autoSendEnabled = mutableStateOf(true)
     private var lastDataSendTime = 0L
-    private val dataSendInterval = 200L
+    private val dataSendInterval = 200L  // 恢复200ms间隔，Python端能很好处理高频数据
 
     // OpenpPilot状态数据
     private val openpilotStatusData = mutableStateOf(OpenpilotStatusData())
@@ -200,10 +200,29 @@ class NetworkManager(
             val oldData = openpilotStatusData.value
             openpilotStatusData.value = statusData
 
+            // 更新CarrotManFields中的接收数据字段
+            carrotManFields.value = carrotManFields.value.copy(
+                carrot2 = statusData.carrot2,
+                isOnroad = statusData.isOnroad,
+                carrotRouteActive = statusData.carrotRouteActive,
+                ip = statusData.ip,
+                port = statusData.port,
+                logCarrot = statusData.logCarrot,
+                vCruiseKph = statusData.vCruiseKph,
+                vEgoKph = statusData.vEgoKph,
+                tbtDist = statusData.tbtDist,
+                sdiDist = statusData.sdiDist,
+                active = statusData.active,
+                xState = statusData.xState,
+                trafficState = statusData.trafficState,
+                carcruiseSpeed = statusData.carcruiseSpeed,
+                lastUpdateTime = statusData.lastUpdateTime
+            )
+
             // 保存速度数据到SharedPreferences，供FloatingWindowService使用
             saveSpeedDataToPreferences(statusData)
 
-            //Log.i(TAG, "✅ OpenpPilot状态已更新: 车速=${statusData.vEgoKph}km/h, 激活=${statusData.active}, 在路上=${statusData.isOnroad}")
+            Log.i(TAG, "✅ OpenpPilot状态已更新: 车速=${statusData.vEgoKph}km/h, 激活=${statusData.active}, 在路上=${statusData.isOnroad}")
 
             // 如果是重要状态变化，记录详细日志
             if (oldData.vEgoKph != statusData.vEgoKph || oldData.active != statusData.active) {
@@ -390,9 +409,23 @@ class NetworkManager(
      */
     fun getCurrentDeviceIP(): String? {
         return if (::carrotNetworkClient.isInitialized) {
-            carrotNetworkClient.getCurrentDevice()?.ip
+            val ip = carrotNetworkClient.getDeviceIP()
+            Log.d(TAG, "🔍 NetworkManager获取设备IP: $ip")
+            ip
         } else {
+            Log.w(TAG, "⚠️ 网络客户端未初始化，无法获取设备IP")
             null
+        }
+    }
+
+    fun getPhoneIP(): String {
+        return if (::carrotNetworkClient.isInitialized) {
+            val ip = carrotNetworkClient.getPhoneIP()
+            Log.d(TAG, "🔍 NetworkManager获取手机IP: $ip")
+            ip
+        } else {
+            Log.w(TAG, "⚠️ 网络客户端未初始化，无法获取手机IP")
+            "未初始化"
         }
     }
 
@@ -445,7 +478,7 @@ class NetworkManager(
                     )
                     
                     // 发送数据到Comma3设备
-                    carrotNetworkClient.sendCarrotManData(carrotData)
+                    carrotNetworkClient.sendCarrotManData(fields)
                     
                     Log.d(TAG, "📤 CarrotMan数据已发送: 转弯类型=${fields.nTBTTurnType}, 距离=${fields.nTBTDist}m")
                     
@@ -465,15 +498,8 @@ class NetworkManager(
         if (::carrotNetworkClient.isInitialized) {
             CoroutineScope(Dispatchers.IO).launch {
                 try {
-                    carrotNetworkClient.sendDestinationUpdate(
-                        goalPosX = longitude,   // 经度
-                        goalPosY = latitude,    // 纬度
-                        szGoalName = name,
-                        goalAddress = address,
-                        priority = "high"
-                    )
-                    // 注意：不再额外发送CarrotManData，避免重复发送和绕过许可证检查
-                    Log.i(TAG, "🎯 目的地信息已发送到comma3: $name ($latitude, $longitude)")
+                    // 目的地更新功能已移除，只记录日志
+                    Log.i(TAG, "🎯 目的地信息: $name ($latitude, $longitude)")
                 } catch (e: Exception) {
                     Log.e(TAG, "❌ 发送目的地信息到comma3失败: ${e.message}", e)
                 }
@@ -490,8 +516,8 @@ class NetworkManager(
     fun sendTrafficLightUpdate(trafficState: Int, leftSec: Int) {
         if (::carrotNetworkClient.isInitialized) {
             try {
-                carrotNetworkClient.sendTrafficLightUpdate(trafficState, leftSec)
-                Log.i(TAG, "🚦 交通灯状态更新已发送: 状态=$trafficState, 倒计时=${leftSec}s")
+                // 交通灯更新功能已移除，只记录日志
+                Log.i(TAG, "🚦 交通灯状态: 状态=$trafficState, 倒计时=${leftSec}s")
             } catch (e: Exception) {
                 Log.e(TAG, "❌ 发送交通灯状态更新失败: ${e.message}", e)
             }
@@ -507,8 +533,8 @@ class NetworkManager(
     fun sendDetectCommand(trafficState: Int, leftSec: Int, distance: Int, gpsLat: Double = 0.0, gpsLon: Double = 0.0) {
         if (::carrotNetworkClient.isInitialized) {
             try {
-                carrotNetworkClient.sendDetectCommand(trafficState, leftSec, distance, gpsLat, gpsLon)
-                Log.i(TAG, "🔍 DETECT命令已发送: 状态=$trafficState, 倒计时=${leftSec}s, 距离=${distance}m, GPS=($gpsLat,$gpsLon)")
+                // DETECT命令功能已移除，只记录日志
+                Log.i(TAG, "🔍 DETECT命令: 状态=$trafficState, 倒计时=${leftSec}s, 距离=${distance}m, GPS=($gpsLat,$gpsLon)")
             } catch (e: Exception) {
                 Log.e(TAG, "❌ 发送DETECT命令失败: ${e.message}", e)
             }
@@ -827,16 +853,20 @@ class NetworkManager(
 
                 Log.d(TAG, "📦 控制指令JSON: ${commandMessage.toString()}")
 
-                // 发送UDP数据包
-                carrotNetworkClient.sendCustomDataPacket(commandMessage)
+                // 自定义数据包功能已移除，只记录日志
+                Log.i(TAG, "📦 自定义数据包: ${commandMessage.toString()}")
                 
-                // 立即清理CarrotManFields中的指令字段，防止重复发送
-                carrotManFields.value = carrotManFields.value.copy(
-                    carrotCmd = "",
-                    carrotArg = ""
-                )
+                // 🚀 修复UI闪烁：延迟清理指令字段，避免UI突然显示空白
+                // 使用协程延迟500ms后再清空，给UI足够的显示时间
+                CoroutineScope(Dispatchers.Main).launch {
+                    delay(500) // 延迟500ms，确保UI有足够时间显示数据
+                    carrotManFields.value = carrotManFields.value.copy(
+                        carrotCmd = "",
+                        carrotArg = ""
+                    )
+                    Log.d(TAG, "🧹 已延迟清理CarrotManFields中的指令字段")
+                }
                 
-                Log.d(TAG, "🧹 已清理CarrotManFields中的指令字段")
                 Log.i(TAG, "✅ 控制指令已发送: carrotCmd=$command, carrotArg=$arg, 设备=$deviceIP")
             } catch (e: Exception) {
                 Log.e(TAG, "❌ 发送控制指令失败: ${e.message}", e)

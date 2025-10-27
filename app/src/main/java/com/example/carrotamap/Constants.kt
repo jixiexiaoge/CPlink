@@ -175,7 +175,7 @@ object AppConstants {
     // ===============================
     object DataTransfer {
         const val SPEED_LIMIT_SEND_INTERVAL = 2000L    // 限速数据发送间隔
-        const val DATA_SEND_INTERVAL = 200L             // 通用数据发送间隔
+        const val DATA_SEND_INTERVAL = 200L             // 通用数据发送间隔，Python端能很好处理高频数据
         const val HEARTBEAT_INTERVAL = 1000L            // 心跳包发送间隔
         
         // 数据质量阈值

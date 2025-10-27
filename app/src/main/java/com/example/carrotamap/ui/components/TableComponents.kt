@@ -219,10 +219,5 @@ fun DataTable(
             TableRow(fieldData.first, fieldData.second, fieldData.third)
         }
 
-        // ========== 从comma3接收的字段 (7705端口) ==========
-        TableSectionHeader("📥 从comma3接收的字段 (7705端口)")
-        dataFieldManager.getOpenpilotReceiveFields(carrotManFields).forEach { fieldData ->
-            TableRow(fieldData.first, fieldData.second, fieldData.third)
-        }
     }
 }

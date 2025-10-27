@@ -56,6 +56,7 @@ class CarrotManNetworkClient(
     // 动态端口配置（基于逆向分析）
     private var dynamicSendPort: Int = MAIN_DATA_PORT  // 从广播数据动态获取
     private var deviceIP: String? = null               // 从广播数据动态获取
+    private var phoneIP: String = ""                   // 手机IP地址
     
     // Socket连接管理
     private var listenSocket: DatagramSocket? = null
@@ -127,23 +128,26 @@ class CarrotManNetworkClient(
         }
     }
     
-    // 启动 CarrotMan 网络服务（基于逆向分析的完整启动流程）
+    // 启动 CarrotMan 网络服务
     fun start() {
         if (isRunning) {
             Log.w(TAG, "网络服务已在运行中，忽略重复启动请求")
             return
         }
         
-        // 手动 Log.i(TAG, "启动 CarrotMan 网络客户端服务")
+        Log.i(TAG, "启动 CarrotMan 网络客户端服务")
         isRunning = true
         
         try {
+            // 获取手机IP地址
+            phoneIP = getPhoneIPAddress()
+            Log.i(TAG, "📱 手机IP地址: $phoneIP")
+            
             initializeSockets()
             startDeviceListener()
             startDeviceHealthCheck()
-            startDeviceDiscovery()  // 添加主动设备发现
             onConnectionStatusChanged?.invoke(false, "")
-            // 手动 Log.i(TAG, "CarrotMan 网络服务启动成功")
+            Log.i(TAG, "CarrotMan 网络服务启动成功")
         } catch (e: Exception) {
             Log.e(TAG, "启动网络服务失败: ${e.message}", e)
             onConnectionStatusChanged?.invoke(false, "")
@@ -257,8 +261,8 @@ class CarrotManNetworkClient(
             val receivedData = String(packet.data, 0, packet.length)
             val deviceIP = packet.address.hostAddress ?: "unknown"
 
-            // 手动 Log.i(TAG, "📡 收到设备广播: [$receivedData] from $deviceIP")
-            // 手动 Log.d(TAG, "📊 当前状态: 已发现设备=${discoveredDevices.size}, 当前连接=${currentTargetDevice?.ip ?: "无"}")
+            Log.i(TAG, "📡 收到设备广播: [$receivedData] from $deviceIP")
+            Log.d(TAG, "📊 当前状态: 已发现设备=${discoveredDevices.size}, 当前连接=${currentTargetDevice?.ip ?: "无"}")
 
             lastDataReceived = System.currentTimeMillis()
             parseDeviceBroadcast(receivedData, deviceIP)
@@ -274,41 +278,51 @@ class CarrotManNetworkClient(
         }
     }
     
-    // 解析收到的设备广播数据（基于UDP广播JSON数据确认设备）
+    // 解析收到的设备广播数据
     private fun parseDeviceBroadcast(broadcastData: String, deviceIP: String) {
         try {
-            // 手动 Log.i(TAG, "🔍 解析设备广播数据: $broadcastData from $deviceIP")
+            Log.i(TAG, "🔍 解析设备广播数据: $broadcastData from $deviceIP")
+
+            // 过滤掉手机自己的IP地址
+            if (deviceIP == phoneIP) {
+                Log.d(TAG, "🚫 过滤手机IP地址: $deviceIP")
+                return
+            }
 
             if (broadcastData.trim().startsWith("{")) {
                 val jsonBroadcast = JSONObject(broadcastData)
 
                 // 检查是否为OpenpPilot状态数据（基于逆向分析的字段）
                 if (isOpenpilotStatusData(jsonBroadcast)) {
-                    // 手动 Log.d(TAG, "📡 检测到OpenpPilot状态数据 from $deviceIP")
+                    Log.d(TAG, "📡 检测到OpenpPilot状态数据 from $deviceIP")
                     onOpenpilotStatusReceived?.invoke(broadcastData)
 
                     // 从JSON数据中获取正确的设备IP和端口
                     val jsonIP = jsonBroadcast.optString("ip", "")
                     val jsonPort = jsonBroadcast.optInt("port", MAIN_DATA_PORT)
                     
+                    Log.i(TAG, "🎯 从JSON数据提取IP: jsonIP='$jsonIP', jsonPort=$jsonPort, packetIP='$deviceIP'")
+                    
                     // 使用JSON中的IP地址（这是正确的设备IP）
                     val correctIP = if (jsonIP.isNotEmpty()) jsonIP else deviceIP
                     val version = "openpilot"
+                    
+                    Log.i(TAG, "✅ 确定设备IP: $correctIP (来源: ${if (jsonIP.isNotEmpty()) "JSON数据" else "UDP包"})")
                     
                     // 更新动态端口配置
                     dynamicSendPort = jsonPort
                     this.deviceIP = correctIP
                     
-                    // 创建已验证的设备信息
+                    // 创建设备信息（简化：有JSON广播就是有效设备）
                     val device = DeviceInfo(
                         ip = correctIP,
                         port = jsonPort,
                         version = version,
                         deviceId = generateDeviceId(correctIP, jsonPort),
                         capabilities = listOf("openpilot", "autopilot", "navigation"),
-                        connectionQuality = 1.0f,  // 广播数据表示设备活跃
+                        connectionQuality = 1.0f,
                         responseTime = 0L,
-                        isVerified = true  // 基于广播数据验证
+                        isVerified = true  // 有JSON广播就是有效设备
                     )
                     
                     addDiscoveredDevice(device)
@@ -323,23 +337,27 @@ class CarrotManNetworkClient(
                 val jsonPort = jsonBroadcast.optInt("port", MAIN_DATA_PORT)
                 val version = jsonBroadcast.optString("version", "unknown")
                 
+                Log.i(TAG, "🎯 从标准JSON数据提取IP: jsonIP='$jsonIP', jsonPort=$jsonPort, packetIP='$deviceIP'")
+                
                 // 使用JSON中的IP地址
                 val correctIP = if (jsonIP.isNotEmpty()) jsonIP else deviceIP
+                
+                Log.i(TAG, "✅ 确定标准设备IP: $correctIP (来源: ${if (jsonIP.isNotEmpty()) "JSON数据" else "UDP包"})")
                 
                 // 更新动态端口配置
                 dynamicSendPort = jsonPort
                 this.deviceIP = correctIP
 
-                // 创建已验证的设备信息
+                // 创建设备信息（简化：有JSON广播就是有效设备）
                 val device = DeviceInfo(
                     ip = correctIP,
                     port = jsonPort,
                     version = version,
                     deviceId = generateDeviceId(correctIP, jsonPort),
                     capabilities = detectDeviceCapabilities(DeviceInfo(correctIP, jsonPort, version)),
-                    connectionQuality = 0.8f,  // 基于广播数据的基础质量
+                    connectionQuality = 1.0f,
                     responseTime = 0L,
-                    isVerified = true  // 基于广播数据验证
+                    isVerified = true  // 有JSON广播就是有效设备
                 )
                 
                 addDiscoveredDevice(device)
@@ -373,9 +391,9 @@ class CarrotManNetworkClient(
             val logCarrot = jsonData.optString("log_carrot", "")
             val carrot2 = jsonData.optString("Carrot2", "")
             
-            // 手动 Log.d(TAG, "📊 OpenpPilot状态: 在路上=$isOnRoad, 路线激活=$carrotRouteActive, 活跃=$active")
-            // 手动 Log.d(TAG, "📊 状态码: xState=$xState, 交通=$trafficState, 速度=${vEgoKph}km/h")
-            // 手动 Log.d(TAG, "📊 距离: TBT=${tbtDist}m, SDI=${sdiDist}m")
+            Log.d(TAG, "📊 OpenpPilot状态: 在路上=$isOnRoad, 路线激活=$carrotRouteActive, 活跃=$active")
+            Log.d(TAG, "📊 状态码: xState=$xState, 交通=$trafficState, 速度=${vEgoKph}km/h")
+            Log.d(TAG, "📊 距离: TBT=${tbtDist}m, SDI=${sdiDist}m")
             
         } catch (e: Exception) {
             Log.w(TAG, "解析OpenpPilot状态失败: ${e.message}")
@@ -386,11 +404,17 @@ class CarrotManNetworkClient(
     // 检查JSON数据是否为OpenpPilot状态数据
     private fun isOpenpilotStatusData(jsonObject: JSONObject): Boolean {
         // OpenpPilot状态数据的特征字段
-        return jsonObject.has("Carrot2") ||
-               jsonObject.has("IsOnroad") ||
-               jsonObject.has("v_ego_kph") ||
-               jsonObject.has("active") ||
-               jsonObject.has("xState")
+        val hasCarrot2 = jsonObject.has("Carrot2")
+        val hasIsOnroad = jsonObject.has("IsOnroad")
+        val hasVEgoKph = jsonObject.has("v_ego_kph")
+        val hasActive = jsonObject.has("active")
+        val hasXState = jsonObject.has("xState")
+        
+        val isOpenpilot = hasCarrot2 || hasIsOnroad || hasVEgoKph || hasActive || hasXState
+        
+        Log.d(TAG, "🔍 检查OpenpPilot数据: Carrot2=$hasCarrot2, IsOnroad=$hasIsOnroad, v_ego_kph=$hasVEgoKph, active=$hasActive, xState=$hasXState -> $isOpenpilot")
+        
+        return isOpenpilot
     }
     
     // 添加新发现的设备到设备列表（基于逆向分析的智能连接策略）
@@ -401,7 +425,7 @@ class CarrotManNetworkClient(
 
         if (!discoveredDevices.containsKey(deviceKey)) {
             discoveredDevices[deviceKey] = device
-            // 手动 Log.i(TAG, "🎯 发现新的Comma3设备: $device")
+            Log.i(TAG, "🎯 发现新的Comma3设备: $device")
             onDeviceDiscovered?.invoke(device)
 
             // 基于逆向分析的智能设备连接逻辑
@@ -418,240 +442,41 @@ class CarrotManNetworkClient(
         }
     }
     
-    // 智能设备连接评估（保守连接策略，减少频繁切换）
+    // 智能设备连接评估（简化逻辑：有JSON广播就连接）
     private fun evaluateDeviceConnection(newDevice: DeviceInfo) {
-        when {
-            // 情况1：没有当前连接设备，直接连接
-            currentTargetDevice == null -> {
-                // 手动 Log.i(TAG, "🔄 更新状态: 发现设备 ${newDevice.ip}，正在连接...")
-                onConnectionStatusChanged?.invoke(false, "发现设备 ${newDevice.ip}，正在连接...")
-                connectToDevice(newDevice)
-            }
-            
-            // 情况2：当前设备长时间不活跃（超过30秒），切换到新设备
-            !currentTargetDevice!!.isActive() && 
-            (System.currentTimeMillis() - currentTargetDevice!!.lastSeen > 30000) -> {
-                // 手动 Log.i(TAG, "🔄 当前设备长时间不活跃，切换到新设备: ${newDevice.ip}")
-                connectToDevice(newDevice)
-            }
-            
-            // 情况3：新设备是OpenpPilot且当前设备不是，且当前设备连接质量很差
-            newDevice.version == "openpilot" && 
-            currentTargetDevice?.version != "openpilot" &&
-            (currentTargetDevice?.connectionQuality ?: 1.0f) < 0.3f -> {
-                // 手动 Log.i(TAG, "🔄 发现OpenpPilot设备且当前设备质量差，切换连接: ${newDevice.ip}")
-                connectToDevice(newDevice)
-            }
-            
-            // 情况4：保持当前连接（更保守的策略）
-            else -> {
-                // 手动 Log.d(TAG, "⚠️ 已有活跃连接设备 ${currentTargetDevice?.ip}，保持当前连接")
-                // 更新设备活跃时间，避免误判为离线
-                val deviceKey = "${newDevice.ip}:${newDevice.port}"
-                if (discoveredDevices.containsKey(deviceKey)) {
-                    discoveredDevices[deviceKey] = newDevice.copy(lastSeen = System.currentTimeMillis())
-                }
-            }
-        }
-    }
-    
-    // 判断是否应该切换到新设备（修复频繁切换问题）
-    private fun shouldSwitchToNewDevice(newDevice: DeviceInfo): Boolean {
-        val currentDevice = currentTargetDevice ?: return true
+        Log.i(TAG, "🔍 评估设备连接: 新设备=$newDevice, 当前设备=${currentTargetDevice?.toString()}")
         
-        // 如果当前设备仍然活跃，避免频繁切换
-        if (currentDevice.isActive()) {
-            // 只有在明显优势时才切换
-            return when {
-                // 新设备是OpenpPilot设备，当前不是（明显优势）
-                newDevice.version == "openpilot" && currentDevice.version != "openpilot" -> true
-                
-                // 新设备连接质量显著更好（时间差超过10秒）
-                newDevice.lastSeen > currentDevice.lastSeen + 10000 -> true
-                
-                else -> false
+        // 简化逻辑：如果新设备IP与当前设备不同，就切换连接
+        if (currentTargetDevice == null || newDevice.ip != currentTargetDevice?.ip) {
+            Log.i(TAG, "🔄 切换设备连接: ${currentTargetDevice?.ip ?: "无"} -> ${newDevice.ip}")
+            connectToDevice(newDevice)
+        } else {
+            Log.d(TAG, "✅ 设备IP相同，保持当前连接: ${newDevice.ip}")
+            // 更新设备活跃时间
+            val deviceKey = "${newDevice.ip}:${newDevice.port}"
+            if (discoveredDevices.containsKey(deviceKey)) {
+                discoveredDevices[deviceKey] = newDevice.copy(lastSeen = System.currentTimeMillis())
             }
-        }
-        
-        // 当前设备不活跃时，允许切换
-        return true
-    }
-    
-    // 判断网络拓扑优先级（基于IP地址的简单判断）
-    private fun isBetterNetworkTopology(newIP: String, currentIP: String): Boolean {
-        // 简单的网络拓扑判断：优先选择更小的IP地址（通常是更稳定的设备）
-        return try {
-            val newIPParts = newIP.split(".").map { it.toInt() }
-            val currentIPParts = currentIP.split(".").map { it.toInt() }
-            
-            // 比较IP地址的数值大小
-            for (i in 0..3) {
-                when {
-                    newIPParts[i] < currentIPParts[i] -> return true
-                    newIPParts[i] > currentIPParts[i] -> return false
-                }
-            }
-            false
-        } catch (e: Exception) {
-            false
         }
     }
     
     
-    // 连接到指定的Comma3设备（基于广播数据快速连接）
+    
+    // 连接到指定的Comma3设备（简化逻辑：直接连接）
     fun connectToDevice(device: DeviceInfo) {
-        val currentTime = System.currentTimeMillis()
-        
-        // 检查连接稳定性
-        if (currentTime - lastConnectionSwitchTime < connectionStabilityThreshold) {
-            connectionSwitchCount++
-            if (connectionSwitchCount > 3) {
-                Log.w(TAG, "⚠️ 连接频繁切换，可能存在网络不稳定问题")
-            }
-        } else {
-            connectionSwitchCount = 1
-        }
-        lastConnectionSwitchTime = currentTime
-        
-        // 手动 Log.i(TAG, "🔗 开始连接到Comma3设备: $device")
+        Log.i(TAG, "🔗 连接到设备: $device")
 
-        // 基于广播数据验证的设备直接连接（无需额外验证）
-        if (device.isVerified) {
-            currentTargetDevice = device
-            dataSendJob?.cancel()
-            startDataTransmission()
+        // 直接连接，不需要复杂验证
+        currentTargetDevice = device
+        // 强制更新deviceIP字段，确保使用正确的IP地址
+        deviceIP = device.ip
+        Log.i(TAG, "🔧 设置deviceIP: ${device.ip}")
+        
+        dataSendJob?.cancel()
+        startDataTransmission()
 
-            // 手动 Log.i(TAG, "✅ 更新连接状态: 已连接到设备 ${device.ip}")
-            onConnectionStatusChanged?.invoke(true, "")
-            // 手动 Log.i(TAG, "🎉 设备连接建立成功: ${device.ip}")
-        } else {
-            // 对于未验证的设备，进行快速验证（2秒内完成）
-            networkScope.launch {
-                val verifiedDevice = verifyDeviceConnection(device)
-                if (verifiedDevice != null) {
-                    currentTargetDevice = verifiedDevice
-                    dataSendJob?.cancel()
-                    startDataTransmission()
-
-                    // 手动 Log.i(TAG, "✅ 更新连接状态: 已连接到设备 ${device.ip}")
-                    onConnectionStatusChanged?.invoke(true, "")
-                    // 手动 Log.i(TAG, "🎉 设备连接建立成功: ${device.ip}")
-                } else {
-                    Log.w(TAG, "❌ 设备验证失败: $device")
-                    onConnectionStatusChanged?.invoke(false, "设备验证失败")
-                }
-            }
-        }
-    }
-    
-    // 验证设备连接质量（新增设备确认机制）
-    private suspend fun verifyDeviceConnection(device: DeviceInfo): DeviceInfo? = withContext(Dispatchers.IO) {
-        try {
-            val startTime = System.currentTimeMillis()
-            
-            // 1. 发送验证ping
-            val pingResult = sendVerificationPing(device)
-            val responseTime = System.currentTimeMillis() - startTime
-            
-            if (pingResult) {
-                // 2. 测试数据传输
-                val dataTestResult = testDataTransmission(device)
-                
-                // 3. 计算连接质量
-                val quality = calculateConnectionQuality(responseTime, dataTestResult)
-                
-                // 4. 返回验证后的设备信息
-                return@withContext device.copy(
-                    isVerified = true,
-                    responseTime = responseTime,
-                    connectionQuality = quality,
-                    deviceId = generateDeviceId(device.ip, device.port),
-                    capabilities = detectDeviceCapabilities(device)
-                )
-            }
-            
-            return@withContext null
-            
-        } catch (e: Exception) {
-            Log.e(TAG, "设备验证失败: ${e.message}", e)
-            return@withContext null
-        }
-    }
-    
-    // 发送验证ping
-    private suspend fun sendVerificationPing(device: DeviceInfo): Boolean = withContext(Dispatchers.IO) {
-        try {
-            val pingData = JSONObject().apply {
-                put("type", "ping")
-                put("timestamp", System.currentTimeMillis())
-                put("source", "android_app")
-            }
-            
-            val dataBytes = pingData.toString().toByteArray(Charsets.UTF_8)
-            val packet = DatagramPacket(
-                dataBytes,
-                dataBytes.size,
-                InetAddress.getByName(device.ip),
-                device.port
-            )
-            
-            dataSocket?.send(packet)
-            // 手动 Log.d(TAG, "发送验证ping到: ${device.ip}:${device.port}")
-            
-            // 快速验证（2秒超时）
-            delay(2000)
-            return@withContext true
-            
-        } catch (e: Exception) {
-            Log.e(TAG, "发送验证ping失败: ${e.message}", e)
-            return@withContext false
-        }
-    }
-    
-    // 测试数据传输
-    private suspend fun testDataTransmission(device: DeviceInfo): Boolean = withContext(Dispatchers.IO) {
-        try {
-            val testData = JSONObject().apply {
-                put("type", "test")
-                put("timestamp", System.currentTimeMillis())
-                put("data", "connection_test")
-            }
-            
-            val dataBytes = testData.toString().toByteArray(Charsets.UTF_8)
-            val packet = DatagramPacket(
-                dataBytes,
-                dataBytes.size,
-                InetAddress.getByName(device.ip),
-                device.port
-            )
-            
-            dataSocket?.send(packet)
-            return@withContext true
-            
-        } catch (e: Exception) {
-            Log.e(TAG, "数据传输测试失败: ${e.message}", e)
-            return@withContext false
-        }
-    }
-    
-    // 计算连接质量
-    private fun calculateConnectionQuality(responseTime: Long, dataTestResult: Boolean): Float {
-        var quality = 1.0f
-        
-        // 响应时间评分
-        when {
-            responseTime < 100 -> quality *= 1.0f
-            responseTime < 500 -> quality *= 0.8f
-            responseTime < 1000 -> quality *= 0.6f
-            else -> quality *= 0.3f
-        }
-        
-        // 数据传输测试评分
-        if (!dataTestResult) {
-            quality *= 0.5f
-        }
-        
-        return quality.coerceIn(0.0f, 1.0f)
+        Log.i(TAG, "✅ 设备连接成功: ${device.ip}")
+        onConnectionStatusChanged?.invoke(true, "")
     }
     
     // 生成设备ID
@@ -728,180 +553,62 @@ class CarrotManNetworkClient(
         }
     }
     
-    // 执行设备健康检查（修复连接稳定性问题）
+    // 简化的设备健康检查
     private suspend fun performDeviceHealthCheck() {
         val currentTime = System.currentTimeMillis()
-        val initialDeviceCount = discoveredDevices.size
         
-        // 更长的超时时间，减少误判
-        val timeout = if (isInBackground) DEVICE_TIMEOUT * 5 else DEVICE_TIMEOUT * 2
-        
-        // 1. 清理离线设备（更保守的策略）
-        val removedDevices = discoveredDevices.values.filter { device ->
+        // 清理长时间未活跃的设备
+        val timeout = DEVICE_TIMEOUT * 2
+        val inactiveDevices = discoveredDevices.values.filter { device ->
             currentTime - device.lastSeen > timeout
         }
         
-        removedDevices.forEach { device ->
+        inactiveDevices.forEach { device ->
             val deviceKey = "${device.ip}:${device.port}"
             discoveredDevices.remove(deviceKey)
-            // 手动 Log.i(TAG, "移除离线设备: $device")
+            Log.d(TAG, "移除离线设备: $device")
         }
         
-        // 2. 检查当前连接设备状态（修复频繁断开问题）
+        // 如果当前设备离线，断开连接
         currentTargetDevice?.let { device ->
-            val deviceKey = "${device.ip}:${device.port}"
-            
-            // 只有在设备真正从发现列表中移除时才断开连接
-            if (!discoveredDevices.containsKey(deviceKey)) {
-                Log.w(TAG, "当前连接设备已从发现列表移除: $device")
-                handleCurrentDeviceDisconnection()
-            } else {
-                // 更新设备活跃时间（避免频繁断开）
-                val updatedDevice = discoveredDevices[deviceKey]?.copy(lastSeen = currentTime)
-                if (updatedDevice != null) {
-                    discoveredDevices[deviceKey] = updatedDevice
-                }
-                
-                // 只有在设备真正不活跃时才断开（增加容错时间）
-                if (!device.isActive() && currentTime - device.lastSeen > timeout / 2) {
-                    Log.w(TAG, "当前设备长时间不活跃: $device")
-                    handleCurrentDeviceDisconnection()
-                }
-            }
-        }
-        
-        // 3. 自动选择最佳设备（如果没有当前连接）
-        if (currentTargetDevice == null && discoveredDevices.isNotEmpty()) {
-            selectBestAvailableDevice()
-        }
-        
-        // 4. 更新连接状态
-        updateConnectionStatus()
-        
-        if (removedDevices.isNotEmpty()) {
-            // 手动 Log.d(TAG, "健康检查完成 - 设备数量: $initialDeviceCount -> ${discoveredDevices.size}")
-        }
-    }
-    
-    // 处理当前设备断开连接（修复协程取消异常）
-    private suspend fun handleCurrentDeviceDisconnection() {
-        try {
-            currentTargetDevice = null
-            
-            // 安全取消数据传输任务
-            dataSendJob?.cancel()
-            dataSendJob = null
-            
-            // 尝试自动切换到备用设备
-            selectBestAvailableDevice()
-        } catch (e: Exception) {
-            Log.e(TAG, "处理设备断开连接时发生异常: ${e.message}", e)
-        }
-    }
-    
-    // 选择最佳可用设备（基于逆向分析的设备选择策略）
-    private suspend fun selectBestAvailableDevice() {
-        val activeDevices = discoveredDevices.values.filter { it.isActive() }
-        
-        if (activeDevices.isNotEmpty()) {
-            // 基于逆向分析的设备优先级选择
-            val bestDevice = selectDeviceByPriority(activeDevices)
-            // 手动 Log.i(TAG, "自动选择最佳设备: $bestDevice")
-            connectToDevice(bestDevice)
-        } else {
-            Log.w(TAG, "没有可用的备用设备")
-            onConnectionStatusChanged?.invoke(false, "没有可用设备")
-        }
-    }
-    
-    // 基于优先级选择设备（增强设备确认机制）
-    private fun selectDeviceByPriority(devices: List<DeviceInfo>): DeviceInfo {
-        return devices.sortedWith(compareBy<DeviceInfo> { device ->
-            // 优先级1：已验证且可靠的设备
-            when {
-                device.isReliable() -> 0
-                device.isVerified -> 1
-                else -> 2
-            }
-        }.thenBy { device ->
-            // 优先级2：连接质量评分
-            -device.connectionQuality
-        }.thenBy { device ->
-            // 优先级3：OpenpPilot设备优先
-            when (device.version) {
-                "openpilot" -> 0
-                "comma3" -> 1
-                else -> 2
-            }
-        }.thenBy { device ->
-            // 优先级4：响应时间
-            device.responseTime
-        }.thenBy { device ->
-            // 优先级5：更近期的活跃时间
-            -device.lastSeen
-        }).first()
-    }
-    
-    // 更新连接状态（基于逆向分析的状态管理）
-    private fun updateConnectionStatus() {
-        when {
-            currentTargetDevice != null -> {
-                // 有活跃连接
-                onConnectionStatusChanged?.invoke(true, "")
-            }
-            discoveredDevices.isNotEmpty() -> {
-                // 有发现设备但未连接
-                onConnectionStatusChanged?.invoke(false, "发现设备但未连接")
-            }
-            else -> {
-                // 没有发现任何设备
-                onConnectionStatusChanged?.invoke(false, "未发现设备")
+            if (!device.isActive() && currentTime - device.lastSeen > timeout) {
+                Log.w(TAG, "当前设备离线，断开连接: $device")
+                currentTargetDevice = null
+                dataSendJob?.cancel()
+                onConnectionStatusChanged?.invoke(false, "设备离线")
             }
         }
     }
     
-    // 发送心跳包维持连接 - 恢复简单发送逻辑
+    // 发送心跳包维持连接
     private suspend fun sendHeartbeat() = withContext(Dispatchers.IO) {
         val currentTime = System.currentTimeMillis()
         val heartbeatData = JSONObject().apply {
             put("carrotIndex", ++carrotIndex)
             put("epochTime", currentTime / 1000)
-            put("timestamp", currentTime / 1000.0) // 统一时间戳格式
+            put("timestamp", currentTime / 1000.0)
             put("timezone", "Asia/Shanghai")
             put("carrotCmd", "heartbeat")
             put("carrotArg", "")
             put("source", "android_app")
         }
         
-        // 直接发送心跳包，不做去重检查
         sendDataPacket(heartbeatData)
-        // 手动 Log.v(TAG, "心跳包已发送，索引: $carrotIndex")
     }
     
-    // 发送CarrotMan导航数据包 - 恢复简单发送逻辑，移除数据去重
+    // 发送CarrotMan导航数据包
     fun sendCarrotManData(carrotFields: CarrotManFields) {
         if (!isRunning || currentTargetDevice == null) {
-            // 降低无连接时的日志级别，避免日志刷屏
-            if (System.currentTimeMillis() - lastNoConnectionLogTime > 10000) { // 10秒记录一次
-                Log.w(TAG, "发送CarrotMan数据 - 服务未运行或无连接设备")
-                // 手动 Log.d(TAG, "状态检查 - 运行状态: $isRunning, 连接设备: $currentTargetDevice")
-                lastNoConnectionLogTime = System.currentTimeMillis()
-            }
             return
         }
 
         networkScope.launch {
             try {
                 val jsonData = convertCarrotFieldsToJson(carrotFields)
-                
-                // 直接发送数据，不做去重检查
                 sendDataPacket(jsonData)
                 onDataSent?.invoke(++totalPacketsSent)
-                // 手动 Log.v(TAG, "CarrotMan数据包发送成功 #$totalPacketsSent")
             } catch (e: Exception) {
                 Log.e(TAG, "CarrotMan数据发送失败: ${e.message}", e)
-                // 发送失败时短暂延迟，避免快速重试
-                delay(500)
             }
         }
     }
@@ -973,18 +680,23 @@ class CarrotManNetworkClient(
             put("nGoPosTime", fields.nGoPosTime)
             put("szPosRoadName", fields.szPosRoadName)
 
-            // GPS数据字段 (完整字段)
+            // 🚀 GPS数据字段 (完整字段) - 关键：这些字段决定Comma3设备的位置显示
             put("latitude", fields.latitude)                 // GPS纬度
             put("longitude", fields.longitude)               // GPS经度
             put("heading", fields.heading)                   // 方向角
             put("accuracy", fields.accuracy)                 // GPS精度
             put("gps_speed", fields.gps_speed)               // GPS速度 (m/s)
 
-            // 导航位置字段 (comma3需要的兼容字段)
+            // 🚀 导航位置字段 (comma3需要的兼容字段) - 必须包含
             put("vpPosPointLat", fields.vpPosPointLat)       // 导航纬度
             put("vpPosPointLon", fields.vpPosPointLon)       // 导航经度
             put("nPosAngle", fields.nPosAngle)               // 导航方向角
             put("nPosSpeed", fields.nPosSpeed)               // 导航速度
+            
+            // 🔍 调试日志：记录发送的GPS坐标
+            if (fields.latitude != 0.0 && fields.longitude != 0.0) {
+                Log.v(TAG, "📍 发送GPS坐标: lat=${fields.latitude}, lon=${fields.longitude}, vp_lat=${fields.vpPosPointLat}, vp_lon=${fields.vpPosPointLon}")
+            }
 
             // 倒计时字段已移除 - Python内部计算
             // 导航状态字段 (可选)
@@ -1032,254 +744,8 @@ class CarrotManNetworkClient(
         }
     }
     
-    // 发送TCP数据包（用于Vertex数据，基于逆向分析）
-    private suspend fun sendTcpDataPacket(vertexData: List<Pair<Float, Float>>) = withContext(Dispatchers.IO) {
-        val device = currentTargetDevice ?: return@withContext
-        
-        try {
-            // 创建TCP连接
-            tcpSocket = Socket(device.ip, TCP_VERTEX_PORT).apply {
-                soTimeout = SOCKET_TIMEOUT
-            }
-            
-            val outputStream = tcpSocket?.getOutputStream() as DataOutputStream
-            
-            // 写入顶点数量（基于逆向分析的格式）
-            outputStream.writeInt(vertexData.size * 8)  // 每个顶点8字节（2个float）
-            
-            // 写入顶点坐标
-            for ((x, y) in vertexData) {
-                outputStream.writeFloat(x)
-                outputStream.writeFloat(y)
-            }
-            
-            outputStream.flush()
-            // 手动 Log.v(TAG, "TCP Vertex数据发送成功 -> ${device.ip}:$TCP_VERTEX_PORT (${vertexData.size} 顶点)")
-            
-        } catch (e: Exception) {
-            Log.e(TAG, "TCP Vertex数据发送失败: ${e.message}", e)
-            throw e
-        } finally {
-            tcpSocket?.close()
-            tcpSocket = null
-        }
-    }
-    
-    // 发送交通灯状态更新到comma3设备
-    fun sendTrafficLightUpdate(trafficState: Int, leftSec: Int) {
-        if (!isRunning || currentTargetDevice == null) {
-            Log.w(TAG, "网络客户端未运行或设备未连接，无法发送交通灯状态")
-            return
-        }
 
-        networkScope.launch {
-            try {
-                val trafficLightMessage = JSONObject().apply {
-                    // 基础协议字段 (基于逆向文档)
-                    put("carrotIndex", ++carrotIndex)
-                    put("epochTime", System.currentTimeMillis() / 1000)
-                    put("timezone", "Asia/Shanghai")
-                    put("carrotCmd", "traffic_light_update")
-                    put("carrotArg", "")
-                    put("source", "android_amap")
 
-                    // 交通灯状态字段 (基于逆向文档协议)
-                    put("trafficState", trafficState)  // 协议标准字段名
-                    put("leftSec", leftSec)           // 协议标准字段名
-                    put("traffic_state", trafficState) // 内部兼容字段
-                    put("left_sec", leftSec)          // 内部兼容字段
-
-                    // 远程IP地址
-                    put("remote", currentTargetDevice?.ip ?: "")
-                }
-
-                sendDataPacket(trafficLightMessage)
-                totalPacketsSent++
-
-                // 手动 Log.i(TAG, "🚦 交通灯状态更新已发送: 状态=$trafficState, 倒计时=${leftSec}s")
-                onDataSent?.invoke(totalPacketsSent)
-            } catch (e: Exception) {
-                Log.e(TAG, "❌ 发送交通灯状态更新失败: ${e.message}", e)
-            }
-        }
-    }
-
-    // 发送DETECT命令到comma3设备（只在前方120m内有红灯时发送）
-    fun sendDetectCommand(trafficState: Int, leftSec: Int, distance: Int, gpsLat: Double = 0.0, gpsLon: Double = 0.0) {
-        if (!isRunning || currentTargetDevice == null) {
-            Log.w(TAG, "网络客户端未运行或设备未连接，无法发送DETECT命令")
-            return
-        }
-
-        networkScope.launch {
-            try {
-                // 🎯 修复：按照Python端期望的格式构造carrotArg
-                // 格式: "状态,x坐标,y坐标,置信度"
-                val stateString = when (trafficState) {
-                    1 -> "Red Light"        // 普通红灯
-                    4 -> "Red Light"        // 左转红灯（也映射为红灯）
-                    2 -> "Green Light"      // 绿灯
-                    3 -> "Yellow Light"     // 黄灯
-                    else -> "Red Light"     // 默认红灯
-                }
-                
-                // 🎯 使用真实GPS坐标和高置信度（高德地图数据可信度较高）
-                val x = gpsLat  // x坐标 - 使用真实GPS纬度
-                val y = gpsLon  // y坐标 - 使用真实GPS经度  
-                val confidence = 0.9  // 置信度 - 高德地图数据可信度较高
-                
-                val detectMessage = JSONObject().apply {
-                    // 基础协议字段
-                    put("carrotIndex", ++carrotIndex)
-                    put("epochTime", System.currentTimeMillis() / 1000)
-                    put("timezone", "Asia/Shanghai")
-                    put("carrotCmd", "DETECT")
-                    
-                    put("carrotArg", "$stateString,$x,$y,$confidence")
-                    put("source", "android_amap")
-
-                    // 保留用于调试的额外字段
-                    put("leftSec", leftSec)           // 剩余倒计时
-                    put("distance", distance)         // 距离信息
-                    put("androidTrafficState", trafficState) // Android内部状态值
-
-                    // 远程IP地址
-                    put("remote", currentTargetDevice?.ip ?: "")
-                }
-
-                sendDataPacket(detectMessage)
-                totalPacketsSent++
-
-                // 手动 Log.i(TAG, "🔍 DETECT命令已发送: carrotArg='$stateString,$x,$y,$confidence', 距离=${distance}m")
-                onDataSent?.invoke(totalPacketsSent)
-            } catch (e: Exception) {
-                Log.e(TAG, "❌ 发送DETECT命令失败: ${e.message}", e)
-            }
-        }
-    }
-
-    // 发送CarrotMan数据到Comma3设备（实时发送）
-    suspend fun sendCarrotManData(carrotData: CarrotManData) {
-        try {
-            if (currentTargetDevice == null) {
-                Log.w(TAG, "⚠️ 没有连接的设备，无法发送CarrotMan数据")
-                return
-            }
-
-            val currentTime = System.currentTimeMillis()
-            
-            // 构建CarrotMan数据包（基于逆向分析的完整结构）
-            val dataPacket = JSONObject().apply {
-                put("type", "carrotman_data")
-                put("timestamp", currentTime)
-                put("carrotIndex", carrotData.carrotIndex)
-                
-                // 导航信息
-                put("nTBTTurnType", carrotData.nTBTTurnType)
-                put("nTBTDist", carrotData.nTBTDist)
-                put("szTBTMainText", carrotData.szTBTMainText)
-                put("szNearDirName", carrotData.szNearDirName)
-                put("szFarDirName", carrotData.szFarDirName)
-                
-                // 位置信息
-                put("vpPosPointLat", carrotData.vpPosPointLat)
-                put("vpPosPointLon", carrotData.vpPosPointLon)
-                put("vpPosPointLatNavi", carrotData.vpPosPointLatNavi)
-                put("vpPosPointLonNavi", carrotData.vpPosPointLonNavi)
-                
-                // 目的地信息
-                put("goalPosX", carrotData.goalPosX)
-                put("goalPosY", carrotData.goalPosY)
-                put("szGoalName", carrotData.szGoalName)
-                
-                // 道路信息
-                put("roadcate", carrotData.roadcate)
-                put("nRoadLimitSpeed", carrotData.nRoadLimitSpeed)
-                
-                // SDI信息
-                put("nSdiType", carrotData.nSdiType)
-                put("nSdiSpeedLimit", carrotData.nSdiSpeedLimit)
-                put("nSdiDist", carrotData.nSdiDist)
-                
-                // 系统状态
-                put("active_carrot", carrotData.active_carrot)
-                put("isNavigating", carrotData.isNavigating)
-                put("source", "android_app")
-            }
-
-            // 发送到动态端口
-            val targetPort = if (dynamicSendPort != MAIN_DATA_PORT) dynamicSendPort else currentTargetDevice!!.port
-            val targetIP = deviceIP ?: currentTargetDevice!!.ip
-            
-            val dataBytes = dataPacket.toString().toByteArray(Charsets.UTF_8)
-            val packet = DatagramPacket(
-                dataBytes,
-                dataBytes.size,
-                InetAddress.getByName(targetIP),
-                targetPort
-            )
-
-            dataSocket?.send(packet)
-            totalPacketsSent++
-            lastSendTime = currentTime
-
-            Log.d(TAG, "📤 CarrotMan数据已发送: 转弯类型=${carrotData.nTBTTurnType}, 距离=${carrotData.nTBTDist}m")
-            onDataSent?.invoke(totalPacketsSent)
-            
-        } catch (e: Exception) {
-            Log.e(TAG, "发送CarrotMan数据失败: ${e.message}", e)
-            throw e
-        }
-    }
-
-    // 发送专门的目的地更新消息到comma3
-    suspend fun sendDestinationUpdate(
-        goalPosX: Double,
-        goalPosY: Double,
-        szGoalName: String,
-        goalAddress: String = "",
-        priority: String = "high"
-    ) {
-        if (!isRunning || currentTargetDevice == null) {
-            Log.w(TAG, "网络客户端未运行或设备未连接，无法发送目的地更新")
-            return
-        }
-        
-        try {
-            val destinationMessage = JSONObject().apply {
-                put("carrotIndex", ++carrotIndex)
-                put("epochTime", System.currentTimeMillis() / 1000)
-                put("timezone", "Asia/Shanghai")
-                put("carrotCmd", "destination_update")
-                put("carrotArg", "navigation_destination")
-                put("source", "android_amap")
-                put("priority", priority)
-                
-                put("goalPosX", goalPosX)
-                put("goalPosY", goalPosY)
-                put("szGoalName", szGoalName)
-                put("goalAddress", goalAddress)
-                
-                put("destinationUpdateTime", System.currentTimeMillis())
-                put("isNavigating", true)
-                put("active_carrot", 1)
-                put("dataQuality", "destination_update")
-                
-                put("coordinateSystem", "WGS84")
-                put("coordinatePrecision", 6)
-            }
-            
-            sendDataPacket(destinationMessage)
-            totalPacketsSent++
-            
-            // 手动 Log.i(TAG, "目的地更新消息已发送: $szGoalName ($goalPosY, $goalPosX)")
-            onDataSent?.invoke(totalPacketsSent)
-            
-        } catch (e: Exception) {
-            Log.e(TAG, "发送目的地更新失败: ${e.message}", e)
-            throw e
-        }
-    }
 
     // 获取网络连接状态信息
     fun getConnectionStatus(): Map<String, Any> {
@@ -1302,7 +768,49 @@ class CarrotManNetworkClient(
     
     // 获取当前连接的设备信息
     fun getCurrentDevice(): DeviceInfo? {
+        // 优先使用从JSON数据中获取的deviceIP
+        if (deviceIP != null && currentTargetDevice != null) {
+            // 如果deviceIP和currentTargetDevice都存在，返回使用deviceIP的设备信息
+            return currentTargetDevice!!.copy(ip = deviceIP!!)
+        }
         return currentTargetDevice
+    }
+    
+    // 获取手机IP地址
+    private fun getPhoneIPAddress(): String {
+        try {
+            val wifiManager = context.getSystemService(Context.WIFI_SERVICE) as WifiManager
+            val wifiInfo = wifiManager.connectionInfo
+            val ipAddress = wifiInfo.ipAddress
+            
+            // 将int类型的IP地址转换为字符串格式
+            val ip = String.format(
+                "%d.%d.%d.%d",
+                ipAddress and 0xff,
+                ipAddress shr 8 and 0xff,
+                ipAddress shr 16 and 0xff,
+                ipAddress shr 24 and 0xff
+            )
+            
+            return ip
+        } catch (e: Exception) {
+            Log.w(TAG, "⚠️ 获取手机IP地址失败: ${e.message}")
+            return ""
+        }
+    }
+
+    // 获取设备IP地址（优先使用从JSON数据中解析的IP）
+    fun getDeviceIP(): String? {
+        // 优先返回从JSON数据中解析的deviceIP
+        val ip = deviceIP ?: currentTargetDevice?.ip
+        Log.i(TAG, "🔍 获取设备IP: deviceIP=$deviceIP, currentTargetDevice.ip=${currentTargetDevice?.ip}, 最终IP=$ip")
+        Log.i(TAG, "📊 设备状态: 运行状态=$isRunning, 发现设备数=${discoveredDevices.size}, 当前设备=${currentTargetDevice?.toString()}")
+        return ip
+    }
+
+    // 获取手机IP地址
+    fun getPhoneIP(): String {
+        return phoneIP.ifEmpty { "未获取" }
     }
     
     // 设置设备发现事件回调
@@ -1398,210 +906,6 @@ class CarrotManNetworkClient(
         }
     }
 
-    /**
-     * 发送Vertex数据（TCP方式，基于逆向分析）
-     * @param vertexData 顶点坐标列表
-     */
-    fun sendVertexData(vertexData: List<Pair<Float, Float>>) {
-        if (!isRunning || currentTargetDevice == null) {
-            Log.w(TAG, "网络客户端未运行或设备未连接，无法发送Vertex数据")
-            return
-        }
-
-        networkScope.launch {
-            try {
-                sendTcpDataPacket(vertexData)
-                totalPacketsSent++
-                onDataSent?.invoke(totalPacketsSent)
-            } catch (e: Exception) {
-                Log.e(TAG, "发送Vertex数据失败: ${e.message}", e)
-            }
-        }
-    }
-
-    /**
-     * 发送自定义JSON数据包（用于控制指令等）
-     * @param jsonData 要发送的JSON数据
-     */
-    fun sendCustomDataPacket(jsonData: JSONObject) {
-        // 手动 Log.d(TAG, "📦 CarrotManNetworkClient.sendCustomDataPacket: ${jsonData.toString()}")
-        
-        if (!isRunning || currentTargetDevice == null) {
-            Log.w(TAG, "⚠️ 网络服务未运行或无连接设备，无法发送自定义数据包")
-            Log.w(TAG, "⚠️ 状态检查 - 运行状态: $isRunning, 连接设备: $currentTargetDevice")
-            return
-        }
-
-        networkScope.launch {
-            try {
-                // 手动 Log.d(TAG, "📡 开始发送自定义数据包到设备: ${currentTargetDevice?.ip}:${currentTargetDevice?.port}")
-                sendDataPacket(jsonData)
-                totalPacketsSent++
-                
-                // 手动 Log.i(TAG, "✅ 自定义数据包发送成功 #$totalPacketsSent")
-                // 手动 Log.d(TAG, "📦 数据内容: ${jsonData.toString()}")
-                
-                onDataSent?.invoke(totalPacketsSent)
-            } catch (e: Exception) {
-                Log.e(TAG, "❌ 发送自定义数据包失败: ${e.message}", e)
-            }
-        }
-    }
     
-    /**
-     * 启动设备发现服务（基于逆向分析的主动发现机制）
-     */
-    private fun startDeviceDiscovery() {
-        // 手动 Log.i(TAG, "🔍 启动设备发现服务...")
-        
-        networkScope.launch {
-            while (isRunning) {
-                try {
-                    // 主动设备发现：发送发现广播
-                    sendDeviceDiscoveryBroadcast()
-                    
-                    // 检查已发现设备的活跃状态
-                    checkDiscoveredDevices()
-                    
-                    // 自动选择最佳设备
-                    autoSelectBestDevice()
-                    
-                    delay(5000) // 5秒发现间隔
-                } catch (e: Exception) {
-                    Log.e(TAG, "❌ 设备发现失败: ${e.message}", e)
-                    delay(5000)
-                }
-            }
-        }
-    }
-    
-    // 发送设备发现广播（基于逆向分析的主动发现）
-    private suspend fun sendDeviceDiscoveryBroadcast() = withContext(Dispatchers.IO) {
-        try {
-            val discoveryMessage = JSONObject().apply {
-                put("type", "device_discovery")
-                put("source", "android_app")
-                put("timestamp", System.currentTimeMillis())
-                put("version", "1.0")
-            }
-            
-            val dataBytes = discoveryMessage.toString().toByteArray(Charsets.UTF_8)
-            val broadcastPacket = DatagramPacket(
-                dataBytes,
-                dataBytes.size,
-                InetAddress.getByName("255.255.255.255"),  // 广播地址
-                BROADCAST_PORT
-            )
-            
-            dataSocket?.send(broadcastPacket)
-            // 手动 Log.v(TAG, "设备发现广播已发送")
-            
-        } catch (e: Exception) {
-            // 手动 Log.w(TAG, "发送设备发现广播失败: ${e.message}")
-        }
-    }
-    
-    // 移除设备发现广播，简化连接逻辑
-    
-    /**
-     * 检查已发现设备的活跃状态
-     */
-    private fun checkDiscoveredDevices() {
-        val currentTime = System.currentTimeMillis()
-        val inactiveDevices = mutableListOf<String>()
-        
-        discoveredDevices.forEach { (deviceId, device) ->
-            if (!device.isActive()) {
-                inactiveDevices.add(deviceId)
-                // 手动 Log.d(TAG, "⏰ 设备已离线: $device")
-            }
-        }
-        
-        // 移除离线设备
-        inactiveDevices.forEach { deviceId ->
-            discoveredDevices.remove(deviceId)
-            // 手动 Log.i(TAG, "🗑️ 移除离线设备: $deviceId")
-        }
-        
-        // 如果当前目标设备离线，清除目标
-        if (currentTargetDevice != null && !currentTargetDevice!!.isActive()) {
-            Log.w(TAG, "⚠️ 当前目标设备已离线，清除目标")
-            currentTargetDevice = null
-        }
-    }
-    
-    /**
-     * 简化设备连接逻辑 - 发现设备后立即连接
-     */
-    private fun autoSelectBestDevice() {
-        if (currentTargetDevice != null && currentTargetDevice!!.isActive()) {
-            return // 当前设备仍然活跃
-        }
-        
-        // 简化逻辑：选择第一个活跃设备
-        val activeDevice = discoveredDevices.values.firstOrNull { it.isActive() }
-        if (activeDevice != null) {
-            // 手动 Log.d(TAG, "🎯 连接发现的设备: $activeDevice")
-            connectToDevice(activeDevice)
-        }
-    }
-    
-    // 移除数据去重检查函数，恢复简单发送逻辑
-    
-    // 移除增量更新函数，恢复简单发送逻辑
     
 }
-
-/* =====================================================
-   通用目的地与地理计算工具函数 (顶层)  
-   提供目的地合法性校验、更新判定以及两点间距离计算，
-   抽离自 MainActivity 以减少其代码体积。
-   ===================================================== */
-
-/**
- * 验证目的地坐标与名称的合法性。
- * 支持全球导航，只验证坐标和名称的基本有效性。
- */
-fun validateDestination(longitude: Double, latitude: Double, name: String): Boolean {
-    val isValidLongitude = longitude in -180.0..180.0    // 全球经度范围
-    val isValidLatitude = latitude in -90.0..90.0        // 全球纬度范围
-    val isValidName = name.isNotEmpty() && name.length <= 100
-    val isNonZeroCoordinates = longitude != 0.0 && latitude != 0.0
-
-    return isValidLongitude && isValidLatitude && isValidName && isNonZeroCoordinates
-}
-
-/**
- * 判断是否需要更新目的地，避免因坐标微小变化频繁刷新。
- * 若名称不同或距离超过 100 米，或之前目的地尚未设置，则返回 true。
- */
-fun shouldUpdateDestination(
-    currentLon: Double,
-    currentLat: Double,
-    currentName: String,
-    newLon: Double,
-    newLat: Double,
-    newName: String,
-    distanceThreshold: Double = 100.0
-): Boolean {
-    val distance = haversineDistance(currentLat, currentLon, newLat, newLon)
-    return currentName != newName || distance > distanceThreshold ||
-            (currentLon == 0.0 && currentLat == 0.0)
-}
-
-/**
- * 计算两点间距离（哈弗辛公式），单位：米。
- */
-fun haversineDistance(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
-    val R = 6371000.0 // 地球半径（米）
-    val dLat = Math.toRadians(lat2 - lat1)
-    val dLon = Math.toRadians(lon2 - lon1)
-    val a = kotlin.math.sin(dLat / 2) * kotlin.math.sin(dLat / 2) +
-            kotlin.math.cos(Math.toRadians(lat1)) * kotlin.math.cos(Math.toRadians(lat2)) *
-            kotlin.math.sin(dLon / 2) * kotlin.math.sin(dLon / 2)
-    val c = 2 * kotlin.math.atan2(kotlin.math.sqrt(a), kotlin.math.sqrt(1 - a))
-    return R * c
-}
-
-
-
