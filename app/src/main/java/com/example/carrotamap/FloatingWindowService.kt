@@ -46,6 +46,9 @@ class FloatingWindowService : Service() {
     private var cruiseSpeedIndicator: SpeedIndicatorView? = null
     private var carSpeedIndicator: SpeedIndicatorView? = null
     
+    // 应用崩溃检测
+    private var appCrashDetectionJob: Job? = null
+    private var lastMainActivityHeartbeat = System.currentTimeMillis()
     
     // 智能控速按钮状态管理
     private var speedControlButton: Button? = null
@@ -80,9 +83,9 @@ class FloatingWindowService : Service() {
             val sharedPreferences = getSharedPreferences("device_prefs", Context.MODE_PRIVATE)
             val userType = sharedPreferences.getInt("user_type", 0)
             
-            // 用户类型2（支持者）不支持悬浮窗功能
-            val hasPermission = userType != 2
-            Log.d(TAG, "👤 用户类型权限检查: userType=$userType, hasPermission=$hasPermission")
+            // 所有用户类型都支持悬浮窗功能
+            val hasPermission = true
+            Log.d(TAG, "👤 用户类型权限检查: userType=$userType, hasPermission=$hasPermission (所有用户都可使用)")
             hasPermission
         } catch (e: Exception) {
             Log.e(TAG, "❌ 检查用户类型权限失败: ${e.message}", e)
@@ -106,10 +109,12 @@ class FloatingWindowService : Service() {
                     initializeNetworkManager()
                     showFloatingWindow()
                     startSpeedDataCheck()
+                    startAppCrashDetection()
                 }
             }
             ACTION_STOP_FLOATING -> {
                 stopSpeedDataCheck()
+                stopAppCrashDetection()
                 hideFloatingWindow()
                 stopSelf()
             }
@@ -275,6 +280,81 @@ class FloatingWindowService : Service() {
         speedDataCheckJob?.cancel()
         speedDataCheckJob = null
         Log.i(TAG, "⏹️ 停止速度数据检查")
+    }
+
+    /**
+     * 开始应用崩溃检测
+     * 检测MainActivity是否还在运行，如果崩溃则自动清理悬浮窗
+     */
+    private fun startAppCrashDetection() {
+        stopAppCrashDetection() // 先停止之前的检测任务
+        
+        appCrashDetectionJob = CoroutineScope(Dispatchers.IO).launch {
+            while (isActive) {
+                try {
+                    val currentTime = System.currentTimeMillis()
+                    
+                    // 检查MainActivity是否还在运行
+                    val isMainActivityRunning = isMainActivityRunning()
+                    
+                    if (!isMainActivityRunning) {
+                        // MainActivity已停止运行，可能是崩溃了
+                        Log.w(TAG, "⚠️ 检测到MainActivity已停止运行，可能是应用崩溃")
+                        
+                        // 延迟5秒再次检查，避免误判
+                        delay(5000)
+                        if (!isMainActivityRunning()) {
+                            Log.w(TAG, "🚨 确认MainActivity已崩溃，自动清理悬浮窗")
+                            
+                            // 自动清理悬浮窗
+                            withContext(Dispatchers.Main) {
+                                hideFloatingWindow()
+                                stopSelf()
+                            }
+                            break
+                        }
+                    }
+                    
+                    // 每10秒检查一次
+                    delay(10000)
+                } catch (e: Exception) {
+                    Log.e(TAG, "❌ 应用崩溃检测异常: ${e.message}", e)
+                    delay(5000) // 出错后等待5秒再重试
+                }
+            }
+        }
+        Log.i(TAG, "🔍 应用崩溃检测已启动")
+    }
+
+    /**
+     * 停止应用崩溃检测
+     */
+    private fun stopAppCrashDetection() {
+        appCrashDetectionJob?.cancel()
+        appCrashDetectionJob = null
+        Log.i(TAG, "⏹️ 停止应用崩溃检测")
+    }
+
+    /**
+     * 检查MainActivity是否还在运行
+     */
+    private fun isMainActivityRunning(): Boolean {
+        return try {
+            val activityManager = getSystemService(Context.ACTIVITY_SERVICE) as android.app.ActivityManager
+            val runningTasks = activityManager.getRunningTasks(10)
+            
+            for (taskInfo in runningTasks) {
+                if (taskInfo.topActivity?.packageName == packageName &&
+                    taskInfo.topActivity?.className?.contains("MainActivity") == true) {
+                    return true
+                }
+            }
+            false
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ 检查MainActivity运行状态失败: ${e.message}", e)
+            // 如果检查失败，假设还在运行，避免误判
+            true
+        }
     }
 
     /**
@@ -811,19 +891,19 @@ class FloatingWindowService : Service() {
     }
 
     /**
-     * 打开数据页面
+     * 打开主页页面
      */
     private fun openDataPage() {
         try {
-            Log.i(TAG, "📊 悬浮窗：打开数据页面")
+            Log.i(TAG, "📊 悬浮窗：打开主页页面")
             val intent = Intent(this, MainActivity::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
-                putExtra("OPEN_PAGE", 4) // 4: 实时数据页面
+                putExtra("OPEN_PAGE", 0) // 0: 主页页面
             }
             startActivity(intent)
             hideFloatingWindow()
         } catch (e: Exception) {
-            Log.e(TAG, "❌ 悬浮窗打开数据页面失败: ${e.message}", e)
+            Log.e(TAG, "❌ 悬浮窗打开主页页面失败: ${e.message}", e)
         }
     }
     
@@ -1122,10 +1202,18 @@ class FloatingWindowService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         try {
+            Log.i(TAG, "🔧 悬浮窗服务正在销毁，清理所有资源...")
+            
+            // 停止所有后台任务
             stopSpeedDataCheck()
+            stopAppCrashDetection()
+            
+            // 隐藏悬浮窗
             hideFloatingWindow()
+            
+            Log.i(TAG, "✅ 悬浮窗服务资源清理完成")
         } catch (e: Exception) {
-            Log.w(TAG, "⚠️ 销毁时隐藏悬浮窗异常: ${e.message}")
+            Log.w(TAG, "⚠️ 销毁时清理资源异常: ${e.message}")
         }
         Log.i(TAG, "🔧 悬浮窗服务销毁")
     }

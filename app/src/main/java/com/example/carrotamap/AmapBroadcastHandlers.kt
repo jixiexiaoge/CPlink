@@ -447,6 +447,18 @@ class AmapBroadcastHandlers(
                 nSdiSpeedLimit = if (cameraDist > 50) cameraSpeed else if (cameraDist <= 50) 0 else carrotManFields.value.nSdiSpeedLimit,
                 nSdiDist = if (cameraDist > 50) cameraDist else if (cameraDist <= 50) 0 else carrotManFields.value.nSdiDist,
                 nAmapCameraType = if (cameraType >= 0) cameraType else carrotManFields.value.nAmapCameraType, // 保存高德原始CAMERA_TYPE用于调试
+                // 🚀 改进：在引导信息中也设置nSdiSection，使用cameraIndex或生成唯一ID
+                nSdiSection = if (cameraDist > 50 && cameraType >= 0) {
+                    if (cameraIndex >= 0) {
+                        cameraIndex  // 使用高德提供的摄像头索引
+                    } else {
+                        // 生成基于cameraType和当前时间的唯一ID
+                        val timestamp = System.currentTimeMillis() / 1000
+                        (cameraType * 1000 + timestamp % 1000).toInt()
+                    }
+                } else {
+                    carrotManFields.value.nSdiSection  // 保持现有值
+                },
                 szSdiDescr = carrotManFields.value.szSdiDescr,
 
                 // 红绿灯数量信息
@@ -663,37 +675,48 @@ class AmapBroadcastHandlers(
      * 包含区间测速逻辑判断
      */
     fun handleSpeedLimit(intent: Intent) {
-        Log.d(TAG, "🚦 处理限速信息广播")
+        Log.i(TAG, "🚦 开始处理限速信息广播 (KEY_TYPE: 12110)")  // 🚀 增强日志级别
         
         try {
             val speedLimit = intent.getIntExtra("LIMITED_SPEED", 0)
             val roadName = intent.getStringExtra("ROAD_NAME") ?: ""
             val speedLimitType = intent.getIntExtra("SPEED_LIMIT_TYPE", -1)
             
-            // 区间测速相关字段
-            val startDistance = intent.getDoubleExtra("START_DISTANCE", 0.0)
-            val endDistance = intent.getDoubleExtra("END_DISTANCE", 0.0)
-            val intervalDistance = intent.getDoubleExtra("INTERVAL_DISTANCE", 0.0)
+            // 区间测速相关字段 - 🚀 修复：使用getFloatExtra避免类型转换错误
+            val startDistance = intent.getFloatExtra("START_DISTANCE", 0.0f).toDouble()
+            val endDistance = intent.getFloatExtra("END_DISTANCE", 0.0f).toDouble()
+            val intervalDistance = intent.getFloatExtra("INTERVAL_DISTANCE", 0.0f).toDouble()
             val cameraType = intent.getIntExtra("CAMERA_TYPE", -1)
+            val cameraIndex = intent.getIntExtra("CAMERA_INDEX", -1)  // 🚀 新增：摄像头索引
             val averageSpeed = intent.getIntExtra("AVERAGE_SPEED", 0)
             
-            Log.d(TAG, "🚦 限速信息: 限速=${speedLimit}km/h, 道路='$roadName', 类型=$speedLimitType")
-            Log.d(TAG, "🚦 区间测速: 开始距离=${startDistance}m, 结束距离=${endDistance}m, 区间距离=${intervalDistance}m, 摄像头类型=$cameraType, 平均速度=${averageSpeed}km/h")
+            Log.i(TAG, "🚦 限速信息: 限速=${speedLimit}km/h, 道路='$roadName', 类型=$speedLimitType")
+            Log.i(TAG, "🚦 区间测速: 开始距离=${startDistance}m, 结束距离=${endDistance}m, 区间距离=${intervalDistance}m, 摄像头类型=$cameraType, 摄像头索引=$cameraIndex, 平均速度=${averageSpeed}km/h")
             
             // 首先根据CAMERA_TYPE获取基础SDI类型
             val baseSdiType = if (cameraType >= 0) mapAmapCameraTypeToSdi(cameraType) else carrotManFields.value.nSdiType
             
-            // 然后根据距离信息判断是否在区间测速中
+            // 🚀 关键修复：基于Python代码逻辑的区间测速判断
+            // Python代码要求：nSdiType=4, nSdiBlockType=2/3, nSdiBlockDist=区间距离
             val sdiType = when {
-                // 如果CAMERA_TYPE是区间测速相关(8或9)，且满足区间测速中的条件
-                (cameraType == 8 || cameraType == 9) && 
-                startDistance > 0 && endDistance > 0 && intervalDistance > 0 -> {
-                    Log.d(TAG, "🚦 区间测速进行中状态 (基于距离信息判断)")
-                    4  // 区间测速中
+                // 🎯 核心逻辑：CAMERA_TYPE=8 且距离信息完整 = 区间测速进行中
+                cameraType == 8 && startDistance > 0 && endDistance > 0 && intervalDistance > 0 -> {
+                    Log.i(TAG, "🚦 识别为区间测速进行中状态 (CAMERA_TYPE=$cameraType, 距离信息完整)")
+                    4  // 区间测速中 - Python代码要求
+                }
+                // CAMERA_TYPE=8 但距离信息不完整，可能是区间测速开始
+                cameraType == 8 && startDistance > 0 -> {
+                    Log.i(TAG, "🚦 识别为区间测速开始状态 (CAMERA_TYPE=$cameraType)")
+                    2  // 区间测速开始
+                }
+                // CAMERA_TYPE=9 但距离信息不完整，可能是区间测速结束
+                cameraType == 9 && endDistance > 0 -> {
+                    Log.i(TAG, "🚦 识别为区间测速结束状态 (CAMERA_TYPE=$cameraType)")
+                    3  // 区间测速结束
                 }
                 // 否则使用CAMERA_TYPE映射的基础类型
                 else -> {
-                    Log.d(TAG, "🚦 使用CAMERA_TYPE映射: $cameraType -> $baseSdiType")
+                    Log.i(TAG, "🚦 使用CAMERA_TYPE映射: $cameraType -> $baseSdiType")
                     baseSdiType
                 }
             }
@@ -714,6 +737,27 @@ class AmapBroadcastHandlers(
                 else -> -1
             }
             
+            // 🚀 关键修复：生成唯一的区间测速ID
+            // 基于日志分析，高德没有提供CAMERA_INDEX，使用GPS坐标+时间戳生成唯一ID
+            val sdiSectionId = when {
+                // 如果是区间测速相关类型，生成基于GPS坐标的唯一ID
+                sdiType in 2..4 -> {
+                    // 使用GPS坐标的整数部分+时间戳生成唯一ID
+                    val lat = intent.getDoubleExtra("EXTRA_SLAT", 0.0)
+                    val lon = intent.getDoubleExtra("EXTRA_SLON", 0.0)
+                    val timestamp = System.currentTimeMillis() / 1000
+                    if (lat != 0.0 && lon != 0.0) {
+                        // 使用GPS坐标的整数部分+时间戳
+                        ((lat * 1000).toInt() + (lon * 1000).toInt() + timestamp % 1000).toInt()
+                    } else {
+                        // 备用方案：使用cameraType+时间戳
+                        (cameraType * 1000 + timestamp % 1000).toInt()
+                    }
+                }
+                // 非区间测速类型，设为0
+                else -> 0
+            }
+            
             carrotManFields.value = carrotManFields.value.copy(
                 nRoadLimitSpeed = speedLimit,
                 szPosRoadName = roadName,
@@ -722,14 +766,15 @@ class AmapBroadcastHandlers(
                 nSdiType = sdiType,
                 nSdiSpeedLimit = speedLimit,
                 nSdiDist = sdiDist,
-                nSdiSection = if (sdiType in 2..4) 1 else 0,  // 区间测速ID
+                nSdiSection = sdiSectionId,  // 🚀 修复：使用唯一的区间测速ID
                 nSdiBlockType = sdiBlockType,
                 nSdiBlockSpeed = speedLimit,
                 nSdiBlockDist = intervalDistance.toInt(),
                 lastUpdateTime = System.currentTimeMillis()
             )
             
-            Log.d(TAG, "🚦 区间测速状态更新: nSdiType=$sdiType, nSdiDist=$sdiDist, nSdiBlockType=${carrotManFields.value.nSdiBlockType}")
+            Log.i(TAG, "🚦 区间测速状态更新: nSdiType=$sdiType, nSdiDist=$sdiDist, nSdiBlockType=${carrotManFields.value.nSdiBlockType}, nSdiSection=$sdiSectionId")
+            Log.i(TAG, "🚦 发送到Python的数据: nSdiSpeedLimit=${carrotManFields.value.nSdiSpeedLimit}, nSdiBlockSpeed=${carrotManFields.value.nSdiBlockSpeed}, nSdiBlockDist=${carrotManFields.value.nSdiBlockDist}")
             
         } catch (e: Exception) {
             Log.e(TAG, "❌ 处理限速信息失败: ${e.message}", e)

@@ -98,11 +98,8 @@ class MainActivityLifecycle(
             Log.w(TAG, "⚠️ 记录使用时长失败: ${e.message}")
         }
         
-        // 只有用户类型3（赞助者）和4（铁粉）才能使用悬浮窗
-        if (core.userType.value !in listOf(3, 4)) {
-            Log.i(TAG, "🔒 用户类型${core.userType.value}不支持悬浮窗功能，仅限赞助者和铁粉")
-            return
-        }
+        // 所有用户类型都可以使用悬浮窗功能
+        Log.i(TAG, "🔓 用户类型${core.userType.value}可以使用悬浮窗功能")
         
         // 设置网络管理器为后台模式，调整网络策略
         try {
@@ -171,8 +168,22 @@ class MainActivityLifecycle(
         Log.i(TAG, "🔧 MainActivity正在销毁，清理资源...")
 
         try {
+            // 首先停止悬浮窗服务，防止悬浮窗残留
+            try {
+                val intent = Intent(activity, FloatingWindowService::class.java).apply {
+                    action = FloatingWindowService.ACTION_STOP_FLOATING
+                }
+                activity.startService(intent)
+                Log.i(TAG, "🛑 已发送停止悬浮窗服务指令")
+            } catch (e: Exception) {
+                Log.w(TAG, "⚠️ 停止悬浮窗服务失败: ${e.message}")
+            }
+            
             // 停止内存监控
             core.stopMemoryMonitoring()
+            
+            // 清理协程作用域，避免协程取消异常
+            core.cleanupCoroutineScope()
             
             // 记录应用使用时长（在清理前，检查是否已初始化）
             try {
@@ -189,6 +200,7 @@ class MainActivityLifecycle(
             // 注销控制指令广播接收器
             core.unregisterCarrotCommandReceiver()
             
+            // 按顺序清理各个管理器，避免依赖问题
             try {
                 core.amapBroadcastManager.unregisterReceiver()
             } catch (e: Exception) {
@@ -207,6 +219,7 @@ class MainActivityLifecycle(
                 Log.w(TAG, "⚠️ 清理权限管理器失败: ${e.message}")
             }
             
+            // 网络管理器最后清理，因为它可能被其他组件依赖
             try {
                 core.networkManager.cleanup()
             } catch (e: Exception) {
@@ -502,7 +515,19 @@ class MainActivityLifecycle(
             try {
                 Log.i(TAG, "🚀 开始异步自检查流程...")
                 
-                // 1. 位置和传感器管理器初始化（主线程）
+                // 1. 网络管理器初始化（优先启动，后台线程）
+                updateSelfCheckStatusAsync("网络管理器", "正在初始化...", false)
+                initializeNetworkManagerOnly()
+                updateSelfCheckStatusAsync("网络管理器", "初始化完成", true)
+                delay(100)
+
+                // 2. 启动网络服务（优先启动，后台线程）
+                updateSelfCheckStatusAsync("网络服务", "正在启动...", false)
+                startNetworkService()
+                updateSelfCheckStatusAsync("网络服务", "启动完成", true)
+                delay(100)
+
+                // 3. 位置和传感器管理器初始化（主线程）
                 updateSelfCheckStatusAsync("位置传感器管理器", "正在初始化...", false)
                 withContext(Dispatchers.Main) { // LocationManager requires main thread
                     initializeLocationSensorManager()
@@ -510,7 +535,7 @@ class MainActivityLifecycle(
                 updateSelfCheckStatusAsync("位置传感器管理器", "初始化完成", true)
                 delay(100) // 减少延迟时间
 
-                // 2. 权限管理器初始化（主线程）
+                // 4. 权限管理器初始化（主线程）
                 updateSelfCheckStatusAsync("权限管理器", "正在初始化...", false)
                 withContext(Dispatchers.Main) { // PermissionManager might interact with UI/LocationManager
                     initializePermissionManager()
@@ -518,7 +543,7 @@ class MainActivityLifecycle(
                 updateSelfCheckStatusAsync("权限管理器", "初始化完成", true)
                 delay(100)
 
-                // 3. 权限管理和位置服务初始化（主线程）
+                // 5. 权限管理和位置服务初始化（主线程）
                 updateSelfCheckStatusAsync("权限和位置服务", "正在设置...", false)
                 withContext(Dispatchers.Main) { // LocationManager requires main thread
                     setupPermissionsAndLocation()
@@ -526,19 +551,7 @@ class MainActivityLifecycle(
                 updateSelfCheckStatusAsync("权限和位置服务", "设置完成", true)
                 delay(100)
 
-                // 4. 网络管理器初始化（后台线程）
-                updateSelfCheckStatusAsync("网络管理器", "正在初始化...", false)
-                initializeNetworkManagerOnly()
-                updateSelfCheckStatusAsync("网络管理器", "初始化完成", true)
-                delay(100)
-
-                // 5. 启动网络服务（提前启动，后台线程）
-                updateSelfCheckStatusAsync("网络服务", "正在启动...", false)
-                startNetworkService()
-                updateSelfCheckStatusAsync("网络服务", "启动完成", true)
-                delay(100)
-
-                // 5.5. 获取和显示IP地址信息（后台线程）
+                // 6. 获取和显示IP地址信息（后台线程）
                 updateSelfCheckStatusAsync("IP地址信息", "正在获取...", false)
                 
                 // 延迟一下，确保网络服务完全启动
@@ -561,7 +574,7 @@ class MainActivityLifecycle(
                 updateSelfCheckStatusAsync("IP地址信息", ipInfo, true)
                 delay(100)
 
-                // 6-8. 并行初始化高德地图、广播和设备管理器（后台线程）
+                // 7-9. 并行初始化高德地图、广播和设备管理器（后台线程）
                 updateSelfCheckStatusAsync("系统管理器", "正在并行初始化...", false)
                 
                 // 并行执行三个管理器的初始化
@@ -583,7 +596,27 @@ class MainActivityLifecycle(
                 updateSelfCheckStatusAsync("系统管理器", "并行初始化完成", true)
                 delay(100)
 
-                // 9. 用户类型获取（直接调用API）
+                // 9.5. 异步更新使用统计（不阻塞启动，将在用户类型检查后执行）
+                updateSelfCheckStatusAsync("使用统计", "等待用户类型检查...", false)
+                delay(50) // 进一步减少延迟
+
+                // 10. 执行初始位置更新（主线程）
+                updateSelfCheckStatusAsync("位置更新", "正在执行...", false)
+                withContext(Dispatchers.Main) { // LocationManager requires main thread
+                    performInitialLocationUpdate()
+                }
+                updateSelfCheckStatusAsync("位置更新", "执行完成", true)
+                delay(100)
+
+                // 11. 处理静态接收器Intent（后台线程）
+                updateSelfCheckStatusAsync("静态接收器", "正在处理...", false)
+                core.handleIntentFromStaticReceiver(activity.intent)
+                updateSelfCheckStatusAsync("静态接收器", "处理完成", true)
+                delay(50)
+
+                // 网络服务已在步骤5启动，跳过重复启动
+
+                // 10. 用户类型获取（最后执行，直接调用API）
                 updateSelfCheckStatusAsync("用户类型", "正在获取...", false)
                 val fetchedUserType = core.fetchUserType(core.deviceId.value)
                 core.userType.value = fetchedUserType
@@ -601,9 +634,9 @@ class MainActivityLifecycle(
                     else -> "未知类型($fetchedUserType)"
                 }
                 updateSelfCheckStatusAsync("用户类型", "获取完成: $userTypeText", true)
-                delay(50) // 进一步减少延迟
+                delay(50)
 
-                // 9.5. 异步更新使用统计（不阻塞启动）
+                // 10.5. 异步更新使用统计（基于用户类型）
                 if (fetchedUserType in 2..4) {
                     updateSelfCheckStatusAsync("使用统计", "后台更新中...", false)
                     // 异步执行使用统计更新，不阻塞启动流程
@@ -631,26 +664,12 @@ class MainActivityLifecycle(
                             }
                         }
                     }
+                } else {
+                    updateSelfCheckStatusAsync("使用统计", "用户类型不支持统计更新", true)
                 }
-                delay(50) // 进一步减少延迟
-
-                // 10. 执行初始位置更新（主线程）
-                updateSelfCheckStatusAsync("位置更新", "正在执行...", false)
-                withContext(Dispatchers.Main) { // LocationManager requires main thread
-                    performInitialLocationUpdate()
-                }
-                updateSelfCheckStatusAsync("位置更新", "执行完成", true)
-                delay(100)
-
-                // 11. 处理静态接收器Intent（后台线程）
-                updateSelfCheckStatusAsync("静态接收器", "正在处理...", false)
-                core.handleIntentFromStaticReceiver(activity.intent)
-                updateSelfCheckStatusAsync("静态接收器", "处理完成", true)
                 delay(50)
 
-                // 网络服务已在步骤5启动，跳过重复启动
-
-                // 12. 设置UI界面（后台线程）
+                // 11. 设置UI界面（后台线程）
                 updateSelfCheckStatusAsync("用户界面", "正在设置...", false)
                 updateSelfCheckStatusAsync("用户界面", "设置完成", true)
                 delay(50)

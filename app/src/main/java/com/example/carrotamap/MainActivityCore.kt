@@ -23,6 +23,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import android.content.pm.PackageManager
 import java.net.HttpURLConnection
 import java.net.URL
@@ -115,6 +117,9 @@ class MainActivityCore(
     
     // 内存监控定时器
     var memoryMonitorTimer: java.util.Timer? = null
+    
+    // 协程作用域管理
+    private val coreScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
     // ===============================
     // 权限处理
@@ -805,6 +810,18 @@ class MainActivityCore(
         memoryMonitorTimer?.cancel()
         memoryMonitorTimer = null
         Log.i(TAG, "📊 内存监控已停止")
+    }
+    
+    /**
+     * 清理协程作用域
+     */
+    fun cleanupCoroutineScope() {
+        try {
+            coreScope.cancel()
+            Log.i(TAG, "🧹 协程作用域已清理")
+        } catch (e: Exception) {
+            Log.w(TAG, "⚠️ 清理协程作用域失败: ${e.message}")
+        }
     }
     
     /**

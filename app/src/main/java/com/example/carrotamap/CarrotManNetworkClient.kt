@@ -76,6 +76,25 @@ class CarrotManNetworkClient(
     private var lastSendTime = 0L
     private var lastDataReceived = 0L
     private var lastNoConnectionLogTime = 0L // 添加无连接日志时间控制
+    private var lastNetworkErrorLogTime = 0L // 添加网络错误日志时间控制
+
+    // 心跳管理 - 改为在数据发送中处理，避免Socket冲突
+    private var lastHeartbeatTime = 0L
+    private val heartbeatInterval = 1000L // 1秒心跳间隔
+
+    // 网络错误处理和重连机制 - 增强版
+    private var consecutiveNetworkErrors = 0
+    private var maxConsecutiveErrors = 3 // 降低阈值，更快触发恢复
+    private var lastNetworkErrorTime = 0L
+    private var networkErrorThreshold = 5000L // 5秒内连续错误阈值
+    private var isNetworkRecovering = false
+    
+    // 智能重连策略
+    private var reconnectAttempts = 0
+    private var maxReconnectAttempts = 3
+    private var lastReconnectTime = 0L
+    private var reconnectDelay = 2000L // 2秒重连延迟
+    private var lastSuccessfulSendTime = 0L
     
     // 连接稳定性监控
     private var connectionSwitchCount = 0
@@ -136,6 +155,10 @@ class CarrotManNetworkClient(
         }
         
         Log.i(TAG, "启动 CarrotMan 网络客户端服务")
+        
+        // 禁用系统调试输出以减少日志噪音
+        disableSystemDebugOutput()
+        
         isRunning = true
         
         try {
@@ -146,6 +169,7 @@ class CarrotManNetworkClient(
             initializeSockets()
             startDeviceListener()
             startDeviceHealthCheck()
+            startHeartbeatTask() // 启动心跳任务而不是定时器
             onConnectionStatusChanged?.invoke(false, "")
             Log.i(TAG, "CarrotMan 网络服务启动成功")
         } catch (e: Exception) {
@@ -155,43 +179,32 @@ class CarrotManNetworkClient(
         }
     }
     
-    // 停止 CarrotMan 网络服务（基于逆向分析的完整清理）
+    // 停止 CarrotMan 网络服务
     fun stop() {
-        // 手动 Log.i(TAG, "停止 CarrotMan 网络客户端服务")
+        Log.i(TAG, "停止 CarrotMan 网络客户端服务")
         isRunning = false
         
-        // 取消所有协程任务
         listenJob?.cancel()
         dataSendJob?.cancel()
         autoSendJob?.cancel()
         deviceCheckJob?.cancel()
         
-        // 关闭所有Socket连接
+        // 心跳任务由协程管理，无需单独停止
+        
         listenSocket?.close()
         dataSocket?.close()
         tcpSocket?.close()
         
-        // 清理Socket引用
         listenSocket = null
         dataSocket = null
         tcpSocket = null
-        
-        // 清理设备状态
         currentTargetDevice = null
-        discoveredDevices.clear()
         
-        // 重置动态配置
-        dynamicSendPort = MAIN_DATA_PORT
-        deviceIP = null
-        
-        // 重置统计信息
-        carrotIndex = 0L
-        totalPacketsSent = 0
-        lastSendTime = 0L
-        lastDataReceived = 0L
+        // 保存停止状态到SharedPreferences
+        saveNetworkStatus(false, "")
         
         onConnectionStatusChanged?.invoke(false, "")
-        // 手动 Log.i(TAG, "CarrotMan 网络服务已完全停止")
+        Log.i(TAG, "CarrotMan 网络服务已完全停止")
     }
     
     // 初始化UDP Socket连接
@@ -223,18 +236,19 @@ class CarrotManNetworkClient(
         }
     }
     
-    // 启动设备广播监听服务（基于逆向分析的持续监听模式）
+    // 启动设备广播监听服务
     private fun startDeviceListener() {
         listenJob = networkScope.launch {
-            // 手动 Log.i(TAG, "启动设备广播监听服务 - 端口: $BROADCAST_PORT")
+            Log.i(TAG, "✅ 启动设备广播监听服务 - 端口: $BROADCAST_PORT")
 
             while (isRunning) {
                 try {
-                    // 持续监听设备广播（基于逆向分析的实现）
+                    // 持续监听设备广播
                     listenForDeviceBroadcasts()
                 } catch (e: Exception) {
                     if (isRunning) {
-                        Log.e(TAG, "设备广播监听异常: ${e.message}", e)
+                        Log.e(TAG, "❌ 设备广播监听异常: ${e.message}", e)
+
                         // 短暂延迟后重试，避免快速失败循环
                         delay(1000)
                     }
@@ -244,7 +258,7 @@ class CarrotManNetworkClient(
                     delay(100) // 短暂延迟，避免CPU占用过高
                 }
             }
-            // 手动 Log.d(TAG, "设备广播监听服务已停止")
+            Log.d(TAG, "设备广播监听服务已停止")
         }
     }
     
@@ -281,89 +295,38 @@ class CarrotManNetworkClient(
     // 解析收到的设备广播数据
     private fun parseDeviceBroadcast(broadcastData: String, deviceIP: String) {
         try {
-            Log.i(TAG, "🔍 解析设备广播数据: $broadcastData from $deviceIP")
-
-            // 过滤掉手机自己的IP地址
-            if (deviceIP == phoneIP) {
-                Log.d(TAG, "🚫 过滤手机IP地址: $deviceIP")
-                return
-            }
+            //Log.i(TAG, "🔍 解析设备广播数据: $broadcastData from $deviceIP")
+            //Log.d(TAG, "📊 解析前状态: 已发现设备=${discoveredDevices.size}, 当前连接=${currentTargetDevice?.ip ?: "无"}")
 
             if (broadcastData.trim().startsWith("{")) {
                 val jsonBroadcast = JSONObject(broadcastData)
 
-                // 检查是否为OpenpPilot状态数据（基于逆向分析的字段）
+                // 检查是否为OpenpPilot状态数据
                 if (isOpenpilotStatusData(jsonBroadcast)) {
-                    Log.d(TAG, "📡 检测到OpenpPilot状态数据 from $deviceIP")
+                    //Log.d(TAG, "📡 检测到OpenpPilot状态数据 from $deviceIP")
                     onOpenpilotStatusReceived?.invoke(broadcastData)
 
-                    // 从JSON数据中获取正确的设备IP和端口
-                    val jsonIP = jsonBroadcast.optString("ip", "")
-                    val jsonPort = jsonBroadcast.optInt("port", MAIN_DATA_PORT)
-                    
-                    Log.i(TAG, "🎯 从JSON数据提取IP: jsonIP='$jsonIP', jsonPort=$jsonPort, packetIP='$deviceIP'")
-                    
-                    // 使用JSON中的IP地址（这是正确的设备IP）
-                    val correctIP = if (jsonIP.isNotEmpty()) jsonIP else deviceIP
+                    // OpenpPilot状态数据也表示设备存在，需要添加到设备列表
+                    val ip = jsonBroadcast.optString("ip", deviceIP)
+                    val port = jsonBroadcast.optInt("port", MAIN_DATA_PORT)
                     val version = "openpilot"
-                    
-                    Log.i(TAG, "✅ 确定设备IP: $correctIP (来源: ${if (jsonIP.isNotEmpty()) "JSON数据" else "UDP包"})")
-                    
-                    // 更新动态端口配置
-                    dynamicSendPort = jsonPort
-                    this.deviceIP = correctIP
-                    
-                    // 创建设备信息（简化：有JSON广播就是有效设备）
-                    val device = DeviceInfo(
-                        ip = correctIP,
-                        port = jsonPort,
-                        version = version,
-                        deviceId = generateDeviceId(correctIP, jsonPort),
-                        capabilities = listOf("openpilot", "autopilot", "navigation"),
-                        connectionQuality = 1.0f,
-                        responseTime = 0L,
-                        isVerified = true  // 有JSON广播就是有效设备
-                    )
-                    
+                    val device = DeviceInfo(ip, port, version)
                     addDiscoveredDevice(device)
-                    
-                    // 解析并处理OpenpPilot状态信息
-                    parseOpenpilotStatus(jsonBroadcast)
+                    //Log.d(TAG, "从OpenpPilot状态数据中发现设备: $device")
                     return
                 }
 
-                // 处理标准设备发现数据
-                val jsonIP = jsonBroadcast.optString("ip", "")
-                val jsonPort = jsonBroadcast.optInt("port", MAIN_DATA_PORT)
+                // 处理设备发现数据
+                val ip = jsonBroadcast.optString("ip", deviceIP)
+                val port = jsonBroadcast.optInt("port", MAIN_DATA_PORT)
                 val version = jsonBroadcast.optString("version", "unknown")
                 
-                Log.i(TAG, "🎯 从标准JSON数据提取IP: jsonIP='$jsonIP', jsonPort=$jsonPort, packetIP='$deviceIP'")
-                
-                // 使用JSON中的IP地址
-                val correctIP = if (jsonIP.isNotEmpty()) jsonIP else deviceIP
-                
-                Log.i(TAG, "✅ 确定标准设备IP: $correctIP (来源: ${if (jsonIP.isNotEmpty()) "JSON数据" else "UDP包"})")
-                
-                // 更新动态端口配置
-                dynamicSendPort = jsonPort
-                this.deviceIP = correctIP
-
-                // 创建设备信息（简化：有JSON广播就是有效设备）
-                val device = DeviceInfo(
-                    ip = correctIP,
-                    port = jsonPort,
-                    version = version,
-                    deviceId = generateDeviceId(correctIP, jsonPort),
-                    capabilities = detectDeviceCapabilities(DeviceInfo(correctIP, jsonPort, version)),
-                    connectionQuality = 1.0f,
-                    responseTime = 0L,
-                    isVerified = true  // 有JSON广播就是有效设备
-                )
-                
+                val device = DeviceInfo(ip, port, version)
                 addDiscoveredDevice(device)
+                //Log.d(TAG, "JSON格式设备信息解析成功: $device")
 
             } else {
-                // 手动 Log.d(TAG, "收到简单格式广播，使用默认配置: $deviceIP")
+                //Log.d(TAG, "收到简单格式广播，使用默认配置: $deviceIP")
                 val device = DeviceInfo(deviceIP, MAIN_DATA_PORT, "detected")
                 addDiscoveredDevice(device)
             }
@@ -417,29 +380,33 @@ class CarrotManNetworkClient(
         return isOpenpilot
     }
     
-    // 添加新发现的设备到设备列表（基于逆向分析的智能连接策略）
+    // 添加新发现的设备到设备列表
     private fun addDiscoveredDevice(device: DeviceInfo) {
         val deviceKey = "${device.ip}:${device.port}"
 
-        // 手动 Log.d(TAG, "🔍 尝试添加设备: $device, 设备键: $deviceKey")
+        //Log.d(TAG, "🔍 尝试添加设备: $device, 设备键: $deviceKey")
+        //Log.d(TAG, "📊 当前设备列表: ${discoveredDevices.keys}")
 
         if (!discoveredDevices.containsKey(deviceKey)) {
             discoveredDevices[deviceKey] = device
-            Log.i(TAG, "🎯 发现新的Comma3设备: $device")
+            //Log.i(TAG, "🎯 发现新的Comma3设备: $device")
             onDeviceDiscovered?.invoke(device)
 
-            // 基于逆向分析的智能设备连接逻辑
-            evaluateDeviceConnection(device)
+            // 更新状态为发现设备
+            if (currentTargetDevice == null) {
+                Log.i(TAG, "🔄 更新状态: 发现设备 ${device.ip}，正在连接...")
+                onConnectionStatusChanged?.invoke(false, "发现设备 ${device.ip}，正在连接...")
+                //Log.i(TAG, "🚀 自动连接到第一个发现的设备")
+                connectToDevice(device)
         } else {
-            // 更新设备活跃时间
-            discoveredDevices[deviceKey] = device.copy(lastSeen = System.currentTimeMillis())
-            // 手动 Log.v(TAG, "🔄 更新设备活跃时间: $deviceKey")
-            
-            // 如果这是当前连接的设备，也更新其活跃时间
-            if (currentTargetDevice?.ip == device.ip && currentTargetDevice?.port == device.port) {
-                currentTargetDevice = currentTargetDevice?.copy(lastSeen = System.currentTimeMillis())
+                //Log.d(TAG, "⚠️ 已有连接设备 ${currentTargetDevice?.ip}，不自动连接新设备")
             }
+        } else {
+            discoveredDevices[deviceKey] = device.copy(lastSeen = System.currentTimeMillis())
+            //Log.v(TAG, "🔄 更新设备活跃时间: $deviceKey")
         }
+
+        //Log.d(TAG, "📊 添加后状态: 已发现设备=${discoveredDevices.size}, 当前连接=${currentTargetDevice?.ip ?: "无"}")
     }
     
     // 智能设备连接评估（简化逻辑：有JSON广播就连接）
@@ -462,21 +429,24 @@ class CarrotManNetworkClient(
     
     
     
-    // 连接到指定的Comma3设备（简化逻辑：直接连接）
+    // 连接到指定的Comma3设备
     fun connectToDevice(device: DeviceInfo) {
-        Log.i(TAG, "🔗 连接到设备: $device")
+        //Log.i(TAG, "🔗 开始连接到Comma3设备: $device")
 
-        // 直接连接，不需要复杂验证
         currentTargetDevice = device
-        // 强制更新deviceIP字段，确保使用正确的IP地址
-        deviceIP = device.ip
-        Log.i(TAG, "🔧 设置deviceIP: ${device.ip}")
-        
         dataSendJob?.cancel()
+        
+        // 重置心跳时间，让心跳任务开始工作
+        lastHeartbeatTime = 0L
+        
         startDataTransmission()
 
-        Log.i(TAG, "✅ 设备连接成功: ${device.ip}")
+        // 保存连接状态到SharedPreferences
+        saveNetworkStatus(true, device.toString())
+
+        //Log.i(TAG, "✅ 更新连接状态: 已连接到设备 ${device.ip}")
         onConnectionStatusChanged?.invoke(true, "")
+        Log.i(TAG, "🎉 设备连接建立成功: ${device.ip}")
     }
     
     // 生成设备ID
@@ -506,42 +476,99 @@ class CarrotManNetworkClient(
         return capabilities
     }
     
-    // 启动数据传输任务
+    // 启动数据传输任务（心跳已移至独立定时器）
     private fun startDataTransmission() {
         dataSendJob = networkScope.launch {
-            // 手动 Log.i(TAG, "启动数据传输任务 - 设备: ${currentTargetDevice?.ip}")
+            Log.i(TAG, "✅ 启动数据传输任务 - 设备: ${currentTargetDevice?.ip}")
             
+            // 数据传输任务现在主要用于其他数据发送
+            // 心跳由独立定时器处理
             while (isRunning && currentTargetDevice != null) {
-                try {
-                    sendHeartbeat()
-                } catch (e: Exception) {
-                    Log.e(TAG, "发送心跳包失败: ${e.message}", e)
-                    // 短暂延迟后重试
-                    delay(1000)
-                }
-                
                 delay(DATA_SEND_INTERVAL)
             }
-            // 手动 Log.d(TAG, "数据传输任务已停止")
+            Log.d(TAG, "数据传输任务已停止")
         }
     }
     
-    
-    // 启动设备健康检查服务（基于逆向分析的完善健康检查）
-    private fun startDeviceHealthCheck() {
-        deviceCheckJob = networkScope.launch {
-            // 手动 Log.i(TAG, "启动设备健康检查服务，检查间隔: ${DISCOVER_CHECK_INTERVAL}ms")
+    /**
+     * 启动心跳任务 - 使用协程避免Socket冲突
+     */
+    private fun startHeartbeatTask() {
+        networkScope.launch {
+            Log.i(TAG, "💓 启动心跳任务")
             
             while (isRunning) {
                 try {
-                    // 如果在后台模式，跳过健康检查
-                    if (isInBackground) {
-                        // 手动 Log.v(TAG, "⏸️ 后台模式，跳过设备健康检查")
-                        delay(DISCOVER_CHECK_INTERVAL)
-                        continue
+                    if (currentTargetDevice != null) {
+                        val currentTime = System.currentTimeMillis()
+                        if (currentTime - lastHeartbeatTime >= heartbeatInterval) {
+                    sendHeartbeat()
+                            lastHeartbeatTime = currentTime
+                        }
+                    }
+                    delay(100) // 100ms检查一次，避免过于频繁
+                } catch (e: Exception) {
+                    Log.e(TAG, "❌ 心跳任务异常: ${e.message}", e)
+                    delay(1000) // 异常时等待1秒再继续
+                }
+            }
+            Log.d(TAG, "💓 心跳任务已停止")
+        }
+    }
+    
+    // 启动设备健康检查服务
+    private fun startDeviceHealthCheck() {
+        deviceCheckJob = networkScope.launch {
+            Log.i(TAG, "启动设备健康检查服务，检查间隔: ${DISCOVER_CHECK_INTERVAL}ms")
+            
+            while (isRunning) {
+                try {
+                    val currentTime = System.currentTimeMillis()
+                    val initialDeviceCount = discoveredDevices.size
+                    
+                    val removedDevices = discoveredDevices.values.filter { device ->
+                        currentTime - device.lastSeen > DEVICE_TIMEOUT
                     }
                     
-                    performDeviceHealthCheck()
+                    removedDevices.forEach { device ->
+                        val deviceKey = "${device.ip}:${device.port}"
+                        discoveredDevices.remove(deviceKey)
+                        Log.i(TAG, "移除离线设备: $device")
+                    }
+                    
+                    currentTargetDevice?.let { device ->
+                        val deviceKey = "${device.ip}:${device.port}"
+                        
+                        if (!discoveredDevices.containsKey(deviceKey)) {
+                            Log.w(TAG, "当前连接设备已离线: $device")
+                            
+                            currentTargetDevice = null
+                            dataSendJob?.cancel()
+                            
+                            // 保存断开连接状态
+                            saveNetworkStatus(false, "")
+                            
+                            discoveredDevices.values.firstOrNull()?.let { newDevice ->
+                                Log.i(TAG, "自动切换到备用设备: $newDevice")
+                                connectToDevice(newDevice)
+                            } ?: run {
+                                Log.w(TAG, "没有可用的备用设备")
+                                onConnectionStatusChanged?.invoke(false, "")
+                            }
+                        }
+                    }
+                    
+                    if (removedDevices.isNotEmpty()) {
+                        Log.d(TAG, "健康检查完成 - 设备数量: $initialDeviceCount -> ${discoveredDevices.size}")
+                    }
+
+                    // 检查是否需要更新连接状态
+                    if (currentTargetDevice == null && discoveredDevices.isEmpty()) {
+                        onConnectionStatusChanged?.invoke(false, "")
+                    } else if (currentTargetDevice == null && discoveredDevices.isNotEmpty()) {
+                        onConnectionStatusChanged?.invoke(false, "")
+                    }
+
                     delay(DISCOVER_CHECK_INTERVAL)
                     
                 } catch (e: Exception) {
@@ -549,7 +576,7 @@ class CarrotManNetworkClient(
                     delay(5000)
                 }
             }
-            // 手动 Log.d(TAG, "设备健康检查服务已停止")
+            Log.d(TAG, "设备健康检查服务已停止")
         }
     }
     
@@ -582,11 +609,9 @@ class CarrotManNetworkClient(
     
     // 发送心跳包维持连接
     private suspend fun sendHeartbeat() = withContext(Dispatchers.IO) {
-        val currentTime = System.currentTimeMillis()
         val heartbeatData = JSONObject().apply {
             put("carrotIndex", ++carrotIndex)
-            put("epochTime", currentTime / 1000)
-            put("timestamp", currentTime / 1000.0)
+            put("epochTime", System.currentTimeMillis() / 1000)
             put("timezone", "Asia/Shanghai")
             put("carrotCmd", "heartbeat")
             put("carrotArg", "")
@@ -594,21 +619,49 @@ class CarrotManNetworkClient(
         }
         
         sendDataPacket(heartbeatData)
+        //Log.v(TAG, "心跳包已发送，索引: $carrotIndex")
     }
     
     // 发送CarrotMan导航数据包
     fun sendCarrotManData(carrotFields: CarrotManFields) {
         if (!isRunning || currentTargetDevice == null) {
+            // 降低无连接时的日志级别，避免日志刷屏
+            if (System.currentTimeMillis() - lastNoConnectionLogTime > 10000) { // 10秒记录一次
+                Log.w(TAG, "⚠️ 发送CarrotMan数据 - 服务未运行或无连接设备")
+                Log.d(TAG, "状态检查 - 运行状态: $isRunning, 连接设备: $currentTargetDevice")
+                lastNoConnectionLogTime = System.currentTimeMillis()
+            }
             return
         }
+
+        // 如果正在网络恢复中，跳过发送
+        if (isNetworkRecovering) {
+            Log.d(TAG, "⏸️ 网络恢复中，跳过CarrotMan数据发送")
+            return
+        }
+
+        // 发送完整导航数据（许可证系统已移除）
+        //Log.d(TAG, "发送完整导航数据")
 
         networkScope.launch {
             try {
                 val jsonData = convertCarrotFieldsToJson(carrotFields)
                 sendDataPacket(jsonData)
                 onDataSent?.invoke(++totalPacketsSent)
+                //Log.v(TAG, "CarrotMan数据包发送成功 #$totalPacketsSent")
             } catch (e: Exception) {
-                Log.e(TAG, "CarrotMan数据发送失败: ${e.message}", e)
+                // 使用新的错误处理机制
+                handleNetworkError(e, "CarrotMan数据发送")
+                
+                // 控制CarrotMan数据发送错误日志频率
+                val currentTime = System.currentTimeMillis()
+                if (currentTime - lastNetworkErrorLogTime > 5000) { // 5秒记录一次
+                    Log.w(TAG, "⚠️ CarrotMan数据发送失败: ${e.message}")
+                    if (e.message?.contains("ENETUNREACH") == true) {
+                        Log.w(TAG, "💡 建议：检查设备连接状态和网络配置")
+                    }
+                    lastNetworkErrorLogTime = currentTime
+                }
             }
         }
     }
@@ -710,9 +763,15 @@ class CarrotManNetworkClient(
     }
     
     
-    // 发送UDP数据包到目标设备（使用动态端口配置）
+    // 发送UDP数据包到目标设备
     private suspend fun sendDataPacket(jsonData: JSONObject) = withContext(Dispatchers.IO) {
         val device = currentTargetDevice ?: return@withContext
+        
+        // 如果正在网络恢复中，跳过发送
+        if (isNetworkRecovering) {
+            Log.d(TAG, "⏸️ 网络恢复中，跳过数据发送")
+            return@withContext
+        }
         
         try {
             val dataBytes = jsonData.toString().toByteArray(Charsets.UTF_8)
@@ -722,25 +781,39 @@ class CarrotManNetworkClient(
                 return@withContext
             }
             
-            // 使用动态端口配置（基于逆向分析）
-            val targetPort = if (dynamicSendPort != MAIN_DATA_PORT) dynamicSendPort else device.port
-            val targetIP = deviceIP ?: device.ip
-            
             val packet = DatagramPacket(
                 dataBytes,
                 dataBytes.size,
-                InetAddress.getByName(targetIP),
-                targetPort
+                InetAddress.getByName(device.ip),
+                device.port
             )
             
             dataSocket?.send(packet)
             lastSendTime = System.currentTimeMillis()
             
-            // 手动 Log.v(TAG, "UDP数据包发送成功 -> $targetIP:$targetPort (${dataBytes.size} bytes)")
+            // 记录成功发送
+            recordSuccessfulSend()
+            
+            //Log.v(TAG, "UDP数据包发送成功 -> ${device.ip}:${device.port} (${dataBytes.size} bytes)")
             
         } catch (e: Exception) {
-            Log.e(TAG, "UDP数据包发送失败: ${e.message}", e)
+            // 使用新的错误处理机制
+            val shouldReconnect = handleNetworkError(e, "数据包发送")
+            
+            // 控制网络错误日志频率，避免刷屏
+            val currentTime = System.currentTimeMillis()
+            if (currentTime - lastNetworkErrorLogTime > 5000) { // 5秒记录一次网络错误
+                Log.w(TAG, "⚠️ 网络发送失败: ${e.message}")
+                if (e.message?.contains("ENETUNREACH") == true) {
+                    Log.w(TAG, "💡 网络不可达 - 请检查：1)设备是否在线 2)WiFi连接 3)网络配置")
+                }
+                lastNetworkErrorLogTime = currentTime
+            }
+            
+            // 如果不需要重连，则抛出异常
+            if (!shouldReconnect) {
                 throw e
+            }
         }
     }
     
@@ -779,11 +852,20 @@ class CarrotManNetworkClient(
     // 获取手机IP地址
     private fun getPhoneIPAddress(): String {
         try {
+            // 优先使用网络接口方法，避免使用弃用的WiFi API
+            val networkIP = getPhoneIPFromNetworkInterface()
+            if (networkIP.isNotEmpty()) {
+                return networkIP
+            }
+            
+            // 如果网络接口方法失败，回退到WiFi方法（带弃用抑制）
             val wifiManager = context.getSystemService(Context.WIFI_SERVICE) as WifiManager
+            @Suppress("DEPRECATION")
             val wifiInfo = wifiManager.connectionInfo
+            @Suppress("DEPRECATION")
             val ipAddress = wifiInfo.ipAddress
             
-            // 将int类型的IP地址转换为字符串格式
+            if (ipAddress != 0) {
             val ip = String.format(
                 "%d.%d.%d.%d",
                 ipAddress and 0xff,
@@ -791,12 +873,37 @@ class CarrotManNetworkClient(
                 ipAddress shr 16 and 0xff,
                 ipAddress shr 24 and 0xff
             )
-            
             return ip
+            }
+            
+            return ""
+            
         } catch (e: Exception) {
             Log.w(TAG, "⚠️ 获取手机IP地址失败: ${e.message}")
             return ""
         }
+    }
+    
+    // 从网络接口获取手机IP地址（备用方法）
+    private fun getPhoneIPFromNetworkInterface(): String {
+        try {
+            val interfaces = NetworkInterface.getNetworkInterfaces()
+            while (interfaces.hasMoreElements()) {
+                val networkInterface = interfaces.nextElement()
+                if (!networkInterface.isLoopback && networkInterface.isUp) {
+                    val addresses = networkInterface.inetAddresses
+                    while (addresses.hasMoreElements()) {
+                        val address = addresses.nextElement()
+                        if (address is Inet4Address && !address.isLoopbackAddress) {
+                            return address.hostAddress ?: ""
+                        }
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "⚠️ 从网络接口获取IP地址失败: ${e.message}")
+        }
+        return ""
     }
 
     // 获取设备IP地址（优先使用从JSON数据中解析的IP）
@@ -837,23 +944,238 @@ class CarrotManNetworkClient(
         // 手动 Log.d(TAG, "OpenpPilot状态接收回调已设置")
     }
     
-    // 清理网络客户端资源
-    fun cleanup() {
-        // 手动 Log.i(TAG, "开始清理CarrotMan网络客户端资源")
+    /**
+     * 禁用系统调试输出
+     * 减少System.out的调试信息输出
+     */
+    private fun disableSystemDebugOutput() {
+        try {
+            // 重定向System.out到空输出流（兼容Android 7）
+            System.setOut(object : java.io.PrintStream(object : java.io.OutputStream() {
+                override fun write(b: Int) {
+                    // 静默处理，不输出
+                }
+                override fun write(b: ByteArray, off: Int, len: Int) {
+                    // 静默处理，不输出
+                }
+            }) {
+                override fun println(x: String?) {
+                    // 静默处理，不输出
+                }
+                override fun print(s: String?) {
+                    // 静默处理，不输出
+                }
+            })
+        } catch (e: Exception) {
+            // 忽略设置失败，不影响主要功能
+        }
+    }
+
+    /**
+     * 检查网络连接状态
+     */
+    fun checkNetworkStatus(): Map<String, Any> {
+        val currentTime = System.currentTimeMillis()
+        val hasConnection = currentTargetDevice != null && isRunning
+        val lastErrorTime = if (lastNetworkErrorLogTime > 0) currentTime - lastNetworkErrorLogTime else -1
         
-        stop()
-        networkScope.cancel()
-        discoveredDevices.clear()
+        return mapOf(
+            "isRunning" to isRunning,
+            "hasConnection" to hasConnection,
+            "currentDevice" to (currentTargetDevice?.toString() ?: "无连接"),
+            "discoveredDevices" to discoveredDevices.size,
+            "lastSendTime" to lastSendTime,
+            "lastDataReceived" to lastDataReceived,
+            "lastErrorTime" to lastErrorTime,
+            "networkQuality" to when {
+                hasConnection && lastErrorTime > 30000 -> "优秀"
+                hasConnection && lastErrorTime > 10000 -> "良好"
+                hasConnection -> "一般"
+                else -> "断开"
+            }
+        )
+    }
+    
+    /**
+     * 获取网络状态报告
+     */
+    fun getNetworkStatusReport(): String {
+        val status = checkNetworkStatus()
+        return buildString {
+            appendLine("🌐 网络状态报告:")
+            appendLine("  🔗 连接状态: ${if (status["hasConnection"] as Boolean) "已连接" else "未连接"}")
+            appendLine("  📱 当前设备: ${status["currentDevice"]}")
+            appendLine("  🔍 发现设备: ${status["discoveredDevices"]}个")
+            appendLine("  📊 网络质量: ${status["networkQuality"]}")
+            appendLine("  ⏰ 最后发送: ${if (status["lastSendTime"] as Long > 0) "${(System.currentTimeMillis() - status["lastSendTime"] as Long) / 1000}秒前" else "从未发送"}")
+            appendLine("  📡 最后接收: ${if (status["lastDataReceived"] as Long > 0) "${(System.currentTimeMillis() - status["lastDataReceived"] as Long) / 1000}秒前" else "从未接收"}")
+            if (status["lastErrorTime"] as Long > 0) {
+                appendLine("  ⚠️ 最后错误: ${(status["lastErrorTime"] as Long) / 1000}秒前")
+            }
+            appendLine("  🔄 连续错误: $consecutiveNetworkErrors/$maxConsecutiveErrors")
+            appendLine("  🛠️ 恢复状态: ${if (isNetworkRecovering) "正在恢复" else "正常"}")
+        }
+    }
+
+    /**
+     * 处理网络错误并决定是否重连 - 增强版
+     */
+    private fun handleNetworkError(exception: Exception, operation: String): Boolean {
+        val currentTime = System.currentTimeMillis()
+        
+        // 检查是否在错误阈值时间内
+        if (currentTime - lastNetworkErrorTime < networkErrorThreshold) {
+            consecutiveNetworkErrors++
+        } else {
+            consecutiveNetworkErrors = 1
+        }
+        
+        lastNetworkErrorTime = currentTime
+        
+        // 控制错误日志频率
+        if (currentTime - lastNetworkErrorLogTime > 3000) { // 减少到3秒
+            Log.w(TAG, "⚠️ 网络错误 [$operation]: ${exception.message}")
+            lastNetworkErrorLogTime = currentTime
+        }
+        
+        Log.w(TAG, "🔄 连续错误计数: $consecutiveNetworkErrors/$maxConsecutiveErrors")
+        
+        // 达到错误阈值时启动智能恢复流程
+        if (consecutiveNetworkErrors >= maxConsecutiveErrors) {
+            Log.w(TAG, "🚨 达到连续错误阈值，启动智能网络恢复")
+            startIntelligentNetworkRecovery()
+        }
+        
+        return consecutiveNetworkErrors >= maxConsecutiveErrors
+    }
+
+    /**
+     * 启动智能网络恢复流程
+     */
+    private fun startIntelligentNetworkRecovery() {
+        if (isNetworkRecovering) {
+            Log.d(TAG, "🔄 网络恢复已在进行中，跳过重复启动")
+            return
+        }
+        
+        isNetworkRecovering = true
+        reconnectAttempts = 0
+        
+        networkScope.launch {
+            performIntelligentNetworkRecovery()
+        }
+    }
+    
+    /**
+     * 执行智能网络恢复流程
+     */
+    private suspend fun performIntelligentNetworkRecovery() {
+        try {
+            Log.i(TAG, "🔄 开始智能网络恢复流程...")
+            
+            // 1. 重置当前连接
         currentTargetDevice = null
-        
-        carrotIndex = 0L
-        totalPacketsSent = 0
-        lastSendTime = 0L
-        lastDataReceived = 0L
-        
-        // 数据去重状态已移除
-        
-        // 手动 Log.i(TAG, "CarrotMan网络客户端资源清理完成")
+            onConnectionStatusChanged?.invoke(false, "智能恢复中...")
+            
+            // 2. 重新初始化Socket
+            try {
+                dataSocket?.close()
+                dataSocket = null
+                
+                dataSocket = DatagramSocket().apply {
+                    soTimeout = SOCKET_TIMEOUT
+                }
+                Log.i(TAG, "✅ Socket重新初始化成功")
+            } catch (e: Exception) {
+                Log.e(TAG, "❌ Socket重新初始化失败: ${e.message}", e)
+            }
+            
+            // 3. 智能重连策略
+            while (reconnectAttempts < maxReconnectAttempts && isRunning) {
+                reconnectAttempts++
+                val currentTime = System.currentTimeMillis()
+                
+                // 检查重连间隔
+                if (currentTime - lastReconnectTime < reconnectDelay) {
+                    val waitTime = reconnectDelay - (currentTime - lastReconnectTime)
+                    Log.d(TAG, "⏳ 等待重连间隔: ${waitTime}ms")
+                    delay(waitTime)
+                }
+                
+                lastReconnectTime = System.currentTimeMillis()
+                
+                Log.i(TAG, "🔍 重新扫描可用设备... (尝试 $reconnectAttempts/$maxReconnectAttempts)")
+                
+                // 4. 重新扫描设备
+                val availableDevices = discoveredDevices.values.filter { it.isActive() }
+                
+                if (availableDevices.isNotEmpty()) {
+                    val targetDevice = availableDevices.first()
+                    Log.i(TAG, "🎯 发现可用设备，尝试重连: $targetDevice")
+                    
+                    // 尝试连接
+                    try {
+                        connectToDevice(targetDevice)
+                        
+                        // 等待连接稳定
+                        delay(1000)
+                        
+                        // 验证连接是否成功
+                        if (currentTargetDevice != null) {
+                            // 重置错误计数
+                            consecutiveNetworkErrors = 0
+                            isNetworkRecovering = false
+                            lastSuccessfulSendTime = System.currentTimeMillis()
+                            
+                            Log.i(TAG, "✅ 智能网络恢复成功")
+                            onConnectionStatusChanged?.invoke(true, "")
+                            return
+                        }
+                    } catch (e: Exception) {
+                        Log.w(TAG, "⚠️ 重连尝试失败: ${e.message}")
+                    }
+                } else {
+                    Log.w(TAG, "⚠️ 未发现可用设备，等待设备上线...")
+                }
+                
+                // 增加重连延迟
+                reconnectDelay = minOf(reconnectDelay * 2, 10000L) // 最大10秒
+            }
+            
+            // 所有重连尝试失败
+            Log.w(TAG, "❌ 智能网络恢复失败，已达到最大重连次数")
+            isNetworkRecovering = false
+            onConnectionStatusChanged?.invoke(false, "网络恢复失败")
+            
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ 智能网络恢复异常: ${e.message}", e)
+            isNetworkRecovering = false
+        }
+    }
+
+    /**
+     * 记录成功发送，重置错误计数
+     */
+    private fun recordSuccessfulSend() {
+        consecutiveNetworkErrors = 0
+        lastSuccessfulSendTime = System.currentTimeMillis()
+        isNetworkRecovering = false
+    }
+
+    // 保存网络状态到SharedPreferences
+    private fun saveNetworkStatus(isRunning: Boolean, currentDevice: String) {
+        try {
+            val sharedPreferences = context.getSharedPreferences("network_status", Context.MODE_PRIVATE)
+            sharedPreferences.edit().apply {
+                putBoolean("is_running", isRunning)
+                putString("current_device", currentDevice)
+                putLong("last_update", System.currentTimeMillis())
+                apply()
+            }
+            Log.d(TAG, "网络状态已保存: running=$isRunning, device=$currentDevice")
+        } catch (e: Exception) {
+            Log.e(TAG, "保存网络状态失败: ${e.message}", e)
+        }
     }
 
     /**
@@ -867,7 +1189,7 @@ class CarrotManNetworkClient(
         carrotManFieldsState: MutableState<CarrotManFields>,
         sendInterval: Long = 200L
     ) {
-        // 手动 Log.i(TAG, "📡 启动自动数据发送任务(客户端)…")
+        Log.i(TAG, "📡 启动自动数据发送任务(客户端)…")
 
         // 若已有任务在运行，先取消
         autoSendJob?.cancel()
@@ -876,36 +1198,96 @@ class CarrotManNetworkClient(
             var lastSendTime = 0L
             while (isRunning) {
                 try {
-                    if (autoSendEnabled.value && System.currentTimeMillis() - lastSendTime > sendInterval) {
                     val currentFields = carrotManFieldsState.value
+                    val shouldSend = autoSendEnabled.value && (
+                        System.currentTimeMillis() - lastSendTime > sendInterval || 
+                        currentFields.needsImmediateSend
+                    )
+                    
+                    if (shouldSend) {
                         // 只在有连接设备时记录详细日志
                         if (currentTargetDevice != null) {
-                                // 手动 Log.d(TAG, "📤 准备自动发送数据包:")
-                            // 手动 Log.d(TAG, "   位置: lat=${currentFields.latitude}, lon=${currentFields.longitude}")
-                            // 手动 Log.d(TAG, "  🛣️ 道路: ${currentFields.szPosRoadName}")
-                            // 手动 Log.d(TAG, "  🎯 目标: ${currentFields.szGoalName}")
-                            // 手动 Log.d(TAG, "  🧭 导航状态: ${currentFields.isNavigating}")
+                            if (currentFields.needsImmediateSend) {
+                                Log.i(TAG, "🚀 立即发送数据包 (限速变化):")
+                            } else {
+                                //Log.d(TAG, "📤 准备自动发送数据包:")
+                            }
+                            //Log.d(TAG, "   位置: lat=${currentFields.latitude}, lon=${currentFields.longitude}")
+                            //Log.d(TAG, "  🛣️ 道路: ${currentFields.szPosRoadName}")
+                            //Log.d(TAG, "  🚦 限速: ${currentFields.nRoadLimitSpeed}km/h")
+                            //Log.d(TAG, "  🎯 目标: ${currentFields.szGoalName}")
+                            //Log.d(TAG, "  🧭 导航状态: ${currentFields.isNavigating}")
+                            //Log.d(TAG, "  🔄 转向信息: 类型=${currentFields.nTBTTurnType}, 距离=${currentFields.nTBTDist}m, 指令=${currentFields.szTBTMainText}")
+                            //Log.d(TAG, "  🔄 下一转向: 类型=${currentFields.nTBTTurnTypeNext}, 距离=${currentFields.nTBTDistNext}m")
                         }
 
                         sendCarrotManData(currentFields)
                         lastSendTime = System.currentTimeMillis()
+                        
+                        // 重置立即发送标记
+                        if (currentFields.needsImmediateSend) {
+                            carrotManFieldsState.value = currentFields.copy(needsImmediateSend = false)
+                        }
 
                         // 只在有连接设备时记录成功日志
                         if (currentTargetDevice != null) {
-                            // 手动 Log.i(TAG, "✅ 自动发送数据包完成")
+                            if (currentFields.needsImmediateSend) {
+                                Log.i(TAG, "✅ 立即发送数据包完成 (限速已更新)")
+                            } else {
+                                //Log.i(TAG, "✅ 自动发送数据包完成")
+                            }
                         }
                     } else {
-                        // 手动 Log.v(TAG, "⏸️ 自动发送跳过: enabled=${autoSendEnabled.value}, 时间间隔=${System.currentTimeMillis() - lastSendTime}ms")
+                        //Log.v(TAG, "⏸️ 自动发送跳过: enabled=${autoSendEnabled.value}, 时间间隔=${System.currentTimeMillis() - lastSendTime}ms, 立即发送=${currentFields.needsImmediateSend}")
                     }
                     delay(sendInterval)
                 } catch (e: Exception) {
-                    Log.e(TAG, "❌ 自动数据发送失败: ${'$'}{e.message}", e)
+                    Log.e(TAG, "❌ 自动数据发送失败: ${e.message}", e)
                     delay(1000)
                 }
             }
         }
     }
 
-    
-    
+    /**
+     * 发送自定义JSON数据包（用于控制指令等）
+     * @param jsonData 要发送的JSON数据
+     */
+    fun sendCustomDataPacket(jsonData: JSONObject) {
+        if (!isRunning || currentTargetDevice == null) {
+            Log.w(TAG, "⚠️ 网络服务未运行或无连接设备，无法发送自定义数据包")
+            return
+        }
+
+        networkScope.launch {
+            try {
+                sendDataPacket(jsonData)
+                totalPacketsSent++
+                
+                //Log.i(TAG, "✅ 自定义数据包发送成功 #$totalPacketsSent")
+                //Log.d(TAG, "📦 数据内容: ${jsonData.toString()}")
+                
+                onDataSent?.invoke(totalPacketsSent)
+            } catch (e: Exception) {
+                Log.e(TAG, "❌ 发送自定义数据包失败: ${e.message}", e)
+            }
+        }
+    }
+
+    // 清理网络客户端资源
+    fun cleanup() {
+        Log.i(TAG, "开始清理CarrotMan网络客户端资源")
+        
+        stop()
+        networkScope.cancel()
+        discoveredDevices.clear()
+        currentTargetDevice = null
+        
+        carrotIndex = 0L
+        totalPacketsSent = 0
+        lastSendTime = 0L
+        lastDataReceived = 0L
+        
+        Log.i(TAG, "CarrotMan网络客户端资源清理完成")
+    }
 }
