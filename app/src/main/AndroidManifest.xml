@@ -96,13 +96,6 @@
                 <action android:name="AMAP_NAVI_ACTION_LOCATION" />
             </intent-filter>
         </receiver>
-
-        <!-- 悬浮窗服务 -->
-        <service
-            android:name=".FloatingWindowService"
-            android:enabled="true"
-            android:exported="false"
-            android:stopWithTask="false" />
         
     </application>
 

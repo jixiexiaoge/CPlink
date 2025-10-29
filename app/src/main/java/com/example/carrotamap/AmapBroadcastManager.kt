@@ -47,8 +47,9 @@ class AmapBroadcastManager(
     // 协程作用域
     private val receiverScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     
-    // 广播处理Channel - 避免为每个广播创建新协程
-    private val broadcastChannel = Channel<Pair<Intent, Int>>(Channel.UNLIMITED)
+    // 广播处理Channel - 使用有限容量避免内存溢出
+    // 使用BUFFERED(容量64)替代UNLIMITED，防止内存无限增长导致闪退
+    private val broadcastChannel = Channel<Pair<Intent, Int>>(Channel.BUFFERED)
     
     // 🚀 性能优化：移除数据限流器，确保实时处理所有广播
     // private val throttler = DataThrottler(50L) // 已移除，改为实时处理
@@ -273,9 +274,29 @@ class AmapBroadcastManager(
             }
         }
 
+        // 对于频繁的广播类型，抑制详细日志输出（用于背压日志）
+        val shouldSuppressLogs = when (keyType) {
+            AppConstants.AmapBroadcast.Navigation.GUIDE_INFO,           // 10001
+            AppConstants.AmapBroadcast.MapLocation.UNKNOWN_INFO_13011,  // 13011
+            AppConstants.AmapBroadcast.MapLocation.GEOLOCATION_INFO,    // 12205
+            AppConstants.AmapBroadcast.Navigation.TURN_INFO,            // 10016
+            AppConstants.AmapBroadcast.Navigation.MAP_STATE,            // 10019
+            AppConstants.AmapBroadcast.MapLocation.TRAFFIC_LIGHT,       // 60073
+            60073  // 直接添加数字常量
+            -> true
+            else -> false
+        }
+
         try {
             // 发送到Channel处理，避免创建新协程
-            broadcastChannel.trySend(Pair(intent, keyType))
+            // 使用trySend避免阻塞，如果Channel满了就丢弃（防止内存堆积）
+            val result = broadcastChannel.trySend(Pair(intent, keyType))
+            if (result.isFailure) {
+                // Channel满了，丢弃旧数据，这是正常的背压处理
+                if (!shouldSuppressLogs) {
+                    Log.v(TAG, "⚠️ 广播Channel已满，丢弃数据 (KEY_TYPE: $keyType) - 这是正常的背压控制")
+                }
+            }
         } catch (e: Exception) {
             Log.e(TAG, "发送广播到Channel失败: ${e.message}", e)
         }
@@ -452,38 +473,36 @@ class AmapBroadcastManager(
         val keyType = intent.getIntExtra("KEY_TYPE", -1)
         val timestamp = System.currentTimeMillis()
 
-        // 提取所有额外数据
+        // 🔧 内存优化：只提取关键字段，避免存储所有额外数据导致内存膨胀
+        // 这些关键字段足以用于UI显示和调试，同时大幅减少内存占用
         val rawExtras = mutableMapOf<String, String>()
+        val keyFieldsToExtract = listOf(
+            "KEY_TYPE", "EXTRA_STATE", "GUIDE_ICON", "SEG_REMAIN_DIS", 
+            "ROAD_NAME", "LIMIT_SPEED", "CUR_SPEED", "EXTRA_VALUE"
+        )
+        
         intent.extras?.let { bundle ->
-            for (key in bundle.keySet()) {
-                val value = try {
-                    // 使用最安全的方法：直接获取原始值并判断类型
-                    @Suppress("DEPRECATION")
-                    val rawValue = bundle.get(key)
-                    when (rawValue) {
-                        is String -> rawValue
-                        is Int -> rawValue.toString()
-                        is Long -> rawValue.toString()
-                        is Double -> rawValue.toString()
-                        is Float -> rawValue.toString()
-                        is Boolean -> rawValue.toString()
-                        is Short -> rawValue.toString()
-                        is Byte -> rawValue.toString()
-                        is Char -> rawValue.toString()
-                        is ByteArray -> "ByteArray[${rawValue.size}]"
-                        is IntArray -> "IntArray[${rawValue.size}]"
-                        is LongArray -> "LongArray[${rawValue.size}]"
-                        is DoubleArray -> "DoubleArray[${rawValue.size}]"
-                        is FloatArray -> "FloatArray[${rawValue.size}]"
-                        is BooleanArray -> "BooleanArray[${rawValue.size}]"
-                        is Array<*> -> "Array[${rawValue.size}]"
-                        null -> "null"
-                        else -> rawValue.toString()
+            // 只提取关键字段，忽略其他不必要的数据
+            for (key in keyFieldsToExtract) {
+                if (bundle.containsKey(key)) {
+                    val value = try {
+                        @Suppress("DEPRECATION")
+                        val rawValue = bundle.get(key)
+                        when (rawValue) {
+                            is String -> rawValue.take(100) // 限制字符串长度
+                            is Int -> rawValue.toString()
+                            is Long -> rawValue.toString()
+                            is Double -> rawValue.toString()
+                            is Float -> rawValue.toString()
+                            is Boolean -> rawValue.toString()
+                            null -> "null"
+                            else -> rawValue.toString().take(50) // 限制其他类型长度
+                        }
+                    } catch (e: Exception) {
+                        "解析失败"
                     }
-                } catch (e: Exception) {
-                    "获取失败: ${e.message}"
+                    rawExtras[key] = value
                 }
-                rawExtras[key] = value
             }
         }
 

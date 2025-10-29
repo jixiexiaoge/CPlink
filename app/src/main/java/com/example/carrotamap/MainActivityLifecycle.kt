@@ -40,9 +40,6 @@ class MainActivityLifecycle(
 
         // 请求忽略电池优化
         core.requestIgnoreBatteryOptimizations()
-        
-        // 请求悬浮窗权限
-        core.requestFloatingWindowPermission()
 
         // 请求通知权限（Android 13+ 前台服务通知需要）
         core.requestNotificationPermissionIfNeeded()
@@ -77,10 +74,9 @@ class MainActivityLifecycle(
      * 处理新的Intent
      */
     fun onNewIntent(intent: Intent) {
-        Log.i(TAG, "📱 收到新的Intent，处理页面导航")
-        // 处理新的Intent，用于从悬浮窗导航
+        Log.i(TAG, "📱 收到新的Intent")
+        // 保存Intent供后续使用
         core.pendingNavigationIntent = intent
-        core.handleFloatingWindowNavigation()
     }
 
     /**
@@ -98,9 +94,6 @@ class MainActivityLifecycle(
             Log.w(TAG, "⚠️ 记录使用时长失败: ${e.message}")
         }
         
-        // 所有用户类型都可以使用悬浮窗功能
-        Log.i(TAG, "🔓 用户类型${core.userType.value}可以使用悬浮窗功能")
-        
         // 设置网络管理器为后台模式，调整网络策略
         try {
             core.networkManager.setBackgroundState(true)
@@ -111,14 +104,6 @@ class MainActivityLifecycle(
             Log.w(TAG, "⚠️ 设置后台状态失败: ${e.message}")
         }
         
-        // 启动悬浮窗服务
-        if (core.isFloatingWindowEnabled.value) {
-            val intent = Intent(activity, FloatingWindowService::class.java).apply {
-                action = FloatingWindowService.ACTION_START_FLOATING
-            }
-            activity.startService(intent)
-        }
-        
         // 注意：不暂停GPS更新，让GPS在后台继续工作
         Log.i(TAG, "🌍 GPS位置更新在后台继续运行")
     }
@@ -127,7 +112,7 @@ class MainActivityLifecycle(
      * Activity恢复时的处理
      */
     fun onResume() {
-        Log.i(TAG, "▶️ Activity恢复，隐藏悬浮窗")
+        Log.i(TAG, "▶️ Activity恢复")
         
         // 设置网络管理器为前台模式，恢复正常网络策略
         try {
@@ -138,12 +123,6 @@ class MainActivityLifecycle(
         } catch (e: Exception) {
             Log.w(TAG, "⚠️ 设置前台状态失败: ${e.message}")
         }
-        
-        // 隐藏悬浮窗
-        val intent = Intent(activity, FloatingWindowService::class.java).apply {
-            action = FloatingWindowService.ACTION_STOP_FLOATING
-        }
-        activity.startService(intent)
         
         // 重新设置屏幕常亮，确保不会被清除
         activity.window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -156,9 +135,6 @@ class MainActivityLifecycle(
         } catch (e: Exception) {
             Log.w(TAG, "⚠️ 更新使用统计失败: ${e.message}")
         }
-        
-        // 处理悬浮窗页面导航
-        core.handleFloatingWindowNavigation()
     }
 
     /**
@@ -168,16 +144,6 @@ class MainActivityLifecycle(
         Log.i(TAG, "🔧 MainActivity正在销毁，清理资源...")
 
         try {
-            // 首先停止悬浮窗服务，防止悬浮窗残留
-            try {
-                val intent = Intent(activity, FloatingWindowService::class.java).apply {
-                    action = FloatingWindowService.ACTION_STOP_FLOATING
-                }
-                activity.startService(intent)
-                Log.i(TAG, "🛑 已发送停止悬浮窗服务指令")
-            } catch (e: Exception) {
-                Log.w(TAG, "⚠️ 停止悬浮窗服务失败: ${e.message}")
-            }
             
             // 停止内存监控
             core.stopMemoryMonitoring()
@@ -391,12 +357,47 @@ class MainActivityLifecycle(
 
         try {
             core.networkManager = NetworkManager(activity, core.carrotManFields)
+            
+            // 启动网络状态监控
+            startNetworkStatusMonitoring()
+
+
+            
             // 仅创建NetworkManager实例，不启动网络服务
             Log.i(TAG, "✅ 网络管理器初始化成功（网络服务待启动）")
         } catch (e: Exception) {
             Log.e(TAG, "❌ 网络管理器初始化失败: ${e.message}", e)
         }
     }
+
+    /**
+     * 启动网络状态监控
+     */
+    private fun startNetworkStatusMonitoring() {
+        CoroutineScope(Dispatchers.Main).launch {
+            while (true) {
+                try {
+                    val status = core.networkManager.getNetworkConnectionStatus()
+                    val connectionStatus = core.networkManager.getConnectionStatus()
+                    val deviceInfo = connectionStatus["currentDevice"] as? String ?: ""
+                    
+                    core.networkStatus.value = status
+                    core.deviceInfo.value = deviceInfo
+                    
+                    Log.d(TAG, "🌐 网络状态监控: $status, 设备: $deviceInfo")
+                } catch (e: UninitializedPropertyAccessException) {
+                    // NetworkManager还未初始化，跳过本次更新
+                    Log.d(TAG, "🔍 NetworkManager未初始化，跳过状态更新")
+                } catch (e: Exception) {
+                    Log.w(TAG, "⚠️ 网络状态监控异常: ${e.message}")
+                }
+                
+                delay(2000) // 每2秒更新一次
+            }
+        }
+        Log.i(TAG, "🔍 网络状态监控已启动")
+    }
+
 
     /**
      * 启动网络服务（延迟启动）

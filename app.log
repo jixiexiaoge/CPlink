@@ -1,185 +1,110 @@
 
-2025-10-28 18:03:59.048 14744-15114 CarrotManNetwork        com.example.cplink                   V  📍 发送GPS坐标: lat=31.10879106, lon=121.45194723, vp_lat=31.10879106, vp_lon=121.45194723
-2025-10-28 18:03:59.088 14744-15114 CarrotManNetwork        com.example.cplink                   I  📡 收到设备广播: [{"Carrot2": "0.9.9", "IsOnroad": true, "CarrotRouteActive": true, "ip": "192.168.0.3", "port": 7706, "log_carrot": "", "v_cruise_kph": 60.0, "carcruiseSpeed": 61.750003051757815, "v_ego_kph": 55, "tbt_dist": 2801.6328125, "sdi_dist": 0, "active": true, "xState": 2, "trafficState": 2}] from 192.168.0.3
-2025-10-28 18:03:59.089 14744-15114 CarrotManNetwork        com.example.cplink                   D  📊 当前状态: 已发现设备=1, 当前连接=192.168.0.3
-2025-10-28 18:03:59.089 14744-15114 CarrotManNetwork        com.example.cplink                   D  🔍 检查OpenpPilot数据: Carrot2=true, IsOnroad=true, v_ego_kph=true, active=true, xState=true -> true
-2025-10-28 18:03:59.104 14744-14744 NetworkManager          com.example.cplink                   I  ✅ OpenpPilot状态已更新: 车速=55km/h, 激活=true, 在路上=true
-2025-10-28 18:03:59.192 14744-15114 CarrotManNetwork        com.example.cplink                   I  📡 收到设备广播: [{"Carrot2": "0.9.9", "IsOnroad": true, "CarrotRouteActive": true, "ip": "192.168.0.3", "port": 7706, "log_carrot": "", "v_cruise_kph": 60.0, "carcruiseSpeed": 61.750003051757815, "v_ego_kph": 55, "tbt_dist": 2800.107421875, "sdi_dist": 0, "active": true, "xState": 2, "trafficState": 2}] from 192.168.0.3
-2025-10-28 18:03:59.193 14744-15114 CarrotManNetwork        com.example.cplink                   D  📊 当前状态: 已发现设备=1, 当前连接=192.168.0.3
-2025-10-28 18:03:59.193 14744-15114 CarrotManNetwork        com.example.cplink                   D  🔍 检查OpenpPilot数据: Carrot2=true, IsOnroad=true, v_ego_kph=true, active=true, xState=true -> true
-2025-10-28 18:03:59.196 14744-14744 NetworkManager          com.example.cplink                   I  ✅ OpenpPilot状态已更新: 车速=55km/h, 激活=true, 在路上=true
-2025-10-28 18:03:59.231 14744-15114 AmapBroadcastManager    com.example.cplink                   V  🔄 同步缓冲区到UI: 20 条数据
-2025-10-28 18:03:59.232 14744-15114 AmapBroadcastManager    com.example.cplink                   D  📡 处理通用广播: KEY_TYPE=13011
-2025-10-28 18:03:59.241 14744-15114 AmapBroadcastHandlers   com.example.cplink                   D  🧭 处理引导信息广播 (KEY_TYPE: 10001)
-2025-10-28 18:03:59.241 14744-15114 AmapBroadcastHandlers   com.example.cplink                   D  📍 GPS坐标为0，使用手机GPS: lat=31.10879106, lon=121.45194723
-2025-10-28 18:03:59.241 14744-15114 AmapBroadcastHandlers   com.example.cplink                   D  🛣️ 道路类型映射: ROAD_TYPE=7 (主要道路) -> roadcate=10 (很宽道路（四车道及以上）)
-2025-10-28 18:03:59.242 14744-15114 AmapBroadcastHandlers   com.example.cplink                   D  🔄 转弯映射: 高德图标=8 -> CarrotMan类型=14
-2025-10-28 18:03:59.242 14744-15114 AmapBroadcastHandlers   com.example.cplink                   D  🔄 下一转弯映射: 高德图标=0 -> CarrotMan类型=51
-2025-10-28 18:03:59.242 14744-15114 AmapBroadcastHandlers   com.example.cplink                   I  🧭 引导信息: 道路=银都路隧道->芦恒路, 转弯类型=14, 距离=2728m
-2025-10-28 18:03:59.242 14744-15114 AmapBroadcastHandlers   com.example.cplink                   D  📊 数据源已更新: amap_navi
-2025-10-28 18:03:59.243 14744-15114 AmapBroadcastHandlers   com.example.cplink                   V  🔍 引导信息处理后GPS状态:
-2025-10-28 18:03:59.243 14744-15114 AmapBroadcastHandlers   com.example.cplink                   V    使用effectiveLatitude策略: vpPosPointLat=31.10879106, vpPosPointLatNavi=31.10879106
-2025-10-28 18:03:59.244 14744-15114 AmapBroadcastHandlers   com.example.cplink                   D  🧭 处理引导信息广播 (KEY_TYPE: 10001)
-2025-10-28 18:03:59.244 14744-15114 AmapBroadcastHandlers   com.example.cplink                   D  📍 GPS坐标为0，使用手机GPS: lat=31.10879106, lon=121.45194723
-2025-10-28 18:03:59.244 14744-15114 AmapBroadcastHandlers   com.example.cplink                   D  🛣️ 道路类型映射: ROAD_TYPE=7 (主要道路) -> roadcate=10 (很宽道路（四车道及以上）)
-2025-10-28 18:03:59.244 14744-15114 AmapBroadcastHandlers   com.example.cplink                   D  🔄 转弯映射: 高德图标=8 -> CarrotMan类型=14
-2025-10-28 18:03:59.244 14744-15114 AmapBroadcastHandlers   com.example.cplink                   D  🔄 下一转弯映射: 高德图标=0 -> CarrotMan类型=51
-2025-10-28 18:03:59.244 14744-15114 AmapBroadcastHandlers   com.example.cplink                   I  🧭 引导信息: 道路=银都路隧道->芦恒路, 转弯类型=14, 距离=2728m
-2025-10-28 18:03:59.245 14744-15114 AmapBroadcastHandlers   com.example.cplink                   D  📊 数据源已更新: amap_navi
-2025-10-28 18:03:59.245 14744-15114 AmapBroadcastHandlers   com.example.cplink                   V  🔍 引导信息处理后GPS状态:
-2025-10-28 18:03:59.246 14744-15114 AmapBroadcastHandlers   com.example.cplink                   V    使用effectiveLatitude策略: vpPosPointLat=31.10879106, vpPosPointLatNavi=31.10879106
-2025-10-28 18:03:59.246 14744-15114 AmapBroadcastHandlers   com.example.cplink                   D  🧭 处理引导信息广播 (KEY_TYPE: 10001)
-2025-10-28 18:03:59.246 14744-15114 AmapBroadcastHandlers   com.example.cplink                   D  📍 GPS坐标为0，使用手机GPS: lat=31.10879106, lon=121.45194723
-2025-10-28 18:03:59.247 14744-15114 AmapBroadcastHandlers   com.example.cplink                   D  🛣️ 道路类型映射: ROAD_TYPE=7 (主要道路) -> roadcate=10 (很宽道路（四车道及以上）)
-2025-10-28 18:03:59.247 14744-15114 AmapBroadcastHandlers   com.example.cplink                   D  🔄 转弯映射: 高德图标=8 -> CarrotMan类型=14
-2025-10-28 18:03:59.247 14744-15114 AmapBroadcastHandlers   com.example.cplink                   D  🔄 下一转弯映射: 高德图标=0 -> CarrotMan类型=51
-2025-10-28 18:03:59.247 14744-15114 AmapBroadcastHandlers   com.example.cplink                   I  🧭 引导信息: 道路=银都路隧道->芦恒路, 转弯类型=14, 距离=2728m
-2025-10-28 18:03:59.248 14744-15114 AmapBroadcastHandlers   com.example.cplink                   D  📊 数据源已更新: amap_navi
-2025-10-28 18:03:59.248 14744-15114 AmapBroadcastHandlers   com.example.cplink                   V  🔍 引导信息处理后GPS状态:
-2025-10-28 18:03:59.248 14744-15114 AmapBroadcastHandlers   com.example.cplink                   V    使用effectiveLatitude策略: vpPosPointLat=31.10879106, vpPosPointLatNavi=31.10879106
-2025-10-28 18:03:59.248 14744-15126 CarrotManNetwork        com.example.cplink                   V  📍 发送GPS坐标: lat=31.10879106, lon=121.45194723, vp_lat=31.10879106, vp_lon=121.45194723
-2025-10-28 18:03:59.296 14744-15126 CarrotManNetwork        com.example.cplink                   I  📡 收到设备广播: [{"Carrot2": "0.9.9", "IsOnroad": true, "CarrotRouteActive": true, "ip": "192.168.0.3", "port": 7706, "log_carrot": "", "v_cruise_kph": 60.0, "carcruiseSpeed": 61.750003051757815, "v_ego_kph": 55, "tbt_dist": 2787.470703125, "sdi_dist": 0, "active": true, "xState": 2, "trafficState": 2}] from 192.168.0.3
-2025-10-28 18:03:59.296 14744-15126 CarrotManNetwork        com.example.cplink                   D  📊 当前状态: 已发现设备=1, 当前连接=192.168.0.3
-2025-10-28 18:03:59.297 14744-15126 CarrotManNetwork        com.example.cplink                   D  🔍 检查OpenpPilot数据: Carrot2=true, IsOnroad=true, v_ego_kph=true, active=true, xState=true -> true
-2025-10-28 18:03:59.298 14744-14744 NetworkManager          com.example.cplink                   I  ✅ OpenpPilot状态已更新: 车速=55km/h, 激活=true, 在路上=true
-2025-10-28 18:03:59.400 14744-15114 CarrotManNetwork        com.example.cplink                   I  📡 收到设备广播: [{"Carrot2": "0.9.9", "IsOnroad": true, "CarrotRouteActive": true, "ip": "192.168.0.3", "port": 7706, "log_carrot": "", "v_cruise_kph": 60.0, "carcruiseSpeed": 61.750003051757815, "v_ego_kph": 55, "tbt_dist": 2785.78125, "sdi_dist": 0, "active": true, "xState": 2, "trafficState": 2}] from 192.168.0.3
-2025-10-28 18:03:59.400 14744-15114 CarrotManNetwork        com.example.cplink                   D  📊 当前状态: 已发现设备=1, 当前连接=192.168.0.3
-2025-10-28 18:03:59.401 14744-15114 CarrotManNetwork        com.example.cplink                   D  🔍 检查OpenpPilot数据: Carrot2=true, IsOnroad=true, v_ego_kph=true, active=true, xState=true -> true
-2025-10-28 18:03:59.406 14744-14744 NetworkManager          com.example.cplink                   I  ✅ OpenpPilot状态已更新: 车速=55km/h, 激活=true, 在路上=true
-2025-10-28 18:03:59.452 14744-15126 CarrotManNetwork        com.example.cplink                   V  📍 发送GPS坐标: lat=31.10879106, lon=121.45194723, vp_lat=31.10879106, vp_lon=121.45194723
-2025-10-28 18:03:59.506 14744-15126 CarrotManNetwork        com.example.cplink                   I  📡 收到设备广播: [{"Carrot2": "0.9.9", "IsOnroad": true, "CarrotRouteActive": true, "ip": "192.168.0.3", "port": 7706, "log_carrot": "", "v_cruise_kph": 60.0, "carcruiseSpeed": 61.750003051757815, "v_ego_kph": 56, "tbt_dist": 2786.064453125, "sdi_dist": 0, "active": true, "xState": 2, "trafficState": 2}] from 192.168.0.3
-2025-10-28 18:03:59.506 14744-15126 CarrotManNetwork        com.example.cplink                   D  📊 当前状态: 已发现设备=1, 当前连接=192.168.0.3
-2025-10-28 18:03:59.507 14744-15126 CarrotManNetwork        com.example.cplink                   D  🔍 检查OpenpPilot数据: Carrot2=true, IsOnroad=true, v_ego_kph=true, active=true, xState=true -> true
-2025-10-28 18:03:59.510 14744-14744 NetworkManager          com.example.cplink                   I  ✅ OpenpPilot状态已更新: 车速=56km/h, 激活=true, 在路上=true
-2025-10-28 18:03:59.510 14744-14744 NetworkManager          com.example.cplink                   I  🔄 状态变化: 车速 55 -> 56, 激活 true -> true
-2025-10-28 18:03:59.611 14744-15126 CarrotManNetwork        com.example.cplink                   I  📡 收到设备广播: [{"Carrot2": "0.9.9", "IsOnroad": true, "CarrotRouteActive": true, "ip": "192.168.0.3", "port": 7706, "log_carrot": "", "v_cruise_kph": 60.0, "carcruiseSpeed": 61.750003051757815, "v_ego_kph": 56, "tbt_dist": 2787.447265625, "sdi_dist": 0, "active": true, "xState": 2, "trafficState": 2}] from 192.168.0.3
-2025-10-28 18:03:59.611 14744-15126 CarrotManNetwork        com.example.cplink                   D  📊 当前状态: 已发现设备=1, 当前连接=192.168.0.3
-2025-10-28 18:03:59.613 14744-15126 CarrotManNetwork        com.example.cplink                   D  🔍 检查OpenpPilot数据: Carrot2=true, IsOnroad=true, v_ego_kph=true, active=true, xState=true -> true
-2025-10-28 18:03:59.617 14744-14744 NetworkManager          com.example.cplink                   I  ✅ OpenpPilot状态已更新: 车速=56km/h, 激活=true, 在路上=true
-2025-10-28 18:03:59.653 14744-15120 CarrotManNetwork        com.example.cplink                   V  📍 发送GPS坐标: lat=31.10879106, lon=121.45194723, vp_lat=31.10879106, vp_lon=121.45194723
-2025-10-28 18:03:59.718 14744-15120 CarrotManNetwork        com.example.cplink                   I  📡 收到设备广播: [{"Carrot2": "0.9.9", "IsOnroad": true, "CarrotRouteActive": true, "ip": "192.168.0.3", "port": 7706, "log_carrot": "", "v_cruise_kph": 60.0, "carcruiseSpeed": 61.750003051757815, "v_ego_kph": 56, "tbt_dist": 2785.890625, "sdi_dist": 0, "active": true, "xState": 2, "trafficState": 2}] from 192.168.0.3
-2025-10-28 18:03:59.718 14744-15120 CarrotManNetwork        com.example.cplink                   D  📊 当前状态: 已发现设备=1, 当前连接=192.168.0.3
-2025-10-28 18:03:59.719 14744-15120 CarrotManNetwork        com.example.cplink                   D  🔍 检查OpenpPilot数据: Carrot2=true, IsOnroad=true, v_ego_kph=true, active=true, xState=true -> true
-2025-10-28 18:03:59.720 14744-14744 NetworkManager          com.example.cplink                   I  ✅ OpenpPilot状态已更新: 车速=56km/h, 激活=true, 在路上=true
-2025-10-28 18:03:59.822 14744-15114 CarrotManNetwork        com.example.cplink                   I  📡 收到设备广播: [{"Carrot2": "0.9.9", "IsOnroad": true, "CarrotRouteActive": true, "ip": "192.168.0.3", "port": 7706, "log_carrot": "", "v_cruise_kph": 60.0, "carcruiseSpeed": 61.750003051757815, "v_ego_kph": 56, "tbt_dist": 2787.4375, "sdi_dist": 0, "active": true, "xState": 2, "trafficState": 2}] from 192.168.0.3
-2025-10-28 18:03:59.822 14744-15114 CarrotManNetwork        com.example.cplink                   D  📊 当前状态: 已发现设备=1, 当前连接=192.168.0.3
-2025-10-28 18:03:59.823 14744-15114 CarrotManNetwork        com.example.cplink                   D  🔍 检查OpenpPilot数据: Carrot2=true, IsOnroad=true, v_ego_kph=true, active=true, xState=true -> true
-2025-10-28 18:03:59.826 14744-14744 NetworkManager          com.example.cplink                   I  ✅ OpenpPilot状态已更新: 车速=56km/h, 激活=true, 在路上=true
-2025-10-28 18:03:59.855 14744-15126 CarrotManNetwork        com.example.cplink                   V  📍 发送GPS坐标: lat=31.10879106, lon=121.45194723, vp_lat=31.10879106, vp_lon=121.45194723
-2025-10-28 18:03:59.928 14744-15126 CarrotManNetwork        com.example.cplink                   I  📡 收到设备广播: [{"Carrot2": "0.9.9", "IsOnroad": true, "CarrotRouteActive": true, "ip": "192.168.0.3", "port": 7706, "log_carrot": "", "v_cruise_kph": 60.0, "carcruiseSpeed": 61.750003051757815, "v_ego_kph": 57, "tbt_dist": 2785.87109375, "sdi_dist": 0, "active": true, "xState": 2, "trafficState": 2}] from 192.168.0.3
-2025-10-28 18:03:59.928 14744-15126 CarrotManNetwork        com.example.cplink                   D  📊 当前状态: 已发现设备=1, 当前连接=192.168.0.3
-2025-10-28 18:03:59.929 14744-15126 CarrotManNetwork        com.example.cplink                   D  🔍 检查OpenpPilot数据: Carrot2=true, IsOnroad=true, v_ego_kph=true, active=true, xState=true -> true
-2025-10-28 18:03:59.934 14744-14744 NetworkManager          com.example.cplink                   I  ✅ OpenpPilot状态已更新: 车速=57km/h, 激活=true, 在路上=true
-2025-10-28 18:03:59.934 14744-14744 NetworkManager          com.example.cplink                   I  🔄 状态变化: 车速 56 -> 57, 激活 true -> true
-2025-10-28 18:04:00.033 14744-15126 CarrotManNetwork        com.example.cplink                   I  📡 收到设备广播: [{"Carrot2": "0.9.9", "IsOnroad": true, "CarrotRouteActive": true, "ip": "192.168.0.3", "port": 7706, "log_carrot": "", "v_cruise_kph": 60.0, "carcruiseSpeed": 61.750003051757815, "v_ego_kph": 57, "tbt_dist": 2787.423828125, "sdi_dist": 0, "active": true, "xState": 2, "trafficState": 2}] from 192.168.0.3
-2025-10-28 18:04:00.033 14744-14744 MainActivity            com.example.cplink                   I  ⏸️ Activity暂停
-2025-10-28 18:04:00.033 14744-15126 CarrotManNetwork        com.example.cplink                   D  📊 当前状态: 已发现设备=1, 当前连接=192.168.0.3
-2025-10-28 18:04:00.034 14744-15126 CarrotManNetwork        com.example.cplink                   D  🔍 检查OpenpPilot数据: Carrot2=true, IsOnroad=true, v_ego_kph=true, active=true, xState=true -> true
-2025-10-28 18:04:00.044 14744-14744 DeviceManager           com.example.cplink                   I  📊 记录使用时长: 14分钟，累计: 156分钟，保存成功: true
-2025-10-28 18:04:00.044 14744-14744 MainActivity            com.example.cplink                   I  🔓 用户类型4可以使用悬浮窗功能
-2025-10-28 18:04:00.044 14744-14744 NetworkManager          com.example.cplink                   D  🔄 网络管理器后台状态更新: true
-2025-10-28 18:04:00.044 14744-14744 MainActivity            com.example.cplink                   I  🔄 网络管理器已切换到后台模式
-2025-10-28 18:04:00.051 14744-14744 MainActivity            com.example.cplink                   I  🌍 GPS位置更新在后台继续运行
-2025-10-28 18:04:00.056 14744-15126 CarrotManNetwork        com.example.cplink                   V  📍 发送GPS坐标: lat=31.10879106, lon=121.45194723, vp_lat=31.10879106, vp_lon=121.45194723
-2025-10-28 18:04:00.065 14744-14744 NetworkManager          com.example.cplink                   I  ✅ OpenpPilot状态已更新: 车速=57km/h, 激活=true, 在路上=true
-2025-10-28 18:04:00.068 14744-14744 FloatingWindowService   com.example.cplink                   D  👤 用户类型权限检查: userType=4, hasPermission=true (所有用户都可使用)
-2025-10-28 18:04:00.068 14744-14744 FloatingWindowService   com.example.cplink                   I  🔄 使用广播方式发送控制指令，避免端口冲突
-2025-10-28 18:04:00.068 14744-14744 FloatingWindowService   com.example.cplink                   I  ✅ 网络管理器初始化完成（广播模式）
-2025-10-28 18:04:00.087 14744-14744 FloatingWindowService   com.example.cplink                   I  🔄 用户类型文本已更新: 铁粉 📂
-2025-10-28 18:04:00.087 14744-14744 FloatingWindowService   com.example.cplink                   I  ✅ 悬浮窗用户类型显示更新完成
-2025-10-28 18:04:00.087 14744-14744 FloatingWindowService   com.example.cplink                   I  ✅ 智能控速按钮状态初始化: 模式=0
-2025-10-28 18:04:00.113 14744-14744 FloatingWindowService   com.example.cplink                   I  ✅ 悬浮窗显示成功
-2025-10-28 18:04:00.113 14744-14744 FloatingWindowService   com.example.cplink                   I  ⏹️ 停止速度数据检查
-2025-10-28 18:04:00.113 14744-14744 FloatingWindowService   com.example.cplink                   I  🚗 开始优化速度数据检查（高频更新）
-2025-10-28 18:04:00.138 14744-14744 ViewRootImpl            com.example.cplink                   D  AppSizeAfterRelayout, size: Point(674, 455), rotation: ROTATION_0
-2025-10-28 18:04:00.138 14744-14744 libc                    com.example.cplink                   W  Access denied finding property "vendor.display.enable_optimal_refresh_rate"
-2025-10-28 18:04:00.140 14744-15120 CarrotManNetwork        com.example.cplink                   I  📡 收到设备广播: [{"Carrot2": "0.9.9", "IsOnroad": true, "CarrotRouteActive": true, "ip": "192.168.0.3", "port": 7706, "log_carrot": "", "v_cruise_kph": 60.0, "carcruiseSpeed": 61.750003051757815, "v_ego_kph": 57, "tbt_dist": 2785.841796875, "sdi_dist": 0, "active": true, "xState": 2, "trafficState": 2}] from 192.168.0.3
-2025-10-28 18:04:00.140 14744-15120 CarrotManNetwork        com.example.cplink                   D  📊 当前状态: 已发现设备=1, 当前连接=192.168.0.3
-2025-10-28 18:04:00.154 14744-15120 CarrotManNetwork        com.example.cplink                   D  🔍 检查OpenpPilot数据: Carrot2=true, IsOnroad=true, v_ego_kph=true, active=true, xState=true -> true
-2025-10-28 18:04:00.169 14744-14744 ViewRootImpl            com.example.cplink                   D  AppSizeAfterRelayout, size: Point(666, 455), rotation: ROTATION_0
-2025-10-28 18:04:00.177 14744-14744 NetworkManager          com.example.cplink                   I  ✅ OpenpPilot状态已更新: 车速=57km/h, 激活=true, 在路上=true
-2025-10-28 18:04:00.132 14744-14744 .example.cplink         com.example.cplink                   W  type=1400 audit(0.0:5785214): avc:  denied  { read } for  name="u:object_r:vendor_display_prop:s0" dev="tmpfs" ino=462 scontext=u:r:untrusted_app:s0:c199,c257,c512,c768 tcontext=u:object_r:vendor_display_prop:s0 tclass=file permissive=0 app=com.example.cplink
-2025-10-28 18:04:00.265 14744-15120 CarrotManNetwork        com.example.cplink                   V  📍 发送GPS坐标: lat=31.10879106, lon=121.45194723, vp_lat=31.10879106, vp_lon=121.45194723
-2025-10-28 18:04:00.266 14744-15114 CarrotManNetwork        com.example.cplink                   I  📡 收到设备广播: [{"Carrot2": "0.9.9", "IsOnroad": true, "CarrotRouteActive": true, "ip": "192.168.0.3", "port": 7706, "log_carrot": "", "v_cruise_kph": 60.0, "carcruiseSpeed": 61.750003051757815, "v_ego_kph": 57, "tbt_dist": 2771.412109375, "sdi_dist": 0, "active": true, "xState": 2, "trafficState": 2}] from 192.168.0.3
-2025-10-28 18:04:00.266 14744-15114 CarrotManNetwork        com.example.cplink                   D  📊 当前状态: 已发现设备=1, 当前连接=192.168.0.3
-2025-10-28 18:04:00.266 14744-15114 CarrotManNetwork        com.example.cplink                   D  🔍 检查OpenpPilot数据: Carrot2=true, IsOnroad=true, v_ego_kph=true, active=true, xState=true -> true
-2025-10-28 18:04:00.271 14744-14744 NetworkManager          com.example.cplink                   I  ✅ OpenpPilot状态已更新: 车速=57km/h, 激活=true, 在路上=true
-2025-10-28 18:04:00.367 14744-15114 CarrotManNetwork        com.example.cplink                   I  📡 收到设备广播: [{"Carrot2": "0.9.9", "IsOnroad": true, "CarrotRouteActive": true, "ip": "192.168.0.3", "port": 7706, "log_carrot": "", "v_cruise_kph": 60.0, "carcruiseSpeed": 61.750003051757815, "v_ego_kph": 57, "tbt_dist": 2769.81640625, "sdi_dist": 0, "active": true, "xState": 2, "trafficState": 2}] from 192.168.0.3
-2025-10-28 18:04:00.367 14744-15114 CarrotManNetwork        com.example.cplink                   D  📊 当前状态: 已发现设备=1, 当前连接=192.168.0.3
-2025-10-28 18:04:00.367 14744-15114 CarrotManNetwork        com.example.cplink                   D  🔍 检查OpenpPilot数据: Carrot2=true, IsOnroad=true, v_ego_kph=true, active=true, xState=true -> true
-2025-10-28 18:04:00.368 14744-14744 NetworkManager          com.example.cplink                   I  ✅ OpenpPilot状态已更新: 车速=57km/h, 激活=true, 在路上=true
-2025-10-28 18:04:00.577 14744-15115 CarrotManNetwork        com.example.cplink                   I  📡 收到设备广播: [{"Carrot2": "0.9.9", "IsOnroad": true, "CarrotRouteActive": true, "ip": "192.168.0.3", "port": 7706, "log_carrot": "", "v_cruise_kph": 60.0, "carcruiseSpeed": 61.750003051757815, "v_ego_kph": 58, "tbt_dist": 2769.796875, "sdi_dist": 0, "active": true, "xState": 2, "trafficState": 2}] from 192.168.0.3
-2025-10-28 18:04:00.577 14744-15115 CarrotManNetwork        com.example.cplink                   D  📊 当前状态: 已发现设备=1, 当前连接=192.168.0.3
-2025-10-28 18:04:00.580 14744-15115 CarrotManNetwork        com.example.cplink                   D  🔍 检查OpenpPilot数据: Carrot2=true, IsOnroad=true, v_ego_kph=true, active=true, xState=true -> true
-2025-10-28 18:04:00.580 14744-14744 NetworkManager          com.example.cplink                   I  ✅ OpenpPilot状态已更新: 车速=58km/h, 激活=true, 在路上=true
-2025-10-28 18:04:00.619 14744-15115 AmapBroadcastManager    com.example.cplink                   V  🔄 同步缓冲区到UI: 20 条数据
-2025-10-28 18:04:00.619 14744-15115 AmapBroadcastHandlers   com.example.cplink                   D  🧭 处理引导信息广播 (KEY_TYPE: 10001)
-2025-10-28 18:04:00.619 14744-15115 AmapBroadcastHandlers   com.example.cplink                   D  📍 GPS坐标为0，使用手机GPS: lat=31.10879106, lon=121.45194723
-2025-10-28 18:04:00.619 14744-15115 AmapBroadcastHandlers   com.example.cplink                   D  🛣️ 道路类型映射: ROAD_TYPE=7 (主要道路) -> roadcate=10 (很宽道路（四车道及以上）)
-2025-10-28 18:04:00.619 14744-15115 AmapBroadcastHandlers   com.example.cplink                   D  🔄 转弯映射: 高德图标=8 -> CarrotMan类型=14
-2025-10-28 18:04:00.619 14744-15115 AmapBroadcastHandlers   com.example.cplink                   D  🔄 下一转弯映射: 高德图标=0 -> CarrotMan类型=51
-2025-10-28 18:04:00.619 14744-15115 AmapBroadcastHandlers   com.example.cplink                   I  🧭 引导信息: 道路=银都路隧道->芦恒路, 转弯类型=14, 距离=2713m
-2025-10-28 18:04:00.620 14744-15115 AmapBroadcastHandlers   com.example.cplink                   D  📊 数据源已更新: amap_navi
-2025-10-28 18:04:00.620 14744-15115 AmapBroadcastHandlers   com.example.cplink                   V  🔍 引导信息处理后GPS状态:
-2025-10-28 18:04:00.620 14744-15115 AmapBroadcastHandlers   com.example.cplink                   V    使用effectiveLatitude策略: vpPosPointLat=31.10879106, vpPosPointLatNavi=31.10879106
-2025-10-28 18:04:00.620 14744-15115 AmapBroadcastManager    com.example.cplink                   D  📡 处理通用广播: KEY_TYPE=13011
-2025-10-28 18:04:00.620 14744-15115 AmapBroadcastHandlers   com.example.cplink                   D  🧭 处理引导信息广播 (KEY_TYPE: 10001)
-2025-10-28 18:04:00.620 14744-15115 AmapBroadcastHandlers   com.example.cplink                   D  📍 GPS坐标为0，使用手机GPS: lat=31.10879106, lon=121.45194723
-2025-10-28 18:04:00.620 14744-15115 AmapBroadcastHandlers   com.example.cplink                   D  🛣️ 道路类型映射: ROAD_TYPE=7 (主要道路) -> roadcate=10 (很宽道路（四车道及以上）)
-2025-10-28 18:04:00.620 14744-15115 AmapBroadcastHandlers   com.example.cplink                   D  🔄 转弯映射: 高德图标=8 -> CarrotMan类型=14
-2025-10-28 18:04:00.620 14744-15115 AmapBroadcastHandlers   com.example.cplink                   D  🔄 下一转弯映射: 高德图标=0 -> CarrotMan类型=51
-2025-10-28 18:04:00.620 14744-15115 AmapBroadcastHandlers   com.example.cplink                   I  🧭 引导信息: 道路=银都路隧道->芦恒路, 转弯类型=14, 距离=2713m
-2025-10-28 18:04:00.621 14744-15115 AmapBroadcastHandlers   com.example.cplink                   D  📊 数据源已更新: amap_navi
-2025-10-28 18:04:00.621 14744-15115 AmapBroadcastHandlers   com.example.cplink                   V  🔍 引导信息处理后GPS状态:
-2025-10-28 18:04:00.621 14744-15115 AmapBroadcastHandlers   com.example.cplink                   V    使用effectiveLatitude策略: vpPosPointLat=31.10879106, vpPosPointLatNavi=31.10879106
-2025-10-28 18:04:00.681 14744-15114 CarrotManNetwork        com.example.cplink                   I  📡 收到设备广播: [{"Carrot2": "0.9.9", "IsOnroad": true, "CarrotRouteActive": true, "ip": "192.168.0.3", "port": 7706, "log_carrot": "", "v_cruise_kph": 60.0, "carcruiseSpeed": 61.750003051757815, "v_ego_kph": 58, "tbt_dist": 2771.390625, "sdi_dist": 0, "active": true, "xState": 2, "trafficState": 2}] from 192.168.0.3
-2025-10-28 18:04:00.681 14744-15114 CarrotManNetwork        com.example.cplink                   D  📊 当前状态: 已发现设备=1, 当前连接=192.168.0.3
-2025-10-28 18:04:00.681 14744-15114 CarrotManNetwork        com.example.cplink                   D  🔍 检查OpenpPilot数据: Carrot2=true, IsOnroad=true, v_ego_kph=true, active=true, xState=true -> true
-2025-10-28 18:04:00.682 14744-14744 NetworkManager          com.example.cplink                   I  ✅ OpenpPilot状态已更新: 车速=58km/h, 激活=true, 在路上=true
-2025-10-28 18:04:00.728 14744-14744 VRI[MainActivity]       com.example.cplink                   D  visibilityChanged oldVisibility=true newVisibility=false
-2025-10-28 18:04:00.744 14744-14744 ViewRootImpl            com.example.cplink                   D  AppSizeAfterRelayout, size: Point(1080, 2400), rotation: ROTATION_0
-2025-10-28 18:04:00.783 14744-15114 CarrotManNetwork        com.example.cplink                   I  📡 收到设备广播: [{"Carrot2": "0.9.9", "IsOnroad": true, "CarrotRouteActive": true, "ip": "192.168.0.3", "port": 7706, "log_carrot": "", "v_cruise_kph": 60.0, "carcruiseSpeed": 61.750003051757815, "v_ego_kph": 58, "tbt_dist": 2769.615234375, "sdi_dist": 0, "active": true, "xState": 2, "trafficState": 2}] from 192.168.0.3
-2025-10-28 18:04:00.783 14744-15114 CarrotManNetwork        com.example.cplink                   D  📊 当前状态: 已发现设备=1, 当前连接=192.168.0.3
-2025-10-28 18:04:00.784 14744-15114 CarrotManNetwork        com.example.cplink                   D  🔍 检查OpenpPilot数据: Carrot2=true, IsOnroad=true, v_ego_kph=true, active=true, xState=true -> true
-2025-10-28 18:04:00.788 14744-14744 MainActivity            com.example.cplink                   I  🔧 MainActivity正在销毁，清理资源...
-2025-10-28 18:04:00.788 14744-14744 MainActivity            com.example.cplink                   I  📊 内存监控已停止
-2025-10-28 18:04:00.790 14744-14744 DeviceManager           com.example.cplink                   I  📊 记录使用时长: 14分钟，累计: 170分钟，保存成功: true
-2025-10-28 18:04:00.790 14744-14744 MainActivity            com.example.cplink                   I  🛑 停止前台服务...
-2025-10-28 18:04:00.791 14744-14744 MainActivity            com.example.cplink                   I  ✅ 前台服务停止成功
-2025-10-28 18:04:00.791 14744-14744 MainActivity            com.example.cplink                   I  ✅ 控制指令广播接收器已注销
-2025-10-28 18:04:00.792 14744-14744 AmapBroadcastManager    com.example.cplink                   I  ✅ 广播接收器已注销
-2025-10-28 18:04:00.815 14744-14744 LocationSensorManager   com.example.cplink                   I  ✅ 位置和传感器服务已清理
-2025-10-28 18:04:00.815 14744-14744 PermissionManager       com.example.cplink                   I  🧹 清理权限管理器资源...
-2025-10-28 18:04:00.816 14744-14744 NetworkManager          com.example.cplink                   I  ⏹️ 网络状态定期更新已停止
-2025-10-28 18:04:00.816 14744-15114 NetworkManager          com.example.cplink                   E  ❌ 定期更新网络状态失败: StandaloneCoroutine was cancelled
-                                                                                                    kotlinx.coroutines.JobCancellationException: StandaloneCoroutine was cancelled; job=StandaloneCoroutine{Cancelling}@4f0f5e5
-2025-10-28 18:04:00.816 14744-14744 CarrotManNetwork        com.example.cplink                   I  开始清理CarrotMan网络客户端资源
-2025-10-28 18:04:00.816 14744-14744 CarrotManNetwork        com.example.cplink                   I  停止 CarrotMan 网络客户端服务
-2025-10-28 18:04:00.817 14744-15126 CarrotManNetwork        com.example.cplink                   E  ❌ 自动数据发送失败: StandaloneCoroutine was cancelled
-                                                                                                    kotlinx.coroutines.JobCancellationException: StandaloneCoroutine was cancelled; job=StandaloneCoroutine{Cancelling}@386b36b
-2025-10-28 18:04:00.817 14744-15114 CarrotManNetwork        com.example.cplink                   E  ❌ 设备健康检查失败: StandaloneCoroutine was cancelled
-                                                                                                    kotlinx.coroutines.JobCancellationException: StandaloneCoroutine was cancelled; job=StandaloneCoroutine{Cancelling}@dc00b61
-2025-10-28 18:04:00.818 14744-14744 CarrotManNetwork        com.example.cplink                   D  网络状态已保存: running=false, device=
-2025-10-28 18:04:00.818 14744-14744 CarrotManNetwork        com.example.cplink                   I  CarrotMan 网络服务已完全停止
-2025-10-28 18:04:00.818 14744-14744 CarrotManNetwork        com.example.cplink                   I  CarrotMan网络客户端资源清理完成
-2025-10-28 18:04:00.818 14744-14744 NetworkManager          com.example.cplink                   I  🧹 网络管理器资源已清理
-2025-10-28 18:04:00.818 14744-14744 DeviceManager           com.example.cplink                   I  🧹 清理设备管理器资源
-2025-10-28 18:04:00.818 14744-14744 DeviceManager           com.example.cplink                   I  ⏹️ 停止倒计时
-2025-10-28 18:04:00.818 14744-14744 MainActivity            com.example.cplink                   I  ✅ 所有监听器已注销并释放资源
-2025-10-28 18:04:00.819 14744-14744 WindowOnBackDispatcher  com.example.cplink                   W  sendCancelIfRunning: isInProgress=false callback=android.view.ViewRootImpl$$ExternalSyntheticLambda11@43ff07a
-2025-10-28 18:04:00.819 14744-18148 CarrotManNetwork        com.example.cplink                   E  ❌ 心跳任务异常: Job was cancelled
-                                                                                                    kotlinx.coroutines.JobCancellationException: Job was cancelled; job=SupervisorJobImpl{Cancelling}@3db1b47
-2025-10-28 18:04:00.842 14744-14744 NetworkManager          com.example.cplink                   I  ✅ OpenpPilot状态已更新: 车速=58km/h, 激活=true, 在路上=true
-2025-10-28 18:04:00.842 14744-14744 NetworkManager          com.example.cplink                   I  🌐 网络状态变化: connected=false, device=
-2025-10-28 18:04:01.194 14744-14744 ViewRootImpl            com.example.cplink                   D  AppSizeAfterRelayout, size: Point(665, 455), rotation: ROTATION_0
-2025-10-28 18:04:06.216 14744-18148 FloatingWindowService   com.example.cplink                   V  ⚠️ 无有效数据 - 设备连接:false, 速度数据:false
-2025-10-28 18:04:06.421 14744-18148 FloatingWindowService   com.example.cplink                   V  ⚠️ 无有效数据 - 设备连接:false, 速度数据:false
-2025-10-28 18:04:06.627 14744-18148 FloatingWindowService   com.example.cplink                   V  ⚠️ 无有效数据 - 设备连接:false, 速度数据:false
-2025-10-28 18:04:06.832 14744-18148 FloatingWindowService   com.example.cplink                   V  ⚠️ 无有效数据 - 设备连接:false, 速度数据:false
-2025-10-28 18:04:07.038 14744-18148 FloatingWindowService   com.example.cplink                   V  ⚠️ 无有效数据 - 设备连接:false, 速度数据:false
-2025-10-28 18:04:07.243 14744-18148 FloatingWindowService   com.example.cplink                   V  ⚠️ 无有效数据 - 设备连接:false, 速度数据:false
-2025-10-28 18:04:07.447 14744-18148 FloatingWindowService   com.example.cplink                   V  ⚠️ 无有效数据 - 设备连接:false, 速度数据:false
-2025-10-28 18:04:07.652 14744-18148 FloatingWindowService   com.example.cplink                   V  ⚠️ 无有效数据 - 设备连接:false, 速度数据:false
-2025-10-28 18:04:07.856 14744-18148 FloatingWindowService   com.example.cplink                   V  ⚠️ 无有效数据 - 设备连接:false, 速度数据:false
-2025-10-28 18:04:08.061 14744-18148 FloatingWindowService   com.example.cplink                   V  ⚠️ 无有效数据 - 设备连接:false, 速度数据:false
-2025-10-28 18:04:08.270 14744-18148 FloatingWindowService   com.example.cplink                   V  ⚠️ 无有效数据 - 设备连接:false, 速度数据:false
+2025-10-29 22:33:52.033 29521-29898 CarrotManNetwork        com.example.cplink                   V  📍 发送GPS坐标: lat=31.203626, lon=120.628028, vp_lat=31.203626, vp_lon=120.628028
+2025-10-29 22:33:52.040 29521-31043 CarrotManNetwork        com.example.cplink                   I  📡 收到设备广播: [{"Carrot2": "0.9.9", "IsOnroad": false, "CarrotRouteActive": false, "ip": "192.168.10.40", "port": 7706, "log_carrot": "", "v_cruise_kph": 0, "carcruiseSpeed": 0, "v_ego_kph": 0, "tbt_dist": 14, "sdi_dist": 0, "active": false, "xState": 0, "trafficState": 0}] from 192.168.10.40
+2025-10-29 22:33:52.040 29521-31043 CarrotManNetwork        com.example.cplink                   D  📊 当前状态: 已发现设备=1, 当前连接=192.168.10.40
+2025-10-29 22:33:52.040 29521-31043 CarrotManNetwork        com.example.cplink                   D  🔍 检查OpenpPilot数据: Carrot2=true, IsOnroad=true, v_ego_kph=true, active=true, xState=true -> true
+2025-10-29 22:33:52.115 29521-29521 MainActivity            com.example.cplink                   I  ⏸️ Activity暂停
+2025-10-29 22:33:52.116 29521-29849 .example.cplink         com.example.cplink                   I  CollectorTransition concurrent copying GC freed 2044KB AllocSpace bytes, 58(3016KB) LOS objects, 49% free, 5651KB(NonMov:80KB, MS:3531KB + LOS:2040KB)/11MB, paused 62us,212us total 104.501ms
+2025-10-29 22:33:52.118 29521-29521 DeviceManager           com.example.cplink                   I  📊 记录使用时长: 14分钟，累计: 200分钟，保存成功: true
+2025-10-29 22:33:52.118 29521-29521 MainActivity            com.example.cplink                   I  🔓 用户类型4可以使用悬浮窗功能
+2025-10-29 22:33:52.118 29521-29521 NetworkManager          com.example.cplink                   D  🔄 网络管理器后台状态更新: true
+2025-10-29 22:33:52.118 29521-29521 MainActivity            com.example.cplink                   I  🔄 网络管理器已切换到后台模式
+2025-10-29 22:33:52.123 29521-29521 MainActivity            com.example.cplink                   I  🌍 GPS位置更新在后台继续运行
+2025-10-29 22:33:52.127 29521-29521 NetworkManager          com.example.cplink                   I  ✅ OpenpPilot状态已更新: 车速=0km/h, 激活=false, 在路上=false
+2025-10-29 22:33:52.129 29521-29521 FloatingWindowService   com.example.cplink                   D  👤 用户类型权限检查: userType=4, hasPermission=true (所有用户都可使用)
+2025-10-29 22:33:52.129 29521-29521 FloatingWindowService   com.example.cplink                   I  🔄 使用广播方式发送控制指令，避免端口冲突
+2025-10-29 22:33:52.129 29521-29521 FloatingWindowService   com.example.cplink                   I  ✅ 网络管理器初始化完成（广播模式）
+2025-10-29 22:33:52.139 29521-29521 FloatingWindowService   com.example.cplink                   I  🔄 用户类型文本已更新: 铁粉 📂
+2025-10-29 22:33:52.139 29521-29521 FloatingWindowService   com.example.cplink                   I  ✅ 悬浮窗用户类型显示更新完成
+2025-10-29 22:33:52.139 29521-29521 FloatingWindowService   com.example.cplink                   I  ✅ 智能控速按钮状态初始化: 模式=0
+2025-10-29 22:33:52.142 29521-29873 CarrotManNetwork        com.example.cplink                   I  📡 收到设备广播: [{"Carrot2": "0.9.9", "IsOnroad": false, "CarrotRouteActive": false, "ip": "192.168.10.40", "port": 7706, "log_carrot": "", "v_cruise_kph": 0, "carcruiseSpeed": 0, "v_ego_kph": 0, "tbt_dist": 14, "sdi_dist": 0, "active": false, "xState": 0, "trafficState": 0}] from 192.168.10.40
+2025-10-29 22:33:52.142 29521-29873 CarrotManNetwork        com.example.cplink                   D  📊 当前状态: 已发现设备=1, 当前连接=192.168.10.40
+2025-10-29 22:33:52.142 29521-29873 CarrotManNetwork        com.example.cplink                   D  🔍 检查OpenpPilot数据: Carrot2=true, IsOnroad=true, v_ego_kph=true, active=true, xState=true -> true
+2025-10-29 22:33:52.154 29521-29521 FloatingWindowService   com.example.cplink                   I  ✅ 悬浮窗显示成功
+2025-10-29 22:33:52.154 29521-29521 FloatingWindowService   com.example.cplink                   I  ⏹️ 停止速度数据检查
+2025-10-29 22:33:52.154 29521-29521 FloatingWindowService   com.example.cplink                   I  🚗 开始优化速度数据检查（高频更新）
+2025-10-29 22:33:52.154 29521-29521 FloatingWindowService   com.example.cplink                   I  ⏹️ 停止应用崩溃检测
+2025-10-29 22:33:52.154 29521-29521 FloatingWindowService   com.example.cplink                   I  🔍 应用崩溃检测已启动
+2025-10-29 22:33:52.187 29521-29521 ViewRootImpl            com.example.cplink                   D  AppSizeAfterRelayout, size: Point(674, 455), rotation: ROTATION_0
+2025-10-29 22:33:52.188 29521-29521 libc                    com.example.cplink                   W  Access denied finding property "vendor.display.enable_optimal_refresh_rate"
+2025-10-29 22:33:52.207 29521-29521 NetworkManager          com.example.cplink                   I  ✅ OpenpPilot状态已更新: 车速=0km/h, 激活=false, 在路上=false
+2025-10-29 22:33:52.210 29521-29521 ViewRootImpl            com.example.cplink                   D  AppSizeAfterRelayout, size: Point(686, 455), rotation: ROTATION_0
+2025-10-29 22:33:52.269 29521-29897 CarrotManNetwork        com.example.cplink                   I  📡 收到设备广播: [{"Carrot2": "0.9.9", "IsOnroad": false, "CarrotRouteActive": false, "ip": "192.168.10.40", "port": 7706, "log_carrot": "", "v_cruise_kph": 0, "carcruiseSpeed": 0, "v_ego_kph": 0, "tbt_dist": 14, "sdi_dist": 0, "active": false, "xState": 0, "trafficState": 0}] from 192.168.10.40
+2025-10-29 22:33:52.269 29521-29897 CarrotManNetwork        com.example.cplink                   D  📊 当前状态: 已发现设备=1, 当前连接=192.168.10.40
+2025-10-29 22:33:52.269 29521-29897 CarrotManNetwork        com.example.cplink                   D  🔍 检查OpenpPilot数据: Carrot2=true, IsOnroad=true, v_ego_kph=true, active=true, xState=true -> true
+2025-10-29 22:33:52.271 29521-29521 NetworkManager          com.example.cplink                   I  ✅ OpenpPilot状态已更新: 车速=0km/h, 激活=false, 在路上=false
+2025-10-29 22:33:52.271 29521-29873 CarrotManNetwork        com.example.cplink                   V  📍 发送GPS坐标: lat=31.203626, lon=120.628028, vp_lat=31.203626, vp_lon=120.628028
+2025-10-29 22:33:52.373 29521-29953 CarrotManNetwork        com.example.cplink                   I  📡 收到设备广播: [{"Carrot2": "0.9.9", "IsOnroad": false, "CarrotRouteActive": false, "ip": "192.168.10.40", "port": 7706, "log_carrot": "", "v_cruise_kph": 0, "carcruiseSpeed": 0, "v_ego_kph": 0, "tbt_dist": 14, "sdi_dist": 0, "active": false, "xState": 0, "trafficState": 0}] from 192.168.10.40
+2025-10-29 22:33:52.373 29521-29953 CarrotManNetwork        com.example.cplink                   D  📊 当前状态: 已发现设备=1, 当前连接=192.168.10.40
+2025-10-29 22:33:52.373 29521-29953 CarrotManNetwork        com.example.cplink                   D  🔍 检查OpenpPilot数据: Carrot2=true, IsOnroad=true, v_ego_kph=true, active=true, xState=true -> true
+2025-10-29 22:33:52.374 29521-29521 NetworkManager          com.example.cplink                   I  ✅ OpenpPilot状态已更新: 车速=0km/h, 激活=false, 在路上=false
+2025-10-29 22:33:52.473 29521-29873 CarrotManNetwork        com.example.cplink                   V  📍 发送GPS坐标: lat=31.203626, lon=120.628028, vp_lat=31.203626, vp_lon=120.628028
+2025-10-29 22:33:52.474 29521-31862 CarrotManNetwork        com.example.cplink                   I  📡 收到设备广播: [{"Carrot2": "0.9.9", "IsOnroad": false, "CarrotRouteActive": false, "ip": "192.168.10.40", "port": 7706, "log_carrot": "", "v_cruise_kph": 0, "carcruiseSpeed": 0, "v_ego_kph": 0, "tbt_dist": 14, "sdi_dist": 0, "active": false, "xState": 0, "trafficState": 0}] from 192.168.10.40
+2025-10-29 22:33:52.474 29521-31862 CarrotManNetwork        com.example.cplink                   D  📊 当前状态: 已发现设备=1, 当前连接=192.168.10.40
+2025-10-29 22:33:52.474 29521-31862 CarrotManNetwork        com.example.cplink                   D  🔍 检查OpenpPilot数据: Carrot2=true, IsOnroad=true, v_ego_kph=true, active=true, xState=true -> true
+2025-10-29 22:33:52.475 29521-29521 NetworkManager          com.example.cplink                   I  ✅ OpenpPilot状态已更新: 车速=0km/h, 激活=false, 在路上=false
+2025-10-29 22:33:52.575 29521-31861 CarrotManNetwork        com.example.cplink                   I  📡 收到设备广播: [{"Carrot2": "0.9.9", "IsOnroad": false, "CarrotRouteActive": false, "ip": "192.168.10.40", "port": 7706, "log_carrot": "", "v_cruise_kph": 0, "carcruiseSpeed": 0, "v_ego_kph": 0, "tbt_dist": 14, "sdi_dist": 0, "active": false, "xState": 0, "trafficState": 0}] from 192.168.10.40
+2025-10-29 22:33:52.575 29521-31861 CarrotManNetwork        com.example.cplink                   D  📊 当前状态: 已发现设备=1, 当前连接=192.168.10.40
+2025-10-29 22:33:52.575 29521-31861 CarrotManNetwork        com.example.cplink                   D  🔍 检查OpenpPilot数据: Carrot2=true, IsOnroad=true, v_ego_kph=true, active=true, xState=true -> true
+2025-10-29 22:33:52.577 29521-29521 NetworkManager          com.example.cplink                   I  ✅ OpenpPilot状态已更新: 车速=0km/h, 激活=false, 在路上=false
+2025-10-29 22:33:52.673 29521-29953 CarrotManNetwork        com.example.cplink                   V  📍 发送GPS坐标: lat=31.203626, lon=120.628028, vp_lat=31.203626, vp_lon=120.628028
+2025-10-29 22:33:52.679 29521-29900 CarrotManNetwork        com.example.cplink                   I  📡 收到设备广播: [{"Carrot2": "0.9.9", "IsOnroad": false, "CarrotRouteActive": false, "ip": "192.168.10.40", "port": 7706, "log_carrot": "", "v_cruise_kph": 0, "carcruiseSpeed": 0, "v_ego_kph": 0, "tbt_dist": 14, "sdi_dist": 0, "active": false, "xState": 0, "trafficState": 0}] from 192.168.10.40
+2025-10-29 22:33:52.679 29521-29900 CarrotManNetwork        com.example.cplink                   D  📊 当前状态: 已发现设备=1, 当前连接=192.168.10.40
+2025-10-29 22:33:52.679 29521-29900 CarrotManNetwork        com.example.cplink                   D  🔍 检查OpenpPilot数据: Carrot2=true, IsOnroad=true, v_ego_kph=true, active=true, xState=true -> true
+2025-10-29 22:33:52.680 29521-29521 NetworkManager          com.example.cplink                   I  ✅ OpenpPilot状态已更新: 车速=0km/h, 激活=false, 在路上=false
+2025-10-29 22:33:52.780 29521-29873 CarrotManNetwork        com.example.cplink                   I  📡 收到设备广播: [{"Carrot2": "0.9.9", "IsOnroad": false, "CarrotRouteActive": false, "ip": "192.168.10.40", "port": 7706, "log_carrot": "", "v_cruise_kph": 0, "carcruiseSpeed": 0, "v_ego_kph": 0, "tbt_dist": 14, "sdi_dist": 0, "active": false, "xState": 0, "trafficState": 0}] from 192.168.10.40
+2025-10-29 22:33:52.780 29521-29873 CarrotManNetwork        com.example.cplink                   D  📊 当前状态: 已发现设备=1, 当前连接=192.168.10.40
+2025-10-29 22:33:52.780 29521-29873 CarrotManNetwork        com.example.cplink                   D  🔍 检查OpenpPilot数据: Carrot2=true, IsOnroad=true, v_ego_kph=true, active=true, xState=true -> true
+2025-10-29 22:33:52.781 29521-29521 NetworkManager          com.example.cplink                   I  ✅ OpenpPilot状态已更新: 车速=0km/h, 激活=false, 在路上=false
+2025-10-29 22:33:52.881 29521-31862 CarrotManNetwork        com.example.cplink                   I  📡 收到设备广播: [{"Carrot2": "0.9.9", "IsOnroad": false, "CarrotRouteActive": false, "ip": "192.168.10.40", "port": 7706, "log_carrot": "", "v_cruise_kph": 0, "carcruiseSpeed": 0, "v_ego_kph": 0, "tbt_dist": 14, "sdi_dist": 0, "active": false, "xState": 0, "trafficState": 0}] from 192.168.10.40
+2025-10-29 22:33:52.881 29521-31862 CarrotManNetwork        com.example.cplink                   D  📊 当前状态: 已发现设备=1, 当前连接=192.168.10.40
+2025-10-29 22:33:52.881 29521-31862 CarrotManNetwork        com.example.cplink                   D  🔍 检查OpenpPilot数据: Carrot2=true, IsOnroad=true, v_ego_kph=true, active=true, xState=true -> true
+2025-10-29 22:33:52.883 29521-29521 NetworkManager          com.example.cplink                   I  ✅ OpenpPilot状态已更新: 车速=0km/h, 激活=false, 在路上=false
+2025-10-29 22:33:52.921 29521-29521 VRI[MainActivity]       com.example.cplink                   D  visibilityChanged oldVisibility=true newVisibility=false
+2025-10-29 22:33:52.932 29521-29521 ViewRootImpl            com.example.cplink                   D  AppSizeAfterRelayout, size: Point(1080, 1191), rotation: ROTATION_0
+2025-10-29 22:33:52.978 29521-29521 MainActivity            com.example.cplink                   I  🔧 MainActivity正在销毁，清理资源...
+2025-10-29 22:33:52.979 29521-29521 MainActivity            com.example.cplink                   I  🛑 已发送停止悬浮窗服务指令
+2025-10-29 22:33:52.980 29521-29521 MainActivity            com.example.cplink                   I  📊 内存监控已停止
+2025-10-29 22:33:52.980 29521-29521 MainActivity            com.example.cplink                   I  🧹 协程作用域已清理
+2025-10-29 22:33:52.981 29521-29521 DeviceManager           com.example.cplink                   I  📊 记录使用时长: 14分钟，累计: 214分钟，保存成功: true
+2025-10-29 22:33:52.981 29521-29521 MainActivity            com.example.cplink                   I  🛑 停止前台服务...
+2025-10-29 22:33:52.982 29521-29521 MainActivity            com.example.cplink                   I  ✅ 前台服务停止成功
+2025-10-29 22:33:52.982 29521-29521 MainActivity            com.example.cplink                   I  ✅ 控制指令广播接收器已注销
+2025-10-29 22:33:52.983 29521-31862 CarrotManNetwork        com.example.cplink                   I  📡 收到设备广播: [{"Carrot2": "0.9.9", "IsOnroad": false, "CarrotRouteActive": false, "ip": "192.168.10.40", "port": 7706, "log_carrot": "", "v_cruise_kph": 0, "carcruiseSpeed": 0, "v_ego_kph": 0, "tbt_dist": 14, "sdi_dist": 0, "active": false, "xState": 0, "trafficState": 0}] from 192.168.10.40
+2025-10-29 22:33:52.983 29521-31862 CarrotManNetwork        com.example.cplink                   D  📊 当前状态: 已发现设备=1, 当前连接=192.168.10.40
+2025-10-29 22:33:52.983 29521-31862 CarrotManNetwork        com.example.cplink                   D  🔍 检查OpenpPilot数据: Carrot2=true, IsOnroad=true, v_ego_kph=true, active=true, xState=true -> true
+2025-10-29 22:33:52.983 29521-29521 AmapBroadcastManager    com.example.cplink                   I  ✅ 广播接收器已注销
+2025-10-29 22:33:53.040 29521-29521 LocationSensorManager   com.example.cplink                   I  ✅ 位置和传感器服务已清理
+2025-10-29 22:33:53.040 29521-29521 PermissionManager       com.example.cplink                   I  🧹 清理权限管理器资源...
+2025-10-29 22:33:53.040 29521-29521 NetworkManager          com.example.cplink                   I  ⏹️ 网络状态定期更新已停止
+2025-10-29 22:33:53.041 29521-29521 CarrotManNetwork        com.example.cplink                   I  开始清理CarrotMan网络客户端资源
+2025-10-29 22:33:53.041 29521-29521 CarrotManNetwork        com.example.cplink                   I  停止 CarrotMan 网络客户端服务
+2025-10-29 22:33:53.042 29521-29953 CarrotManNetwork        com.example.cplink                   E  ❌ 自动数据发送失败: StandaloneCoroutine was cancelled
+                                                                                                    kotlinx.coroutines.JobCancellationException: StandaloneCoroutine was cancelled; job=StandaloneCoroutine{Cancelling}@a6d1edd
+2025-10-29 22:33:53.042 29521-29953 CarrotManNetwork        com.example.cplink                   E  ❌ 设备健康检查失败: StandaloneCoroutine was cancelled
+                                                                                                    kotlinx.coroutines.JobCancellationException: StandaloneCoroutine was cancelled; job=StandaloneCoroutine{Cancelling}@108b123
+2025-10-29 22:33:53.043 29521-29521 CarrotManNetwork        com.example.cplink                   D  网络状态已保存: running=false, device=
+2025-10-29 22:33:53.043 29521-29521 CarrotManNetwork        com.example.cplink                   I  CarrotMan 网络服务已完全停止
+2025-10-29 22:33:53.044 29521-29521 CarrotManNetwork        com.example.cplink                   I  CarrotMan网络客户端资源清理完成
+2025-10-29 22:33:53.045 29521-29521 NetworkManager          com.example.cplink                   I  🧹 网络管理器资源已清理
+2025-10-29 22:33:53.045 29521-29521 DeviceManager           com.example.cplink                   I  🧹 清理设备管理器资源
+2025-10-29 22:33:53.045 29521-29521 DeviceManager           com.example.cplink                   I  ⏹️ 停止倒计时
+2025-10-29 22:33:53.045 29521-29521 MainActivity            com.example.cplink                   I  ✅ 所有监听器已注销并释放资源
+2025-10-29 22:33:53.045 29521-29873 CarrotManNetwork        com.example.cplink                   E  ❌ 心跳任务异常: Job was cancelled
+                                                                                                    kotlinx.coroutines.JobCancellationException: Job was cancelled; job=SupervisorJobImpl{Cancelling}@921cbd9
+2025-10-29 22:33:53.065 29521-29521 FloatingWindowService   com.example.cplink                   I  ⏹️ 停止速度数据检查
+2025-10-29 22:33:53.065 29521-29521 FloatingWindowService   com.example.cplink                   I  ⏹️ 停止应用崩溃检测
+2025-10-29 22:33:53.066 29521-29521 FloatingWindowService   com.example.cplink                   I  ✅ 悬浮窗隐藏成功
+2025-10-29 22:33:53.073 29521-29952 NetworkManager          com.example.cplink                   E  ❌ 定期更新网络状态失败: StandaloneCoroutine was cancelled
+                                                                                                    kotlinx.coroutines.JobCancellationException: StandaloneCoroutine was cancelled; job=StandaloneCoroutine{Cancelling}@691a44c
+2025-10-29 22:33:53.073 29521-29521 NetworkManager          com.example.cplink                   I  ✅ OpenpPilot状态已更新: 车速=0km/h, 激活=false, 在路上=false
+2025-10-29 22:33:53.074 29521-29521 NetworkManager          com.example.cplink                   I  🌐 网络状态变化: connected=false, device=
+2025-10-29 22:33:53.074 29521-29521 WindowOnBackDispatcher  com.example.cplink                   W  sendCancelIfRunning: isInProgress=false callback=android.view.ViewRootImpl$$ExternalSyntheticLambda11@fe696c1
+2025-10-29 22:33:53.101 29521-29521 FloatingWindowService   com.example.cplink                   I  🔧 悬浮窗服务正在销毁，清理所有资源...
+2025-10-29 22:33:53.101 29521-29521 FloatingWindowService   com.example.cplink                   I  ⏹️ 停止速度数据检查
+2025-10-29 22:33:53.101 29521-29521 FloatingWindowService   com.example.cplink                   I  ⏹️ 停止应用崩溃检测
+2025-10-29 22:33:53.101 29521-29521 FloatingWindowService   com.example.cplink                   D  🔍 悬浮窗未显示或已隐藏，跳过隐藏操作
+2025-10-29 22:33:53.101 29521-29521 FloatingWindowService   com.example.cplink                   I  ✅ 悬浮窗服务资源清理完成
+2025-10-29 22:33:53.101 29521-29521 FloatingWindowService   com.example.cplink                   I  🔧 悬浮窗服务销毁
+2025-10-29 22:33:53.233 29521-29521 MainActivity            com.example.cplink                   D  🌐 网络状态监控: ❌ , 设备: 无连接
+2025-10-29 22:33:53.309 29521-29521 MainActivity            com.example.cplink                   D  🌐 网络状态监控: ❌ , 设备: 无连接

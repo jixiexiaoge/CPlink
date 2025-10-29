@@ -30,6 +30,7 @@ import java.net.HttpURLConnection
 import java.net.URL
 import org.json.JSONObject
 
+
 /**
  * 自检查状态数据类
  */
@@ -78,9 +79,6 @@ class MainActivityCore(
     // 使用统计状态
     val usageStats = mutableStateOf(UsageStats(0, 0, 0f))
     
-    // 悬浮窗相关状态
-    val isFloatingWindowEnabled = mutableStateOf(false)
-    
     // 页面状态
     var currentPage by mutableStateOf(0) // 0: 主页, 1: 帮助, 2: 问答, 3: 我的, 4: 实时数据
     
@@ -92,6 +90,22 @@ class MainActivityCore(
     
     // 自检查状态
     val selfCheckStatus = mutableStateOf(SelfCheckStatus())
+    
+    // 网络连接状态
+    val networkStatus = mutableStateOf("🔍 正在连接...")
+    val deviceInfo = mutableStateOf("")
+
+    // 实时网络流程事件（用于在主页顶部显示发现->连接链路）
+    val pipelineEvents = mutableStateListOf<String>()
+
+    fun addPipelineEvent(message: String) {
+        // 带时间戳入队，最多保留20条
+        val ts = java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date())
+        pipelineEvents.add("[$ts] $message")
+        if (pipelineEvents.size > 40) {
+            pipelineEvents.removeFirst()
+        }
+    }
 
     // ===============================
     // 管理器实例
@@ -125,19 +139,6 @@ class MainActivityCore(
     // 权限处理
     // ===============================
     
-    // Activity Result Launcher for overlay permission
-    val overlayPermissionLauncher = activity.registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        if (Settings.canDrawOverlays(activity)) {
-            Log.i(TAG, "✅ 悬浮窗权限已授予")
-            isFloatingWindowEnabled.value = true
-        } else {
-            Log.w(TAG, "❌ 悬浮窗权限被拒绝")
-            isFloatingWindowEnabled.value = false
-        }
-    }
-
     // Android 13+ 通知权限请求
     val notificationPermissionLauncher = activity.registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -220,26 +221,6 @@ class MainActivityCore(
             }
         } catch (e: Exception) {
             Log.w(TAG, "⚠️ 请求电池优化权限失败: ${e.message}")
-        }
-    }
-
-    /**
-     * 请求悬浮窗权限
-     */
-    fun requestFloatingWindowPermission() {
-        try {
-            if (!Settings.canDrawOverlays(activity)) {
-                Log.i(TAG, "🔳 请求悬浮窗权限")
-                val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION).apply {
-                    data = Uri.parse("package:${activity.packageName}")
-                }
-                overlayPermissionLauncher.launch(intent)
-            } else {
-                Log.i(TAG, "🔳 已有悬浮窗权限")
-                isFloatingWindowEnabled.value = true
-            }
-        } catch (e: Exception) {
-            Log.w(TAG, "⚠️ 请求悬浮窗权限失败: ${e.message}")
         }
     }
 
@@ -864,20 +845,6 @@ class MainActivityCore(
             amapBroadcastManager.handleIntentFromStaticReceiver(intent)
         } else {
             Log.w(TAG, "⚠️ 广播管理器未初始化，无法处理静态接收器Intent")
-        }
-    }
-    
-    /**
-     * 处理悬浮窗页面导航
-     */
-    fun handleFloatingWindowNavigation() {
-        val intent = pendingNavigationIntent
-        val openPage = intent?.getIntExtra("OPEN_PAGE", -1)
-        if (openPage != null && openPage != -1) {
-            Log.i(TAG, "📱 悬浮窗导航到页面: $openPage")
-            currentPage = openPage
-            // 清除已处理的Intent
-            pendingNavigationIntent = null
         }
     }
 }

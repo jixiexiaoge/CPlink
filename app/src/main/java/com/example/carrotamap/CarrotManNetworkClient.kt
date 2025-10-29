@@ -275,8 +275,8 @@ class CarrotManNetworkClient(
             val receivedData = String(packet.data, 0, packet.length)
             val deviceIP = packet.address.hostAddress ?: "unknown"
 
-            Log.i(TAG, "📡 收到设备广播: [$receivedData] from $deviceIP")
-            Log.d(TAG, "📊 当前状态: 已发现设备=${discoveredDevices.size}, 当前连接=${currentTargetDevice?.ip ?: "无"}")
+            //Log.i(TAG, "📡 收到设备广播: [$receivedData] from $deviceIP")
+            //Log.d(TAG, "📊 当前状态: 已发现设备=${discoveredDevices.size}, 当前连接=${currentTargetDevice?.ip ?: "无"}")
 
             lastDataReceived = System.currentTimeMillis()
             parseDeviceBroadcast(receivedData, deviceIP)
@@ -354,8 +354,8 @@ class CarrotManNetworkClient(
             val logCarrot = jsonData.optString("log_carrot", "")
             val carrot2 = jsonData.optString("Carrot2", "")
             
-            Log.d(TAG, "📊 OpenpPilot状态: 在路上=$isOnRoad, 路线激活=$carrotRouteActive, 活跃=$active")
-            Log.d(TAG, "📊 状态码: xState=$xState, 交通=$trafficState, 速度=${vEgoKph}km/h")
+            //Log.d(TAG, "📊 OpenpPilot状态: 在路上=$isOnRoad, 路线激活=$carrotRouteActive, 活跃=$active")
+            //Log.d(TAG, "📊 状态码: xState=$xState, 交通=$trafficState, 速度=${vEgoKph}km/h")
             Log.d(TAG, "📊 距离: TBT=${tbtDist}m, SDI=${sdiDist}m")
             
         } catch (e: Exception) {
@@ -375,7 +375,7 @@ class CarrotManNetworkClient(
         
         val isOpenpilot = hasCarrot2 || hasIsOnroad || hasVEgoKph || hasActive || hasXState
         
-        Log.d(TAG, "🔍 检查OpenpPilot数据: Carrot2=$hasCarrot2, IsOnroad=$hasIsOnroad, v_ego_kph=$hasVEgoKph, active=$hasActive, xState=$hasXState -> $isOpenpilot")
+        //Log.d(TAG, "🔍 检查OpenpPilot数据: Carrot2=$hasCarrot2, IsOnroad=$hasIsOnroad, v_ego_kph=$hasVEgoKph, active=$hasActive, xState=$hasXState -> $isOpenpilot")
         
         return isOpenpilot
     }
@@ -418,7 +418,7 @@ class CarrotManNetworkClient(
             Log.i(TAG, "🔄 切换设备连接: ${currentTargetDevice?.ip ?: "无"} -> ${newDevice.ip}")
             connectToDevice(newDevice)
         } else {
-            Log.d(TAG, "✅ 设备IP相同，保持当前连接: ${newDevice.ip}")
+            //Log.d(TAG, "✅ 设备IP相同，保持当前连接: ${newDevice.ip}")
             // 更新设备活跃时间
             val deviceKey = "${newDevice.ip}:${newDevice.port}"
             if (discoveredDevices.containsKey(deviceKey)) {
@@ -748,7 +748,7 @@ class CarrotManNetworkClient(
             
             // 🔍 调试日志：记录发送的GPS坐标
             if (fields.latitude != 0.0 && fields.longitude != 0.0) {
-                Log.v(TAG, "📍 发送GPS坐标: lat=${fields.latitude}, lon=${fields.longitude}, vp_lat=${fields.vpPosPointLat}, vp_lon=${fields.vpPosPointLon}")
+                //Log.v(TAG, "📍 发送GPS坐标: lat=${fields.latitude}, lon=${fields.longitude}, vp_lat=${fields.vpPosPointLat}, vp_lon=${fields.vpPosPointLon}")
             }
 
             // 倒计时字段已移除 - Python内部计算
@@ -821,6 +821,11 @@ class CarrotManNetworkClient(
 
 
     // 获取网络连接状态信息
+    /**
+     * 获取运行状态
+     */
+    fun isRunning(): Boolean = isRunning
+
     fun getConnectionStatus(): Map<String, Any> {
         return mapOf(
             "isRunning" to isRunning,

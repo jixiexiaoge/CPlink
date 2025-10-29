@@ -65,7 +65,7 @@ fun ProfilePage(usageStats: UsageStats, deviceId: String) {
             // 首先尝试获取用户信息
             userData = fetchUserData(deviceId)
             if (userData != null) {
-                // 用户存在，初始化表单数据
+                // 用户存在，初始化表单数据（仅赞助金额允许编辑）
                 carModel = userData!!.carModel
                 wechatName = userData!!.wechatName
                 sponsorAmount = userData!!.sponsorAmount.toString()
@@ -179,14 +179,10 @@ fun ProfilePage(usageStats: UsageStats, deviceId: String) {
         // 使用统计卡片
         UsageStatsCard(usageStats = usageStats)
         
-        // 用户信息编辑表单 - 只有未提交赞助金额的用户才能编辑
-        if (showUserForm && userData != null && userData!!.sponsorAmount <= 0) {
+        // 用户信息编辑表单 - 仅允许编辑赞助金额
+        if (showUserForm && userData != null) {
             UserFormCard(
-                carModel = carModel,
-                wechatName = wechatName,
                 sponsorAmount = sponsorAmount,
-                onCarModelChange = { carModel = it },
-                onWechatNameChange = { wechatName = it },
                 onSponsorAmountChange = { sponsorAmount = it },
                 isUpdating = isUpdating,
                 onSave = {
@@ -198,11 +194,20 @@ fun ProfilePage(usageStats: UsageStats, deviceId: String) {
         }
     }
     
-    // 处理保存操作 - 只有未提交赞助金额的用户才能保存
+    // 处理保存操作 - 仅赞助金额可修改，用户类型按金额自动更新
     LaunchedEffect(isUpdating) {
-        if (isUpdating && showUserForm && userData != null && userData!!.sponsorAmount <= 0) {
+        if (isUpdating && showUserForm && userData != null) {
             try {
-                updateUserData(deviceId, carModel, wechatName, sponsorAmount.toFloatOrNull() ?: 0f, usageStats)
+                // 仅更新赞助金额，其余资料沿用当前用户信息
+                val currentCarModel = userData!!.carModel
+                val currentWechatName = userData!!.wechatName
+                updateUserData(
+                    deviceId,
+                    currentCarModel,
+                    currentWechatName,
+                    sponsorAmount.toFloatOrNull() ?: 0f,
+                    usageStats
+                )
                 // 刷新用户数据
                 userData = fetchUserData(deviceId)
                 showUserForm = false
@@ -211,10 +216,6 @@ fun ProfilePage(usageStats: UsageStats, deviceId: String) {
             } finally {
                 isUpdating = false
             }
-        } else if (isUpdating && userData != null && userData!!.sponsorAmount > 0) {
-            // 已提交赞助金额的用户尝试保存，直接取消
-            isUpdating = false
-            showUserForm = false
         }
     }
 }
@@ -254,49 +255,19 @@ private fun UserInfoDisplay(
         
         Spacer(modifier = Modifier.height(16.dp))
         
-        // 编辑按钮 - 只有未提交赞助金额的用户才能编辑
-        if (userData.sponsorAmount <= 0) {
-            Button(
-                onClick = onEditClick,
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3B82F6))
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = "编辑",
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("编辑用户信息")
-            }
-        } else {
-            // 已提交赞助金额，显示锁定状态
-            Card(
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFFEF3C7)),
-                shape = RoundedCornerShape(8.dp)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Lock,
-                        contentDescription = "已锁定",
-                        tint = Color(0xFFD97706),
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "信息已提交，无法修改",
-                        fontSize = 14.sp,
-                        color = Color(0xFFD97706),
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-            }
+        // 编辑按钮（始终允许，仅编辑赞助金额）
+        Button(
+            onClick = onEditClick,
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3B82F6))
+        ) {
+            Icon(
+                imageVector = Icons.Default.Edit,
+                contentDescription = "编辑",
+                modifier = Modifier.size(18.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("编辑赞助金额")
         }
     }
 }
@@ -380,19 +351,13 @@ private fun UsageStatsCard(usageStats: UsageStats) {
  */
 @Composable
 private fun UserFormCard(
-    carModel: String,
-    wechatName: String,
     sponsorAmount: String,
-    onCarModelChange: (String) -> Unit,
-    onWechatNameChange: (String) -> Unit,
     onSponsorAmountChange: (String) -> Unit,
     isUpdating: Boolean,
     onSave: () -> Unit,
     onCancel: () -> Unit
 ) {
     // 表单验证状态
-    var carModelError by remember { mutableStateOf("") }
-    var wechatNameError by remember { mutableStateOf("") }
     var sponsorAmountError by remember { mutableStateOf("") }
     
     // 验证小数位数（最多一位小数）
@@ -409,22 +374,6 @@ private fun UserFormCard(
     // 验证表单
     fun validateForm(): Boolean {
         var isValid = true
-        
-        // 验证车型
-        if (carModel.isBlank()) {
-            carModelError = "车型不能为空"
-            isValid = false
-        } else {
-            carModelError = ""
-        }
-        
-        // 验证微信名
-        if (wechatName.isBlank()) {
-            wechatNameError = "微信名不能为空"
-            isValid = false
-        } else {
-            wechatNameError = ""
-        }
         
         // 验证赞助金额
         val amount = sponsorAmount.toFloatOrNull()
@@ -458,47 +407,19 @@ private fun UserFormCard(
             modifier = Modifier.padding(20.dp)
         ) {
             Text(
-                text = "编辑用户信息",
+                text = "编辑赞助金额",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF1E293B),
                 modifier = Modifier.padding(bottom = 16.dp)
             )
             
-            // 车型输入
-            OutlinedTextField(
-                value = carModel,
-                onValueChange = onCarModelChange,
-                label = { Text("车型 *") },
-                placeholder = { Text("请输入车型，如：特斯拉 Model 3") },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                isError = carModelError.isNotEmpty(),
-                supportingText = if (carModelError.isNotEmpty()) { { Text(carModelError, color = Color.Red) } } else null
-            )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            // 微信名输入
-            OutlinedTextField(
-                value = wechatName,
-                onValueChange = onWechatNameChange,
-                label = { Text("微信名 *") },
-                placeholder = { Text("请输入微信名") },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                isError = wechatNameError.isNotEmpty(),
-                supportingText = if (wechatNameError.isNotEmpty()) { { Text(wechatNameError, color = Color.Red) } } else null
-            )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
             // 赞助金额输入
             OutlinedTextField(
                 value = sponsorAmount,
                 onValueChange = onSponsorAmountChange,
                 label = { Text("赞助金额 *") },
-                placeholder = { Text("输出曾经赞助过的金额，务必正确输入") },
+                placeholder = { Text("请输入赞助金额，务必正确输入") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),

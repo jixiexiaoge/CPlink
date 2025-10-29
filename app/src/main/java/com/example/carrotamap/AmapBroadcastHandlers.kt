@@ -52,7 +52,7 @@ class AmapBroadcastHandlers(
             carrotManFields.value = carrotManFields.value.copy(
                 remote = remoteIP
             )
-            Log.d(TAG, "🌐 远程IP已更新: $remoteIP")
+           // Log.d(TAG, "🌐 远程IP已更新: $remoteIP")
         }
 
         /**
@@ -85,7 +85,7 @@ class AmapBroadcastHandlers(
             carrotManFields.value = carrotManFields.value.copy(
                 source_last = source
             )
-            Log.d(TAG, "📊 数据源已更新: $source")
+           // Log.d(TAG, "📊 数据源已更新: $source")
         }
 
         // 🎯 注意：ATC控制功能已移至Python端处理
@@ -268,7 +268,7 @@ class AmapBroadcastHandlers(
     // 引导信息处理 - KEY_TYPE: 10001
     // ===============================
     fun handleGuideInfo(intent: Intent) {
-        Log.d(TAG, "🧭 处理引导信息广播 (KEY_TYPE: 10001)")
+        //Log.d(TAG, "🧭 处理引导信息广播 (KEY_TYPE: 10001)")
 
         try {
             // 基础道路信息
@@ -311,7 +311,7 @@ class AmapBroadcastHandlers(
             
             // 记录GPS坐标映射情况
             if (carLatitude == 0.0 && carLongitude == 0.0) {
-                Log.d(TAG, "📍 GPS坐标为0，使用手机GPS: lat=$effectiveLatitude, lon=$effectiveLongitude")
+                //Log.d(TAG, "📍 GPS坐标为0，使用手机GPS: lat=$effectiveLatitude, lon=$effectiveLongitude")
             } else {
                 Log.d(TAG, "📍 使用导航GPS坐标: lat=$effectiveLatitude, lon=$effectiveLongitude")
             }
@@ -347,7 +347,7 @@ class AmapBroadcastHandlers(
             val primaryIcon = if (newIcon != -1) newIcon else icon
             val carrotTurnType = if (primaryIcon != -1) {
                 val mappedType = mapAmapIconToCarrotTurn(primaryIcon)
-                Log.d(TAG, "🔄 转弯映射: 高德图标=$primaryIcon -> CarrotMan类型=$mappedType")
+                //Log.d(TAG, "🔄 转弯映射: 高德图标=$primaryIcon -> CarrotMan类型=$mappedType")
                 mappedType
             } else {
                 carrotManFields.value.nTBTTurnType
@@ -355,7 +355,7 @@ class AmapBroadcastHandlers(
 
             val carrotNextTurnType = if (nextNextTurnIcon != -1) {
                 val mappedNextType = mapAmapIconToCarrotTurn(nextNextTurnIcon)
-                Log.d(TAG, "🔄 下一转弯映射: 高德图标=$nextNextTurnIcon -> CarrotMan类型=$mappedNextType")
+                //Log.d(TAG, "🔄 下一转弯映射: 高德图标=$nextNextTurnIcon -> CarrotMan类型=$mappedNextType")
                 mappedNextType
             } else {
                 carrotManFields.value.nTBTTurnTypeNext
@@ -447,18 +447,8 @@ class AmapBroadcastHandlers(
                 nSdiSpeedLimit = if (cameraDist > 50) cameraSpeed else if (cameraDist <= 50) 0 else carrotManFields.value.nSdiSpeedLimit,
                 nSdiDist = if (cameraDist > 50) cameraDist else if (cameraDist <= 50) 0 else carrotManFields.value.nSdiDist,
                 nAmapCameraType = if (cameraType >= 0) cameraType else carrotManFields.value.nAmapCameraType, // 保存高德原始CAMERA_TYPE用于调试
-                // 🚀 改进：在引导信息中也设置nSdiSection，使用cameraIndex或生成唯一ID
-                nSdiSection = if (cameraDist > 50 && cameraType >= 0) {
-                    if (cameraIndex >= 0) {
-                        cameraIndex  // 使用高德提供的摄像头索引
-                    } else {
-                        // 生成基于cameraType和当前时间的唯一ID
-                        val timestamp = System.currentTimeMillis() / 1000
-                        (cameraType * 1000 + timestamp % 1000).toInt()
-                    }
-                } else {
-                    carrotManFields.value.nSdiSection  // 保持现有值
-                },
+                // nSdiSection 由 handleSpeedLimit (KEY_TYPE=12110) 专门处理
+                // 此处不做修改，避免干扰区间测速逻辑
                 szSdiDescr = carrotManFields.value.szSdiDescr,
 
                 // 红绿灯数量信息
@@ -548,7 +538,7 @@ class AmapBroadcastHandlers(
     // 定位信息处理 - KEY_TYPE: 10065
     // ===============================
     fun handleLocationInfo(intent: Intent) {
-        Log.d(TAG, "📍 处理定位信息广播")
+       // Log.d(TAG, "📍 处理定位信息广播")
         
         try {
             val latitude = intent.getDoubleExtra("LATITUDE", 0.0)
@@ -557,7 +547,7 @@ class AmapBroadcastHandlers(
             val bearing = intent.getFloatExtra("BEARING", 0.0f).toDouble()
             
             if (latitude != 0.0 && longitude != 0.0) {
-                Log.d(TAG, "📍 高德定位广播: lat=$latitude, lon=$longitude, speed=${speed}km/h, bearing=${bearing}°")
+               // Log.d(TAG, "📍 高德定位广播: lat=$latitude, lon=$longitude, speed=${speed}km/h, bearing=${bearing}°")
                 
                 // 简化的时间更新
                 val currentTime = System.currentTimeMillis()
@@ -576,7 +566,7 @@ class AmapBroadcastHandlers(
                     lastUpdateTime = currentTime
                 )
                 
-                Log.d(TAG, "✅ 定位信息（Navi字段）已更新，主要GPS字段由LocationSensorManager持续更新")
+                //Log.d(TAG, "✅ 定位信息（Navi字段）已更新，主要GPS字段由LocationSensorManager持续更新")
                 
                 // 🚀 修复：移除立即发送，由NetworkManager统一200ms间隔发送避免闪烁
             } else {
@@ -592,7 +582,7 @@ class AmapBroadcastHandlers(
     // 转向信息处理 - KEY_TYPE: 10006
     // ===============================
     fun handleTurnInfo(intent: Intent) {
-        Log.d(TAG, "🔄 处理转向信息广播")
+        //Log.d(TAG, "🔄 处理转向信息广播")
         
         try {
             val turnDistance = intent.getIntExtra("TURN_DISTANCE", 0)
@@ -649,14 +639,14 @@ class AmapBroadcastHandlers(
      * 处理路线信息广播 (KEY_TYPE: 10003)
      */
     fun handleRouteInfo(intent: Intent) {
-        Log.d(TAG, "🛣️ 处理路线信息广播")
+        //Log.d(TAG, "🛣️ 处理路线信息广播")
         
         try {
             val routeDistance = intent.getIntExtra("ROUTE_DISTANCE", 0)
             val routeTime = intent.getIntExtra("ROUTE_TIME", 0)
             val routeType = intent.getIntExtra("ROUTE_TYPE", -1)
             
-            Log.d(TAG, "🛣️ 路线信息: 距离=${routeDistance}m, 时间=${routeTime}s, 类型=$routeType")
+           // Log.d(TAG, "🛣️ 路线信息: 距离=${routeDistance}m, 时间=${routeTime}s, 类型=$routeType")
             
             carrotManFields.value = carrotManFields.value.copy(
                 routeDistance = routeDistance,
@@ -666,7 +656,7 @@ class AmapBroadcastHandlers(
             )
             
         } catch (e: Exception) {
-            Log.e(TAG, "❌ 处理路线信息失败: ${e.message}", e)
+            //Log.e(TAG, "❌ 处理路线信息失败: ${e.message}", e)
         }
     }
 
@@ -693,88 +683,106 @@ class AmapBroadcastHandlers(
             Log.i(TAG, "🚦 限速信息: 限速=${speedLimit}km/h, 道路='$roadName', 类型=$speedLimitType")
             Log.i(TAG, "🚦 区间测速: 开始距离=${startDistance}m, 结束距离=${endDistance}m, 区间距离=${intervalDistance}m, 摄像头类型=$cameraType, 摄像头索引=$cameraIndex, 平均速度=${averageSpeed}km/h")
             
-            // 首先根据CAMERA_TYPE获取基础SDI类型
-            val baseSdiType = if (cameraType >= 0) mapAmapCameraTypeToSdi(cameraType) else carrotManFields.value.nSdiType
-            
-            // 🚀 关键修复：基于Python代码逻辑的区间测速判断
-            // Python代码要求：nSdiType=4, nSdiBlockType=2/3, nSdiBlockDist=区间距离
-            val sdiType = when {
-                // 🎯 核心逻辑：CAMERA_TYPE=8 且距离信息完整 = 区间测速进行中
-                cameraType == 8 && startDistance > 0 && endDistance > 0 && intervalDistance > 0 -> {
-                    Log.i(TAG, "🚦 识别为区间测速进行中状态 (CAMERA_TYPE=$cameraType, 距离信息完整)")
-                    4  // 区间测速中 - Python代码要求
-                }
-                // CAMERA_TYPE=8 但距离信息不完整，可能是区间测速开始
-                cameraType == 8 && startDistance > 0 -> {
-                    Log.i(TAG, "🚦 识别为区间测速开始状态 (CAMERA_TYPE=$cameraType)")
+            // 🚀 关键修复：根据用户要求的强制映射规则 + Python代码逆向分析
+            // 规则1: CAMERA_TYPE 8 → nSdiType=2(开始), CAMERA_TYPE 9 → nSdiType=3(结束)
+            val nSdiType = when (cameraType) {
+                8 -> {
+                    Log.i(TAG, "🚦 CAMERA_TYPE=8 → nSdiType=2 (区间测速开始)")
                     2  // 区间测速开始
                 }
-                // CAMERA_TYPE=9 但距离信息不完整，可能是区间测速结束
-                cameraType == 9 && endDistance > 0 -> {
-                    Log.i(TAG, "🚦 识别为区间测速结束状态 (CAMERA_TYPE=$cameraType)")
+                9 -> {
+                    Log.i(TAG, "🚦 CAMERA_TYPE=9 → nSdiType=3 (区间测速结束)")
                     3  // 区间测速结束
                 }
-                // 否则使用CAMERA_TYPE映射的基础类型
                 else -> {
+                    val baseSdiType = if (cameraType >= 0) mapAmapCameraTypeToSdi(cameraType) else carrotManFields.value.nSdiType
                     Log.i(TAG, "🚦 使用CAMERA_TYPE映射: $cameraType -> $baseSdiType")
                     baseSdiType
                 }
             }
             
-            // 计算区间测速距离
-            val sdiDist = when (sdiType) {
-                2 -> startDistance.toInt()  // 开始状态：使用开始距离
-                4 -> intervalDistance.toInt()  // 进行中：使用区间距离
-                3 -> 0  // 结束状态：距离为0
-                else -> carrotManFields.value.nSdiDist
+            // 规则2: nSdiDist 映射 END_DISTANCE（到终点剩余距离）
+            // Python逻辑：普通情况下 xSpdDist = nSdiDist
+            val nSdiDist = if (endDistance > 0) {
+                Log.i(TAG, "🚦 nSdiDist=${endDistance.toInt()} (映射自END_DISTANCE - 到终点剩余距离)")
+                endDistance.toInt()
+            } else {
+                carrotManFields.value.nSdiDist
             }
             
-            // 计算区间测速块类型
-            val sdiBlockType = when (sdiType) {
-                2 -> 1  // 开始
-                4 -> 2  // 进行中
-                3 -> 3  // 结束
+            // 规则3: nSdiBlockType 根据 nSdiType 转换
+            // - nSdiType=2 且在区间测速中 → nSdiBlockType=2 (进行中，此时Python强制xSpdType=4)
+            // - nSdiType=2 且刚开始 → nSdiBlockType=1 (开始)
+            // - nSdiType=3 → nSdiBlockType=3 (结束)
+            val isInProgress = (nSdiType == 2 && startDistance > 0 && endDistance > 0 && intervalDistance > 0)
+            val nSdiBlockType = when {
+                nSdiType == 2 && isInProgress -> {
+                    Log.i(TAG, "🚦 nSdiType=2 且在测速中 → nSdiBlockType=2 (进行中，Python将强制xSpdType=4)")
+                    2  // 区间测速中
+                }
+                nSdiType == 2 -> {
+                    Log.i(TAG, "🚦 nSdiType=2 刚开始 → nSdiBlockType=1 (开始)")
+                    1  // 区间测速开始
+                }
+                nSdiType == 3 -> {
+                    Log.i(TAG, "🚦 nSdiType=3 → nSdiBlockType=3 (结束)")
+                    3  // 区间测速结束
+                }
                 else -> -1
             }
             
-            // 🚀 关键修复：生成唯一的区间测速ID
-            // 基于日志分析，高德没有提供CAMERA_INDEX，使用GPS坐标+时间戳生成唯一ID
-            val sdiSectionId = when {
-                // 如果是区间测速相关类型，生成基于GPS坐标的唯一ID
-                sdiType in 2..4 -> {
-                    // 使用GPS坐标的整数部分+时间戳生成唯一ID
-                    val lat = intent.getDoubleExtra("EXTRA_SLAT", 0.0)
-                    val lon = intent.getDoubleExtra("EXTRA_SLON", 0.0)
-                    val timestamp = System.currentTimeMillis() / 1000
-                    if (lat != 0.0 && lon != 0.0) {
-                        // 使用GPS坐标的整数部分+时间戳
-                        ((lat * 1000).toInt() + (lon * 1000).toInt() + timestamp % 1000).toInt()
-                    } else {
-                        // 备用方案：使用cameraType+时间戳
-                        (cameraType * 1000 + timestamp % 1000).toInt()
-                    }
-                }
-                // 非区间测速类型，设为0
-                else -> 0
+            // 规则4: nSdiSection 使用 INTERVAL_DISTANCE 作为唯一标识
+            val nSdiSection = if (intervalDistance > 0) {
+                Log.i(TAG, "🚦 nSdiSection=${intervalDistance.toInt()} (映射自INTERVAL_DISTANCE - 区间总长度)")
+                intervalDistance.toInt()
+            } else {
+                0
+            }
+            
+            // 规则5: nSdiBlockDist 映射 INTERVAL_DISTANCE（区间总长度）
+            // Python逻辑：当nSdiBlockType in [2,3]时，xSpdDist = nSdiBlockDist
+            val nSdiBlockDist = if (intervalDistance > 0) {
+                Log.i(TAG, "🚦 nSdiBlockDist=${intervalDistance.toInt()} (映射自INTERVAL_DISTANCE - 用于区间平均速度计算)")
+                intervalDistance.toInt()
+            } else {
+                0
+            }
+            
+            // 规则6: nSdiBlockSpeed 映射 LIMITED_SPEED
+            val nSdiBlockSpeed = if (speedLimit > 0) {
+                Log.i(TAG, "🚦 nSdiBlockSpeed=$speedLimit (映射自LIMITED_SPEED)")
+                speedLimit
+            } else {
+                0
             }
             
             carrotManFields.value = carrotManFields.value.copy(
                 nRoadLimitSpeed = speedLimit,
                 szPosRoadName = roadName,
                 speedLimitType = speedLimitType,
-                // 区间测速相关字段
-                nSdiType = sdiType,
-                nSdiSpeedLimit = speedLimit,
-                nSdiDist = sdiDist,
-                nSdiSection = sdiSectionId,  // 🚀 修复：使用唯一的区间测速ID
-                nSdiBlockType = sdiBlockType,
-                nSdiBlockSpeed = speedLimit,
-                nSdiBlockDist = intervalDistance.toInt(),
+                // 区间测速相关字段（完整映射 - 基于Python代码逆向分析）
+                nSdiType = nSdiType,  // CAMERA_TYPE 8→2, 9→3
+                nSdiSpeedLimit = speedLimit,  // 来自 LIMITED_SPEED
+                nSdiDist = nSdiDist,  // 映射 END_DISTANCE（到终点剩余距离）
+                nSdiSection = nSdiSection,  // 使用 INTERVAL_DISTANCE 作为唯一标识
+                nSdiBlockType = nSdiBlockType,  // 根据 nSdiType 转换：1=开始, 2=进行中(xSpdType=4), 3=结束
+                nSdiBlockSpeed = nSdiBlockSpeed,  // 来自 LIMITED_SPEED
+                nSdiBlockDist = nSdiBlockDist,  // 映射 INTERVAL_DISTANCE（区间总长度）
                 lastUpdateTime = System.currentTimeMillis()
             )
             
-            Log.i(TAG, "🚦 区间测速状态更新: nSdiType=$sdiType, nSdiDist=$sdiDist, nSdiBlockType=${carrotManFields.value.nSdiBlockType}, nSdiSection=$sdiSectionId")
-            Log.i(TAG, "🚦 发送到Python的数据: nSdiSpeedLimit=${carrotManFields.value.nSdiSpeedLimit}, nSdiBlockSpeed=${carrotManFields.value.nSdiBlockSpeed}, nSdiBlockDist=${carrotManFields.value.nSdiBlockDist}")
+            Log.i(TAG, "🚦 ====== 区间测速映射完成 (Python逆向分析验证) ======")
+            Log.i(TAG, "🚦 nSdiType=$nSdiType (CAMERA_TYPE=$cameraType → ${if (nSdiType == 2) "开始" else if (nSdiType == 3) "结束" else "其他"})")
+            Log.i(TAG, "🚦 nSdiSpeedLimit=$speedLimit (LIMITED_SPEED)")
+            Log.i(TAG, "🚦 nSdiDist=$nSdiDist (END_DISTANCE - 到终点剩余距离)")
+            Log.i(TAG, "🚦 nSdiSection=$nSdiSection (INTERVAL_DISTANCE - 区间唯一ID)")
+            Log.i(TAG, "🚦 nSdiBlockType=$nSdiBlockType (${when(nSdiBlockType) { 1 -> "开始" 2 -> "进行中(Python强制xSpdType=4)" 3 -> "结束" else -> "无效" }})")
+            Log.i(TAG, "🚦 nSdiBlockSpeed=$nSdiBlockSpeed (LIMITED_SPEED)")
+            Log.i(TAG, "🚦 nSdiBlockDist=$nSdiBlockDist (INTERVAL_DISTANCE - 区间总长度)")
+            Log.i(TAG, "🚦 Python处理逻辑:")
+            Log.i(TAG, "🚦   - 普通情况: xSpdDist = nSdiDist ($nSdiDist)")
+            Log.i(TAG, "🚦   - 区间测速中(nSdiBlockType=2/3): xSpdDist = nSdiBlockDist ($nSdiBlockDist), xSpdType = 4")
+            Log.i(TAG, "🚦 ==================================================")
             
         } catch (e: Exception) {
             Log.e(TAG, "❌ 处理限速信息失败: ${e.message}", e)
@@ -785,7 +793,7 @@ class AmapBroadcastHandlers(
      * 处理电子眼信息广播 (KEY_TYPE: 13005)
      */
     fun handleCameraInfo(intent: Intent) {
-        Log.d(TAG, "📷 处理电子眼信息广播")
+        //Log.d(TAG, "📷 处理电子眼信息广播")
         
         try {
             val cameraType = intent.getIntExtra("CAMERA_TYPE", -1)
@@ -823,14 +831,14 @@ class AmapBroadcastHandlers(
      * 处理SDI Plus信息广播 (KEY_TYPE: 10007)
      */
     fun handleSdiPlusInfo(intent: Intent) {
-        Log.d(TAG, "📊 处理SDI Plus信息广播")
+       // Log.d(TAG, "📊 处理SDI Plus信息广播")
         
         try {
             val sdiPlusType = intent.getIntExtra("SDI_PLUS_TYPE", -1)
             val sdiPlusDistance = intent.getIntExtra("SDI_PLUS_DISTANCE", 0)
             val sdiPlusSpeedLimit = intent.getIntExtra("SDI_PLUS_SPEED_LIMIT", 0)
             
-            Log.d(TAG, "📊 SDI Plus信息: 类型=$sdiPlusType, 距离=${sdiPlusDistance}m, 限速=${sdiPlusSpeedLimit}km/h")
+          //  Log.d(TAG, "📊 SDI Plus信息: 类型=$sdiPlusType, 距离=${sdiPlusDistance}m, 限速=${sdiPlusSpeedLimit}km/h")
 
          carrotManFields.value = carrotManFields.value.copy(
                 nSdiPlusType = sdiPlusType,
@@ -848,7 +856,7 @@ class AmapBroadcastHandlers(
      * 处理路况信息广播 (KEY_TYPE: 10070)
      */
     fun handleTrafficInfo(intent: Intent) {
-        Log.d(TAG, "🚦 处理路况信息广播")
+       // Log.d(TAG, "🚦 处理路况信息广播")
         
         try {
             val trafficLevel = intent.getIntExtra("TRAFFIC_LEVEL", -1)
@@ -871,7 +879,7 @@ class AmapBroadcastHandlers(
      * 处理导航态势广播 (KEY_TYPE: 13003)
      */
     fun handleNaviSituation(intent: Intent) {
-        Log.d(TAG, "📊 处理导航态势广播")
+       // Log.d(TAG, "📊 处理导航态势广播")
         
         try {
             val situationType = intent.getIntExtra("SITUATION_TYPE", -1)
@@ -1043,7 +1051,7 @@ class AmapBroadcastHandlers(
      * 处理地理位置信息广播 (KEY_TYPE: 12205)
      */
     fun handleGeolocationInfo(intent: Intent) {
-        Log.d(TAG, "🌍 处理地理位置信息广播")
+       // Log.d(TAG, "🌍 处理地理位置信息广播")
         
         try {
             val adminArea = intent.getStringExtra("ADMIN_AREA") ?: ""

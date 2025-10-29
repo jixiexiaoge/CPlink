@@ -2,14 +2,14 @@
 # 高级代码混淆和保护规则
 # ===========================================
 
-# 启用代码混淆和优化
+# 启用代码混淆和优化（降低优化级别）
 -dontskipnonpubliclibraryclasses
 -dontskipnonpubliclibraryclassmembers
 -dontusemixedcaseclassnames
 -dontpreverify
 -verbose
 -optimizations !code/simplification/arithmetic,!field/*,!class/merging/*
--optimizationpasses 5
+-optimizationpasses 2
 -allowaccessmodification
 -dontpreverify
 
@@ -71,14 +71,14 @@
 -keep class androidx.media3.** { *; }
 -dontwarn androidx.media3.**
 
-# 移除日志输出
--assumenosideeffects class android.util.Log {
-    public static *** d(...);
-    public static *** v(...);
-    public static *** i(...);
-    public static *** w(...);
-    public static *** e(...);
-}
+# 保留关键日志输出（用于网络诊断）
+# -assumenosideeffects class android.util.Log {
+#     public static *** d(...);
+#     public static *** v(...);
+#     public static *** i(...);
+#     public static *** w(...);
+#     public static *** e(...);
+# }
 
 # 移除System.out.println和System.out.print
 -assumenosideeffects class java.io.PrintStream {
@@ -99,17 +99,17 @@
     public void printStackTrace();
 }
 
-# 移除网络调试输出
--assumenosideeffects class java.net.DatagramSocket {
-    public void send(java.net.DatagramPacket);
-    public void receive(java.net.DatagramPacket);
-}
+# 保留网络调试输出（用于UDP通信诊断）
+# -assumenosideeffects class java.net.DatagramSocket {
+#     public void send(java.net.DatagramPacket);
+#     public void receive(java.net.DatagramPacket);
+# }
 
-# 移除网络包调试输出
--assumenosideeffects class java.net.DatagramPacket {
-    public java.net.InetAddress getAddress();
-    public int getPort();
-}
+# 保留网络包调试输出（用于UDP通信诊断）
+# -assumenosideeffects class java.net.DatagramPacket {
+#     public java.net.InetAddress getAddress();
+#     public int getPort();
+# }
 
 # 保持源文件名和行号信息（用于崩溃日志分析）
 -keepattributes SourceFile,LineNumberTable
@@ -118,8 +118,8 @@
 # 移除调试信息
 -renamesourcefileattribute SourceFile
 
-# 混淆包名
--repackageclasses ''
+# 暂时禁用包名混淆（可能导致反射问题）
+# -repackageclasses ''
 
 # 移除未使用的代码
 -dontwarn **
@@ -140,6 +140,21 @@
 # 保护关键类不被混淆
 -keep class com.example.carrotamap.MainActivity { *; }
 -keep class com.example.carrotamap.** { *; }
+
+# 保护网络相关类和方法
+-keep class com.example.carrotamap.CarrotManNetworkClient { *; }
+-keep class com.example.carrotamap.NetworkManager { *; }
+-keep class com.example.carrotamap.MainActivityLifecycle { *; }
+
+# 保护UDP Socket相关
+-keep class java.net.DatagramSocket { *; }
+-keep class java.net.DatagramPacket { *; }
+-keep class java.net.InetAddress { *; }
+-keep class java.net.SocketAddress { *; }
+
+# 保护协程相关
+-keep class kotlinx.coroutines.** { *; }
+-keep interface kotlinx.coroutines.** { *; }
 
 # 移除未使用的资源
 -keepclassmembers class * {

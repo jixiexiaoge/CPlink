@@ -54,6 +54,7 @@ class NetworkManager(
     // 网络状态更新定时器
     private var networkStatusUpdateJob: Job? = null
 
+
     // 导航确认服务已移除
 
     /**
@@ -81,8 +82,16 @@ class NetworkManager(
 
             carrotNetworkClient.setOnDeviceDiscovered { device ->
                 CoroutineScope(Dispatchers.Main).launch {
-                    discoveredDevicesList.add(device)
-                    Log.i(TAG, "🎯 发现Comma3设备: $device")
+                    // 避免重复添加设备
+                    if (!discoveredDevicesList.any { it.ip == device.ip }) {
+                        // 限制设备列表大小，避免内存无限增长
+                        if (discoveredDevicesList.size >= 10) {
+                            // 移除最旧的设备（FIFO策略）
+                            discoveredDevicesList.removeAt(0)
+                        }
+                        discoveredDevicesList.add(device)
+                        Log.i(TAG, "🎯 发现Comma3设备: $device")
+                    }
                 }
             }
             
@@ -119,11 +128,15 @@ class NetworkManager(
                 }
             }
 
+            // UDP广播接收状态通过其他回调监控
+
 
             
             // 启动网络服务和自动数据发送
             carrotNetworkClient.start()
-            carrotNetworkClient.startAutoDataSending(autoSendEnabled, carrotManFields)
+            // 确保自动发送开启，并以固定间隔推送导航数据，避免只在广播事件时发送导致中断
+            autoSendEnabled.value = true
+            carrotNetworkClient.startAutoDataSending(autoSendEnabled, carrotManFields, dataSendInterval)
             
             // 启动网络状态定期更新
             startNetworkStatusUpdate()
@@ -222,7 +235,7 @@ class NetworkManager(
             // 保存速度数据到SharedPreferences，供FloatingWindowService使用
             saveSpeedDataToPreferences(statusData)
 
-            Log.i(TAG, "✅ OpenpPilot状态已更新: 车速=${statusData.vEgoKph}km/h, 激活=${statusData.active}, 在路上=${statusData.isOnroad}")
+            //Log.i(TAG, "✅ OpenpPilot状态已更新: 车速=${statusData.vEgoKph}km/h, 激活=${statusData.active}, 在路上=${statusData.isOnroad}")
 
             // 如果是重要状态变化，记录详细日志
             if (oldData.vEgoKph != statusData.vEgoKph || oldData.active != statusData.active) {
