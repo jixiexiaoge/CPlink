@@ -38,8 +38,7 @@ class PermissionManager(
         
         // 可选权限 - 增强功能的权限
         private val OPTIONAL_PERMISSIONS = arrayOf(
-            Manifest.permission.FOREGROUND_SERVICE,
-            Manifest.permission.SYSTEM_ALERT_WINDOW
+            Manifest.permission.FOREGROUND_SERVICE
         )
         
         // Android 12+ 权限

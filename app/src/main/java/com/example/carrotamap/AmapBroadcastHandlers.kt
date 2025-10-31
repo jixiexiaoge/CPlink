@@ -278,6 +278,13 @@ class AmapBroadcastHandlers(
             val speedLimit = intent.getIntExtra("LIMITED_SPEED", 0)
             val currentSpeed = intent.getIntExtra("CUR_SPEED", 0)
             val carDirection = intent.getIntExtra("CAR_DIRECTION", 0)
+            
+            // 🆕 添加道路限速调试日志
+            if (speedLimit > 0) {
+                Log.d(TAG, "🚦 从高德广播接收道路限速: ${speedLimit}km/h")
+            } else {
+                //Log.v(TAG, "⚠️ 高德广播未包含道路限速信息 (LIMITED_SPEED=0)")
+            }
 
             // 距离和时间信息
             val remainDistance = intent.getIntExtra("ROUTE_REMAIN_DIS", 0)
@@ -375,7 +382,12 @@ class AmapBroadcastHandlers(
                 szPosRoadName = currentRoad.takeIf { it.isNotEmpty() } ?: carrotManFields.value.szPosRoadName,
                 szNearDirName = nextRoad,  // 总是更新，即使为空
                 szFarDirName = nextNextRoad,  // 总是更新，即使为空
-                nRoadLimitSpeed = speedLimit.takeIf { it > 0 } ?: carrotManFields.value.nRoadLimitSpeed,
+                nRoadLimitSpeed = speedLimit.takeIf { it > 0 } ?: carrotManFields.value.nRoadLimitSpeed.also {
+                    // 🆕 如果高德广播没有道路限速，记录当前值（用于调试）
+                    if (speedLimit == 0 && it > 0) {
+                        //Log.v(TAG, "⚠️ 高德广播LIMITED_SPEED=0，保持当前道路限速: ${it}km/h")
+                    }
+                },
                 nGoPosDist = remainDistance.takeIf { it > 0 } ?: carrotManFields.value.nGoPosDist,
                 nGoPosTime = remainTime.takeIf { it > 0 } ?: carrotManFields.value.nGoPosTime,
                 nPosSpeed = currentSpeed.toDouble(),

@@ -780,6 +780,7 @@ class CarrotManNetworkClient(
             // CarrotMan命令字段
             put("carrotCmd", fields.carrotCmd)
             put("carrotArg", fields.carrotArg)
+            put("carrotCmdIndex", fields.carrotCmdIndex)  // 🆕 命令索引 - Python端用于检测命令变化
 
         }
     }

@@ -24,8 +24,7 @@ object AppConstants {
         val OPTIONAL_PERMISSIONS = arrayOf(
             Manifest.permission.BLUETOOTH,              // 蓝牙权限 - 设备连接用
             Manifest.permission.BLUETOOTH_ADMIN,        // 蓝牙管理权限 - 设备管理用
-            Manifest.permission.WAKE_LOCK,              // 唤醒锁权限 - 后台运行用
-            Manifest.permission.SYSTEM_ALERT_WINDOW     // 悬浮窗权限 - 悬浮窗功能用
+            Manifest.permission.WAKE_LOCK               // 唤醒锁权限 - 后台运行用
         ) + if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
             arrayOf(
                 Manifest.permission.BLUETOOTH_CONNECT,  // 蓝牙连接权限 - Android 12+

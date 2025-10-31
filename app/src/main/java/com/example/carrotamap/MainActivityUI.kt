@@ -71,7 +71,8 @@ class MainActivityUI(
                                 dataFieldManager = core.dataFieldManager,
                                 onSendCommand = { command, arg -> core.sendCarrotCommand(command, arg) },
                                 onSendRoadLimitSpeed = { core.sendCurrentRoadLimitSpeed() },
-                                onLaunchAmap = { core.launchAmapAuto() }
+                                onLaunchAmap = { core.launchAmapAuto() },
+                                onSendNavConfirmation = { core.sendNavigationConfirmationManually() } // 🆕 发送导航确认
                             )
                             1 -> HelpPage()
                             2 -> ProfilePage(
@@ -193,7 +194,8 @@ class MainActivityUI(
         dataFieldManager: DataFieldManager,
         onSendCommand: (String, String) -> Unit,
         onSendRoadLimitSpeed: () -> Unit,
-        onLaunchAmap: () -> Unit
+        onLaunchAmap: () -> Unit,
+        onSendNavConfirmation: () -> Unit // 🆕 发送导航确认
     ) {
         val scrollState = rememberScrollState()
         
@@ -235,6 +237,7 @@ class MainActivityUI(
                     onSendCommand = onSendCommand,
                     onSendRoadLimitSpeed = onSendRoadLimitSpeed,
                     onLaunchAmap = onLaunchAmap,
+                    onSendNavConfirmation = onSendNavConfirmation, // 🆕 传递发送导航确认回调
                     userType = userType,
                     carrotManFields = carrotManFields
                 )
@@ -537,6 +540,7 @@ class MainActivityUI(
         onSendCommand: (String, String) -> Unit,
         onSendRoadLimitSpeed: () -> Unit,
         onLaunchAmap: () -> Unit,
+        onSendNavConfirmation: () -> Unit, // 🆕 发送导航确认
         userType: Int,
         carrotManFields: CarrotManFields
     ) {
@@ -636,6 +640,9 @@ class MainActivityUI(
                 onSendCommand = onSendCommand,
                 onSendRoadLimitSpeed = onSendRoadLimitSpeed,
                 onLaunchAmap = onLaunchAmap,
+                onSendNavConfirmation = onSendNavConfirmation, // 🆕 传递发送导航确认回调
+                isOpenpilotActive = carrotManFields.active, // 🆕 传递OpenpPilot激活状态
+                carrotManFields = carrotManFields, // 🆕 传递CarrotMan字段
                 context = context
             )
         }
@@ -671,23 +678,23 @@ class MainActivityUI(
                 when {
                     // 情况1: 只有图标，没有文字（图标居中显示）
                     icon.isNotEmpty() && label.isEmpty() -> {
-                        Text(
-                            text = icon,
+                    Text(
+                        text = icon,
                             fontSize = 20.sp, // 减小图标：24→20
-                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                        )
-                    }
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                )
+            }
                     // 情况2: 既有图标又有文字（垂直排列）
                     icon.isNotEmpty() && label.isNotEmpty() -> {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Text(
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
                         text = icon,
                         fontSize = 14.sp  // 减小图标：16→14
                     )
-                    Text(
+                Text(
                         text = label,
                         fontSize = 8.sp,  // 减小文字：9→8
                         fontWeight = FontWeight.Medium
@@ -696,15 +703,15 @@ class MainActivityUI(
                     }
                     // 情况3: 只有文字，没有图标（文字居中）
                     else -> {
-                Text(
+                                Text(
                     text = label,
                     fontSize = 10.sp,  // 减小文字：11→10
                     fontWeight = FontWeight.Medium,
                     textAlign = androidx.compose.ui.text.style.TextAlign.Center
                 )
+                    }
+                }
             }
-        }
-    }
         }
     }
 
@@ -831,12 +838,15 @@ class MainActivityUI(
      * 按钮布局：
      * 1(占位)   2(加速)     3(占位)
      * 4(左变道)  5(智能控速)  6(右变道)
-     * 7(设置)    8(减速)     9(占位)
+     * 7(限速)    8(减速)     9(开地图)
      * 
      * 注：
      * - 1号按钮（调试/模拟导航）已移至主页蓝色速度圆环
+     * - 2号按钮（加速）：原生方式，发送SPEED UP命令
      * - 3号按钮（关闭）已移除，点击弹窗外部区域即可关闭
-     * - 9号按钮（启动高德地图）已移至主页绿色速度圆环
+     * - 7号按钮（限速）：显示当前道路限速，点击后将限速设为巡航速度
+     * - 8号按钮（减速）：原生方式，发送SPEED DOWN命令
+     * - 9号按钮（开地图）：手动发送导航确认，需要OpenpPilot激活（active=true）
      * - 回家和公司按钮已移至主页面控制按钮行
      */
     @Composable
@@ -845,6 +855,9 @@ class MainActivityUI(
         onSendCommand: (String, String) -> Unit,
         onSendRoadLimitSpeed: () -> Unit,
         onLaunchAmap: () -> Unit,
+        onSendNavConfirmation: () -> Unit, // 🆕 发送导航确认
+        isOpenpilotActive: Boolean, // 🆕 OpenpPilot激活状态
+        carrotManFields: CarrotManFields, // 🆕 CarrotMan字段（用于获取当前速度）
         context: android.content.Context
     ) {
         // 智能控速模式状态：0=智能控速, 1=原车巡航, 2=弯道减速
@@ -880,12 +893,22 @@ class MainActivityUI(
                                 val buttonNumber = row * 3 + col + 1
                                 
                                 when (buttonNumber) {
-                                    // 2号按钮 - 加速（绿色）
+                                    // 2号按钮 - 加速（绿色）- 基于当前巡航速度加10
                                     2 -> {
+                                        // 🆕 从carrotManFields获取当前巡航速度
+                                        val currentCruiseSpeed = carrotManFields.vCruiseKph.toInt()
+                                        val newSpeed = if (currentCruiseSpeed > 0) {
+                                            // 如果当前巡航速度有效，加10
+                                            minOf(currentCruiseSpeed + 10, 150) // 限制最大150km/h
+                                        } else {
+                                            // 如果当前巡航速度为0，使用默认值50
+                                            50
+                                        }
+                                        
                                         Button(
                                             onClick = {
-                                                android.util.Log.i("MainActivity", "🎮 高阶弹窗：用户点击加速按钮")
-                                                onSendCommand("SPEED", "UP")
+                                                android.util.Log.i("MainActivity", "🎮 高阶弹窗：用户点击加速按钮，当前巡航速度: ${currentCruiseSpeed}km/h，新速度: ${newSpeed}km/h")
+                                                onSendCommand("SPEED", newSpeed.toString())  // 🆕 直接发送速度值
                                                 onDismiss()
                                             },
                                             modifier = Modifier.size(56.dp),
@@ -977,12 +1000,30 @@ class MainActivityUI(
                                             )
                                         }
                                     }
-                                    // 8号按钮 - 减速（红色）
+                                    // 8号按钮 - 减速（红色）- 基于当前巡航速度减10
                                     8 -> {
+                                        // 🆕 从carrotManFields获取当前巡航速度
+                                        val currentCruiseSpeed = carrotManFields.vCruiseKph.toInt()
+                                        val newSpeed = if (currentCruiseSpeed > 20) {
+                                            // 如果当前巡航速度大于20，减10（与Python端逻辑一致）
+                                            maxOf(currentCruiseSpeed - 10, 20) // 限制最小20km/h
+                                        } else {
+                                            // 如果当前巡航速度已经是20或更小，不再减
+                                            currentCruiseSpeed
+                                        }
+                                        
                                         Button(
                                             onClick = {
-                                                android.util.Log.i("MainActivity", "🎮 高阶弹窗：用户点击减速按钮")
-                                                onSendCommand("SPEED", "DOWN")
+                                                android.util.Log.i("MainActivity", "🎮 高阶弹窗：用户点击减速按钮，当前巡航速度: ${currentCruiseSpeed}km/h，新速度: ${newSpeed}km/h")
+                                                if (newSpeed < currentCruiseSpeed) {
+                                                    onSendCommand("SPEED", newSpeed.toString())  // 🆕 直接发送速度值
+                                                } else {
+                                                    android.widget.Toast.makeText(
+                                                        context,
+                                                        "⚠️ 已是最低速度（${currentCruiseSpeed}km/h）",
+                                                        android.widget.Toast.LENGTH_SHORT
+                                                    ).show()
+                                                }
                                                 onDismiss()
                                             },
                                             modifier = Modifier.size(56.dp),
@@ -1000,54 +1041,88 @@ class MainActivityUI(
                                             )
                                         }
                                     }
-                                    // 7号按钮 - 设置（紫色）
+                                    // 7号按钮 - 设置限速（紫色）- 显示当前道路限速
                                     7 -> {
+                                        // 🆕 从carrotManFields实时获取当前道路限速
+                                        val roadLimitSpeed = carrotManFields.nRoadLimitSpeed
+                                        
+                                        val buttonText = if (roadLimitSpeed > 0) {
+                                            "$roadLimitSpeed\n限速"  // 显示限速值（例如："80\n限速"）
+                                        } else {
+                                            "设置\n限速"  // 无限速时显示"设置限速"
+                                        }
+                                        
                                         Button(
                                             onClick = {
-                                                android.util.Log.i("MainActivity", "🎯 高阶弹窗：用户点击设置按钮，发送当前道路限速")
-                                                onSendRoadLimitSpeed()
+                                                android.util.Log.i("MainActivity", "🎯 高阶弹窗：用户点击设置限速按钮，当前道路限速: ${roadLimitSpeed}km/h")
+                                                if (roadLimitSpeed > 0) {
+                                                    onSendRoadLimitSpeed()
+                                                    android.widget.Toast.makeText(
+                                                        context,
+                                                        "✅ 已将道路限速 ${roadLimitSpeed}km/h 设为巡航速度",
+                                                        android.widget.Toast.LENGTH_SHORT
+                                                    ).show()
+                                                } else {
+                                                    android.widget.Toast.makeText(
+                                                        context,
+                                                        "⚠️ 当前无道路限速信息\n请先启动导航",
+                                                        android.widget.Toast.LENGTH_SHORT
+                                                    ).show()
+                                                }
                                                 //onDismiss()
                                             },
                                             modifier = Modifier.size(56.dp),
                                             colors = ButtonDefaults.buttonColors(
-                                                containerColor = Color(0xFF8B5CF6) // 紫色
+                                                containerColor = if (roadLimitSpeed > 0) Color(0xFF8B5CF6) else Color(0xFF94A3B8), // 有限速时紫色，无限速时灰色
+                                                disabledContainerColor = Color(0xFF94A3B8)
                                             ),
+                                            enabled = roadLimitSpeed > 0, // 🆕 无限速时禁用按钮
                                             contentPadding = PaddingValues(0.dp),
                                             shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp)
                                         ) {
                                             Text(
-                                                text = "设置",
-                                                fontSize = 11.sp,
+                                                text = buttonText,
+                                                fontSize = 10.sp,
                                                 fontWeight = FontWeight.Bold,
                                                 color = Color.White,
-                                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                                lineHeight = 12.sp
                                             )
                                         }
                                     }
-                                    // 9号按钮 - 已移至主页绿色速度圆环
+                                    // 9号按钮 - 启用路径（发送导航确认）
                                     9 -> {
                                         Button(
                                             onClick = {
-                                                android.util.Log.i("MainActivity", "💡 提示：启动高德地图功能已移至主页绿色速度圆环")
-                                                android.widget.Toast.makeText(
-                                                    context,
-                                                    "💡 提示：请点击主页的绿色速度圆环\n启动高德地图",
-                                                    android.widget.Toast.LENGTH_SHORT
-                                                ).show()
-                                                onDismiss()
+                                                if (isOpenpilotActive) {
+                                                    android.util.Log.i("MainActivity", "🗺️ 高阶弹窗：用户点击'启用路径'按钮")
+                                                    onSendNavConfirmation()
+                                                    onDismiss()
+                                                } else {
+                                                    android.util.Log.w("MainActivity", "⚠️ OpenpPilot未激活，无法发送导航确认")
+                                                    android.widget.Toast.makeText(
+                                                        context,
+                                                        "⚠️ OpenpPilot未激活\n请先启动车辆系统",
+                                                        android.widget.Toast.LENGTH_SHORT
+                                                    ).show()
+                                                }
                                             },
                                             modifier = Modifier.size(56.dp),
+                                            enabled = isOpenpilotActive, // 🆕 根据激活状态控制可用性
                                             colors = ButtonDefaults.buttonColors(
-                                                containerColor = Color(0xFF94A3B8) // 灰蓝色表示未分配
+                                                containerColor = if (isOpenpilotActive) Color(0xFF10B981) else Color(0xFF94A3B8), // 激活时绿色，未激活时灰色
+                                                disabledContainerColor = Color(0xFF94A3B8) // 禁用时灰色
                                             ),
                                             contentPadding = PaddingValues(0.dp),
                                             shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp)
                                         ) {
                                             Text(
-                                                text = "9",
-                                                fontSize = 16.sp,
+                                                text = "启用\n路径",
+                                                fontSize = 10.sp,
                                                 fontWeight = FontWeight.Bold,
-                                                color = Color.White
+                                                color = Color.White,
+                                                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                                lineHeight = 12.sp
                                             )
                                         }
                                     }

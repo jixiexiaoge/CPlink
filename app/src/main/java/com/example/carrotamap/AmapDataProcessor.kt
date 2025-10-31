@@ -40,37 +40,19 @@ class AmapDataProcessor(
     /**
      * 道路限速更新 - 直接映射到CarrotMan字段
      * 所有复杂逻辑由Python端(carrot_serv.py)处理
+     * 
+     * 🆕 不再保存到SharedPreferences（悬浮窗已移除）
+     * 所有数据都从carrotManFields实时获取
      */
     fun updateRoadSpeedLimit(newLimit: Int) {
         if (newLimit <= 0) return
 
-        // 直接更新，不进行变化检测
+        // 直接更新到carrotManFields，不进行变化检测
         carrotManFields.value = carrotManFields.value.copy(
             nRoadLimitSpeed = newLimit,
             lastUpdateTime = System.currentTimeMillis()
         )
-
-        // 保存到SharedPreferences，供FloatingWindowService使用
-        saveRoadLimitSpeedToPreferences(newLimit)
         
-        Log.d(TAG, "🚦 限速已更新: ${newLimit}km/h (直接映射)")
-    }
-    
-    /**
-     * 保存道路限速到SharedPreferences
-     * 供FloatingWindowService读取使用
-     */
-    private fun saveRoadLimitSpeedToPreferences(roadLimitSpeed: Int) {
-        try {
-            val prefs = context.getSharedPreferences("CarrotAmap", Context.MODE_PRIVATE)
-            prefs.edit().apply {
-                putInt("nRoadLimitSpeed", roadLimitSpeed)
-                putLong("nRoadLimitSpeed_lastUpdate", System.currentTimeMillis())
-                apply()
-            }
-            Log.d(TAG, "💾 道路限速已保存到SharedPreferences: ${roadLimitSpeed}km/h")
-        } catch (e: Exception) {
-            Log.e(TAG, "❌ 保存道路限速到SharedPreferences失败: ${e.message}", e)
-        }
+        Log.d(TAG, "🚦 限速已更新: ${newLimit}km/h (实时更新到carrotManFields)")
     }
 }

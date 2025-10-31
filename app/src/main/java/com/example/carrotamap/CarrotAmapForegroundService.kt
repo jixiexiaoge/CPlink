@@ -199,24 +199,20 @@ class CarrotAmapForegroundService : Service() {
             if (dataProcessedCount > 0) {
                 append(" | 处理数据: ${dataProcessedCount}条")
             }
-            append(" | 持续接收导航数据")
         }
         
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("CarrotAmap导航服务")
+            .setContentTitle("CarrotAmap正在运行")
             .setContentText(contentText)
             .setSmallIcon(android.R.drawable.ic_dialog_info)
             .setContentIntent(pendingIntent)
             .setOngoing(true)
             .setAutoCancel(false)
-            // 🚀 CRITICAL: 提升优先级以对抗vivo等国产手机的后台管理
-            .setPriority(NotificationCompat.PRIORITY_MAX)
-            .setCategory(NotificationCompat.CATEGORY_NAVIGATION)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setCategory(NotificationCompat.CATEGORY_SERVICE)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setShowWhen(true)
             .setWhen(System.currentTimeMillis())
-            // 设置为重要性高，防止被系统杀死
-            .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
             .build()
     }
     

@@ -536,9 +536,8 @@ class MainActivityCore(
      */
     fun sendCurrentRoadLimitSpeed() {
         try {
-            // 从SharedPreferences获取当前道路限速
-            val prefs = activity.getSharedPreferences("CarrotAmap", Context.MODE_PRIVATE)
-            val roadLimitSpeed = prefs.getInt("nRoadLimitSpeed", 0)
+            // 🆕 从carrotManFields获取当前道路限速（与UI保持一致）
+            val roadLimitSpeed = carrotManFields.value.nRoadLimitSpeed
             
             if (roadLimitSpeed > 0) {
                 Log.i(TAG, "🎯 主页发送当前道路限速: ${roadLimitSpeed}km/h")
@@ -552,6 +551,80 @@ class MainActivityCore(
             }
         } catch (e: Exception) {
             Log.e(TAG, "❌ 发送道路限速失败: ${e.message}", e)
+        }
+    }
+
+    /**
+     * 手动发送导航确认到comma3设备（"开地图"按钮功能）
+     * 前提条件：active 为 true（OpenpPilot已激活）
+     */
+    fun sendNavigationConfirmationManually() {
+        try {
+            Log.i(TAG, "🗺️ 用户点击'开地图'按钮")
+            
+            // 检查NetworkManager是否已初始化
+            if (!::networkManager.isInitialized) {
+                Log.w(TAG, "⚠️ NetworkManager未初始化，无法发送导航确认")
+                return
+            }
+            
+            // 检查 active 状态
+            val isActive = carrotManFields.value.active
+            if (!isActive) {
+                Log.w(TAG, "⚠️ OpenpPilot未激活（active=false），无法发送导航确认")
+                return
+            }
+            
+            // 获取目的地信息
+            val goalName = carrotManFields.value.szGoalName.ifEmpty { "目的地" }
+            val goalLat = carrotManFields.value.goalPosY
+            val goalLon = carrotManFields.value.goalPosX
+            
+            // 检查坐标有效性
+            if (goalLat == 0.0 || goalLon == 0.0) {
+                Log.w(TAG, "⚠️ 无有效坐标信息: lat=$goalLat, lon=$goalLon")
+                return
+            }
+            
+            Log.i(TAG, "📍 准备发送导航确认: name=$goalName, lat=$goalLat, lon=$goalLon")
+            
+            // 在后台协程中发送
+            kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+                try {
+                    val result = networkManager.sendNavigationConfirmationToComma3(goalName, goalLat, goalLon)
+                    if (result.isSuccess) {
+                        Log.i(TAG, "✅ 导航确认发送成功")
+                        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                            android.widget.Toast.makeText(
+                                activity,
+                                "✅ 导航确认已发送",
+                                android.widget.Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    } else {
+                        Log.e(TAG, "❌ 导航确认发送失败: ${result.exceptionOrNull()?.message}")
+                        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                            android.widget.Toast.makeText(
+                                activity,
+                                "❌ 导航确认发送失败",
+                                android.widget.Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "❌ 导航确认发送异常: ${e.message}", e)
+                    kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                        android.widget.Toast.makeText(
+                            activity,
+                            "❌ 发送失败: ${e.message}",
+                            android.widget.Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+            }
+            
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ 发送导航确认失败: ${e.message}", e)
         }
     }
 

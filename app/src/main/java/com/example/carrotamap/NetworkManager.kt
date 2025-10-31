@@ -45,14 +45,17 @@ class NetworkManager(
     // OpenpPilot状态数据
     private val openpilotStatusData = mutableStateOf(OpenpilotStatusData())
     
-    // 自动发送状态跟踪 - 避免重复发送
-    private var lastAutoSendState = false
+    // 自动发送状态跟踪 - 已弃用（改为手动点击"开地图"按钮）
+    // private var lastAutoSendState = false
     
     // 后台状态追踪 - 用于调整网络策略
     private var isInBackground = false
     
     // 网络状态更新定时器
     private var networkStatusUpdateJob: Job? = null
+    
+    // 🆕 CarrotMan命令索引 - 用于Python端检测命令变化
+    private var carrotCmdIndex = 0
 
 
     // 导航确认服务已移除
@@ -109,7 +112,7 @@ class NetworkManager(
                         ""
                     }
                     
-                    // 保存网络连接状态到SharedPreferences供悬浮窗使用
+                    // 保存网络连接状态到SharedPreferences
                     saveNetworkStatusToPrefs(connected, deviceInfo)
                     
                     Log.i(TAG, "🌐 网络状态变化: connected=$connected, device=$deviceInfo")
@@ -242,8 +245,7 @@ class NetworkManager(
                 Log.i(TAG, "🔄 状态变化: 车速 ${oldData.vEgoKph} -> ${statusData.vEgoKph}, 激活 ${oldData.active} -> ${statusData.active}")
             }
             
-            // 自动发送逻辑：当CarrotRouteActive为False且active为true时自动发送
-            checkAndAutoSendNavigationConfirmation(statusData)
+            // 自动发送逻辑已移除 - 改为手动点击"开地图"按钮触发
 
         } catch (e: JSONException) {
             Log.e(TAG, "JSON解析失败: ${e.message}, 原始数据: $jsonData", e)
@@ -255,46 +257,14 @@ class NetworkManager(
 
 
     /**
-     * 检查并自动发送导航确认
-     * 当CarrotRouteActive为False且active为true时自动发送
+     * 检查并自动发送导航确认 - 已弃用
+     * 改为手动点击"开地图"按钮触发
      */
+    /*
     private fun checkAndAutoSendNavigationConfirmation(statusData: OpenpilotStatusData) {
-        // 检查发送条件：CarrotRouteActive为False且active为true
-        val shouldAutoSend = !statusData.carrotRouteActive && statusData.active
-        
-        // 如果状态发生变化且满足发送条件，则自动发送
-        if (shouldAutoSend && !lastAutoSendState) {
-            Log.i(TAG, "🚀 触发自动发送条件: CarrotRouteActive=${statusData.carrotRouteActive}, active=${statusData.active}")
-            
-            // 获取目的地信息
-            val goalName = carrotManFields.value.szGoalName.ifEmpty { "目的地" }
-            val goalLat = carrotManFields.value.goalPosY
-            val goalLon = carrotManFields.value.goalPosX
-            
-            if (goalLat != 0.0 && goalLon != 0.0) {
-                Log.i(TAG, "📍 自动发送导航确认: name=$goalName, lat=$goalLat, lon=$goalLon")
-                
-                // 在后台协程中发送
-                CoroutineScope(Dispatchers.IO).launch {
-                    try {
-                        val result = sendNavigationConfirmationToComma3(goalName, goalLat, goalLon)
-                        if (result.isSuccess) {
-                            Log.i(TAG, "✅ 自动发送导航确认成功")
-                        } else {
-                            Log.e(TAG, "❌ 自动发送导航确认失败: ${result.exceptionOrNull()?.message}")
-                        }
-                    } catch (e: Exception) {
-                        Log.e(TAG, "❌ 自动发送导航确认异常: ${e.message}", e)
-                    }
-                }
-            } else {
-                Log.w(TAG, "⚠️ 无有效坐标信息，跳过自动发送: lat=$goalLat, lon=$goalLon")
-            }
-        }
-        
-        // 更新上次发送状态
-        lastAutoSendState = shouldAutoSend
+        // 已弃用 - 改为手动触发
     }
+    */
 
     /**
      * 映射xState枚举值到中文描述
@@ -846,35 +816,56 @@ class NetworkManager(
             try {
                 Log.d(TAG, "📡 准备发送控制指令到设备（重复发送模式）")
 
+                // 🆕 递增命令索引，用于Python端检测命令变化
+                carrotCmdIndex++
+                
                 // 1. 更新 CarrotManFields 中的命令字段（统一数据源）
                 carrotManFields.value = carrotManFields.value.copy(
                     carrotCmd = command,
-                    carrotArg = arg
+                    carrotArg = arg,
+                    carrotCmdIndex = carrotCmdIndex  // 🆕 更新命令索引
                 )
                 
-                Log.d(TAG, "🔄 已更新CarrotManFields: carrotCmd=$command, carrotArg=$arg")
+                Log.d(TAG, "🔄 已更新CarrotManFields: carrotCmd=$command, carrotArg=$arg, carrotCmdIndex=$carrotCmdIndex")
 
-                // 2. 重复发送命令，确保被 Python 端捕获（适配 0.2秒窗口）
-                // 发送6次，间隔100ms，总共覆盖600ms
-                repeat(6) { attemptIndex ->
-                    carrotNetworkClient.sendCarrotManDataImmediately(carrotManFields.value)
-                    Log.v(TAG, "📤 控制指令发送 #${attemptIndex + 1}/6")
-                    
-                    if (attemptIndex < 5) { // 最后一次不延迟
-                        delay(100) // 间隔100ms
+                // 2. 根据命令类型决定发送策略
+                // 🆕 变道命令（LANECHANGE）需要重复发送，确保被 desire_helper.py 捕获（0.2秒窗口）
+                // 🆕 速度命令（SPEED）只需发送一次，cruise.py 会立即处理（一次性执行）
+                if (command == "LANECHANGE") {
+                    // 变道命令：重复发送3次，间隔50ms，确保在0.2秒窗口内被捕获
+                    repeat(3) { attemptIndex ->
+                        carrotNetworkClient.sendCarrotManDataImmediately(carrotManFields.value)
+                        Log.v(TAG, "📤 变道指令发送 #${attemptIndex + 1}/3")
+                        
+                        if (attemptIndex < 2) {
+                            delay(50) // 间隔50ms
+                        }
                     }
-                }
-                
-                Log.i(TAG, "✅ 控制指令已发送完成（6次重复）: carrotCmd=$command, carrotArg=$arg")
-                
-                // 3. 延迟清理命令字段（避免UI闪烁，给UI足够显示时间）
-                CoroutineScope(Dispatchers.Main).launch {
-                    delay(500) // 延迟500ms，确保UI有足够时间显示数据
-                    carrotManFields.value = carrotManFields.value.copy(
-                        carrotCmd = "",
-                        carrotArg = ""
-                    )
-                    Log.d(TAG, "🧹 已延迟清理CarrotManFields中的指令字段")
+                    Log.i(TAG, "✅ 变道指令已发送完成（3次重复）: $command $arg")
+                    
+                    // 延迟清理命令字段，确保 desire_helper.py 有时间设置计数器
+                    CoroutineScope(Dispatchers.Main).launch {
+                        delay(150) // 150ms后清理，确保计数器已设置
+                        carrotManFields.value = carrotManFields.value.copy(
+                            carrotCmd = "",
+                            carrotArg = ""
+                        )
+                        Log.d(TAG, "🧹 已清理变道命令字段")
+                    }
+                } else {
+                    // 速度命令：只发送一次，cruise.py 会立即处理（一次性执行）
+                    carrotNetworkClient.sendCarrotManDataImmediately(carrotManFields.value)
+                    Log.i(TAG, "✅ 速度指令已发送（单次）: $command $arg")
+                    
+                    // 立即清理命令字段，避免重复处理
+                    CoroutineScope(Dispatchers.Main).launch {
+                        delay(100) // 100ms后清理，确保cruise.py已处理
+                        carrotManFields.value = carrotManFields.value.copy(
+                            carrotCmd = "",
+                            carrotArg = ""
+                        )
+                        Log.d(TAG, "🧹 已清理速度命令字段")
+                    }
                 }
                 
             } catch (e: Exception) {
@@ -940,7 +931,6 @@ class NetworkManager(
     
     /**
      * 保存网络连接状态到SharedPreferences
-     * 供悬浮窗服务读取使用
      */
     private fun saveNetworkStatusToPrefs(isConnected: Boolean, deviceInfo: String) {
         try {
