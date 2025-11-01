@@ -13,11 +13,17 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.ui.draw.shadow
+import com.example.carrotamap.R
 import com.example.carrotamap.UsageStats
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -52,6 +58,9 @@ fun ProfilePage(usageStats: UsageStats, deviceId: String) {
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var showUserForm by remember { mutableStateOf(false) }
+    
+    // 二维码弹窗状态（独立于编辑表单）
+    var showQrCodeDialog by remember { mutableStateOf(false) }
     
     // 表单状态
     var carModel by remember { mutableStateOf("") }
@@ -169,7 +178,10 @@ fun ProfilePage(usageStats: UsageStats, deviceId: String) {
                         // 显示用户信息
                         UserInfoDisplay(
                             userData = userData!!,
-                            onEditClick = { showUserForm = true }
+                            onEditClick = { 
+                                showUserForm = true
+                                showQrCodeDialog = true  // 打开编辑表单时同时显示二维码弹窗
+                            }
                         )
                     }
                 }
@@ -194,9 +206,65 @@ fun ProfilePage(usageStats: UsageStats, deviceId: String) {
                     // 触发保存操作
                     isUpdating = true
                 },
-                onCancel = { showUserForm = false }
+                onCancel = { 
+                    showUserForm = false
+                    showQrCodeDialog = false  // 取消编辑时关闭二维码弹窗
+                }
             )
         }
+    }
+    
+    // 二维码弹窗 - 独立于编辑表单，可以单独关闭
+    if (showQrCodeDialog) {
+        AlertDialog(
+            onDismissRequest = { showQrCodeDialog = false },
+            title = {
+                Text(
+                    text = "赞助二维码",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF1E293B)
+                )
+            },
+            text = {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.wepay),
+                        contentDescription = "微信支付赞助二维码",
+                        modifier = Modifier
+                            .size(250.dp)
+                            .shadow(4.dp, RoundedCornerShape(8.dp)),
+                        contentScale = ContentScale.Fit
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = "扫码赞助",
+                        fontSize = 14.sp,
+                        color = Color(0xFF64748B)
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = { showQrCodeDialog = false },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3B82F6))
+                ) {
+                    Text("确定")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showQrCodeDialog = false }
+                ) {
+                    Text("关闭")
+                }
+            },
+            containerColor = Color.White,
+            shape = RoundedCornerShape(16.dp)
+        )
     }
     
     // 处理保存操作 - 根据用户类型决定更新哪些字段

@@ -340,8 +340,9 @@ class MainActivityLifecycle(
     private fun startGpsWarmup() {
         try {
             Log.i(TAG, "🌡️ 开始GPS预热...")
-            // 启动GPS预热，提前获取位置数据
-            core.locationSensorManager.startGpsWarmup()
+            // 启动GPS位置更新，提前获取位置数据
+            // 🔧 修复：使用实际存在的 startLocationUpdates() 方法
+            core.locationSensorManager.startLocationUpdates()
             Log.i(TAG, "✅ GPS预热已启动")
         } catch (e: Exception) {
             Log.e(TAG, "❌ GPS预热失败: ${e.message}", e)
@@ -414,7 +415,7 @@ class MainActivityLifecycle(
                             Log.v(TAG, "🔍 网络状态监控: $status (运行中，搜索设备...)")
                         } else {
                             // 其他情况正常记录
-                            Log.d(TAG, "🌐 网络状态监控: $status, 设备: $deviceInfo")
+                            //Log.d(TAG, "🌐 网络状态监控: $status, 设备: $deviceInfo")
                         }
                     } catch (e: UninitializedPropertyAccessException) {
                         // NetworkManager还未初始化，跳过本次更新
@@ -522,29 +523,16 @@ class MainActivityLifecycle(
                 // 更新位置并计算距离（检查是否已初始化）
                 try {
                     core.deviceManager.updateLocationAndDistance(latitude, longitude)
-
-                    // 启动默认倒计时
-                    core.deviceManager.startCountdown(
-                        initialSeconds = 850,
-                        onUpdate = { seconds: Int -> core.remainingSeconds.value = seconds },
-                        onFinished = { activity.finishAffinity() }
-                    )
+                    // 🔧 修复：删除不存在的倒计时功能
+                    // 倒计时功能已移除，不再使用
                 } catch (e: UninitializedPropertyAccessException) {
-                    Log.w(TAG, "⚠️ deviceManager未初始化，跳过位置更新和倒计时")
+                    Log.w(TAG, "⚠️ deviceManager未初始化，跳过位置更新")
                 }
 
             } catch (e: Exception) {
                 Log.e(TAG, "❌ 初始位置更新失败: ${e.message}", e)
-                // 失败时启动默认倒计时（检查是否已初始化）
-                try {
-                    core.deviceManager.startCountdown(
-                        initialSeconds = 850,
-                        onUpdate = { seconds: Int -> core.remainingSeconds.value = seconds },
-                        onFinished = { activity.finishAffinity() }
-                    )
-                } catch (e: UninitializedPropertyAccessException) {
-                    Log.w(TAG, "⚠️ deviceManager未初始化，无法启动倒计时")
-                }
+                // 🔧 修复：删除不存在的倒计时功能
+                // 倒计时功能已移除，不再使用
             }
         }
     }

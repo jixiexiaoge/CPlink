@@ -109,13 +109,13 @@ class LocationSensorManager(
                 )
 
                 // 🔍 详细GPS数据日志
-                Log.i(TAG, "🌍 GPS位置更新接收:")
-                Log.i(TAG, "  📍 坐标: lat=${String.format("%.6f", location.latitude)}, lon=${String.format("%.6f", location.longitude)}")
-                Log.i(TAG, "  🚀 速度: ${if (location.hasSpeed()) "${String.format("%.1f", location.speed * 3.6)} km/h" else "无速度数据"}")
-                Log.i(TAG, "  🧭 方向: ${if (location.hasBearing()) "${String.format("%.1f", location.bearing)}°" else "无方向数据"}")
-                Log.i(TAG, "  📡 精度: ${location.accuracy}m")
-                Log.i(TAG, "  🔧 提供者: ${location.provider}")
-                Log.i(TAG, "  ⏰ 时间: ${System.currentTimeMillis() - location.time}ms前")
+                //Log.i(TAG, "🌍 GPS位置更新接收:")
+                //Log.i(TAG, "  📍 坐标: lat=${String.format("%.6f", location.latitude)}, lon=${String.format("%.6f", location.longitude)}")
+                //Log.i(TAG, "  🚀 速度: ${if (location.hasSpeed()) "${String.format("%.1f", location.speed * 3.6)} km/h" else "无速度数据"}")
+                //Log.i(TAG, "  🧭 方向: ${if (location.hasBearing()) "${String.format("%.1f", location.bearing)}°" else "无方向数据"}")
+                //Log.i(TAG, "  📡 精度: ${location.accuracy}m")
+                //Log.i(TAG, "  🔧 提供者: ${location.provider}")
+                //Log.i(TAG, "  ⏰ 时间: ${System.currentTimeMillis() - location.time}ms前")
 
                 // 验证坐标有效性 - 增强检查
                 if (location.latitude == 0.0 && location.longitude == 0.0) {
@@ -143,22 +143,22 @@ class LocationSensorManager(
                 }
 
                 // 更新后验证和实时性报告
-                Log.i(TAG, "✅ GPS字段更新完成 (实时性优化):")
-                Log.d(TAG, "  📍 坐标: lat=${String.format("%.6f", location.latitude)}, lon=${String.format("%.6f", location.longitude)}")
-                Log.d(TAG, "  🚀 速度: ${if (location.hasSpeed()) "${String.format("%.1f", location.speed * 3.6)} km/h" else "无速度数据"}")
-                Log.d(TAG, "  🧭 方向: ${if (location.hasBearing()) "${String.format("%.1f", location.bearing)}°" else "无方向数据"}")
-                Log.d(TAG, "  📡 精度: ${String.format("%.1f", location.accuracy)}m")
-                Log.d(TAG, "  🔧 提供者: ${location.provider}")
-                Log.d(TAG, "  ⏰ 数据年龄: ${locationAge}ms")
-                Log.d(TAG, "  🎯 实时性: ${if (locationAge < 1000) "优秀" else if (locationAge < 3000) "良好" else "一般"}")
+                //Log.i(TAG, "✅ GPS字段更新完成 (实时性优化):")
+                //Log.d(TAG, "  📍 坐标: lat=${String.format("%.6f", location.latitude)}, lon=${String.format("%.6f", location.longitude)}")
+                //Log.d(TAG, "  🚀 速度: ${if (location.hasSpeed()) "${String.format("%.1f", location.speed * 3.6)} km/h" else "无速度数据"}")
+                //Log.d(TAG, "  🧭 方向: ${if (location.hasBearing()) "${String.format("%.1f", location.bearing)}°" else "无方向数据"}")
+                //Log.d(TAG, "  📡 精度: ${String.format("%.1f", location.accuracy)}m")
+                //Log.d(TAG, "  🔧 提供者: ${location.provider}")
+                //Log.d(TAG, "  ⏰ 数据年龄: ${locationAge}ms")
+                //Log.d(TAG, "  🎯 实时性: ${if (locationAge < 1000) "优秀" else if (locationAge < 3000) "良好" else "一般"}")
                 
                 // 🔍 验证CarrotManFields中的GPS字段是否正确更新
                 val updatedFields = carrotManFields.value
-                Log.v(TAG, "🔍 验证GPS字段同步:")
-                Log.v(TAG, "  vpPosPointLat: ${updatedFields.vpPosPointLat}")
-                Log.v(TAG, "  vpPosPointLon: ${updatedFields.vpPosPointLon}")
-                Log.v(TAG, "  latitude: ${updatedFields.latitude}")
-                Log.v(TAG, "  longitude: ${updatedFields.longitude}")
+                //Log.v(TAG, "🔍 验证GPS字段同步:")
+                //Log.v(TAG, "  vpPosPointLat: ${updatedFields.vpPosPointLat}")
+                //Log.v(TAG, "  vpPosPointLon: ${updatedFields.vpPosPointLon}")
+                //Log.v(TAG, "  latitude: ${updatedFields.latitude}")
+                //Log.v(TAG, "  longitude: ${updatedFields.longitude}")
 
             } catch (e: Exception) {
                 Log.e(TAG, "GPS位置更新失败: ${e.message}", e)
@@ -173,21 +173,21 @@ class LocationSensorManager(
                 1 -> "暂时不可用"     // LocationProvider.TEMPORARILY_UNAVAILABLE (1)
                 else -> "未知($status)"
             }
-            Log.i(TAG, "📡 位置提供者状态变化: $provider -> $statusText")
+            //Log.i(TAG, "📡 位置提供者状态变化: $provider -> $statusText")
             
             // 根据状态更新位置服务可用性
             when(status) {
                 2 -> { // 可用
-                    Log.d(TAG, "🟢 GPS提供者 $provider 现在可用")
+                    //Log.d(TAG, "🟢 GPS提供者 $provider 现在可用")
                 }
                 0, 1 -> { // 不可用
-                    Log.d(TAG, "🔴 GPS提供者 $provider 不可用: $statusText")
+                    //Log.d(TAG, "🔴 GPS提供者 $provider 不可用: $statusText")
                 }
             }
         }
 
         override fun onProviderEnabled(provider: String) {
-            Log.i(TAG, "✅ 位置提供者已启用: $provider")
+            //Log.i(TAG, "✅ 位置提供者已启用: $provider")
             checkLocationProviderStatus()
         }
 
@@ -201,7 +201,7 @@ class LocationSensorManager(
      * 初始化传感器系统
      */
     fun initializeSensors() {
-        Log.i(TAG, "🧭 初始化传感器系统...")
+        //Log.i(TAG, "🧭 初始化传感器系统...")
         
         sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
         locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
@@ -220,7 +220,7 @@ class LocationSensorManager(
             sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_NORMAL)
         }
         
-        Log.i(TAG, "✅ 传感器系统初始化完成")
+        //Log.i(TAG, "✅ 传感器系统初始化完成")
     }
 
 
@@ -228,7 +228,7 @@ class LocationSensorManager(
      * 启动位置更新服务
      */
     fun startLocationUpdates() {
-        Log.i(TAG, "📍 启动GPS位置更新服务...")
+        //Log.i(TAG, "📍 启动GPS位置更新服务...")
 
         // 首先检查位置提供者状态
         checkLocationProviderStatus()
@@ -245,7 +245,7 @@ class LocationSensorManager(
                         1.0f,  // 1米移动距离触发更新，避免GPS漂移
                         locationListener
                     )
-                    Log.i(TAG, "✅ GPS定位已启动 (高精度模式: 1s/1m)")
+                    //Log.i(TAG, "✅ GPS定位已启动 (高精度模式: 1s/1m)")
                 } else {
                     Log.w(TAG, "⚠️ GPS提供者未启用，跳过GPS定位")
                 }
@@ -258,12 +258,12 @@ class LocationSensorManager(
                         5f,    // 5米移动距离触发更新
                         locationListener
                     )
-                    Log.i(TAG, "✅ 网络定位已启动 (备用模式: 3s/5m)")
+                    //Log.i(TAG, "✅ 网络定位已启动 (备用模式: 3s/5m)")
                 } else {
                     Log.w(TAG, "⚠️ 网络提供者未启用，跳过网络定位")
                 }
 
-                Log.i(TAG, "✅ 位置更新服务启动完成")
+                //Log.i(TAG, "✅ 位置更新服务启动完成")
 
                 // 立即请求一次位置更新来测试
                 requestImmediateLocationUpdate()
@@ -296,11 +296,11 @@ class LocationSensorManager(
                 }
 
                 bestLocation?.let { location ->
-                    Log.i(TAG, "🎯 使用最后已知位置进行立即更新:")
-                    Log.i(TAG, "  📍 坐标: lat=${String.format("%.6f", location.latitude)}, lon=${String.format("%.6f", location.longitude)}")
-                    Log.i(TAG, "  📡 精度: ${location.accuracy}m")
-                    Log.i(TAG, "  🔧 提供者: ${location.provider}")
-                    Log.i(TAG, "  ⏰ 时间: ${System.currentTimeMillis() - location.time}ms前")
+                    //Log.i(TAG, "🎯 使用最后已知位置进行立即更新:")
+                    //Log.i(TAG, "  📍 坐标: lat=${String.format("%.6f", location.latitude)}, lon=${String.format("%.6f", location.longitude)}")
+                    //Log.i(TAG, "  📡 精度: ${location.accuracy}m")
+                    //Log.i(TAG, "  🔧 提供者: ${location.provider}")
+                    //Log.i(TAG, "  ⏰ 时间: ${System.currentTimeMillis() - location.time}ms前")
 
                     // 手动触发位置更新
                     locationListener.onLocationChanged(location)
@@ -318,27 +318,27 @@ class LocationSensorManager(
      */
     private fun checkLocationProviderStatus() {
         try {
-            Log.i(TAG, "🔍 检查位置提供者状态:")
+            //Log.i(TAG, "🔍 检查位置提供者状态:")
 
             // 检查GPS提供者
             val isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
-            Log.i(TAG, "  📡 GPS提供者: ${if (isGpsEnabled) "✅ 启用" else "❌ 禁用"}")
+            //Log.i(TAG, "  📡 GPS提供者: ${if (isGpsEnabled) "✅ 启用" else "❌ 禁用"}")
 
             // 检查网络提供者
             val isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
-            Log.i(TAG, "  🌐 网络提供者: ${if (isNetworkEnabled) "✅ 启用" else "❌ 禁用"}")
+            //Log.i(TAG, "  🌐 网络提供者: ${if (isNetworkEnabled) "✅ 启用" else "❌ 禁用"}")
 
             // 检查被动提供者
             val isPassiveEnabled = locationManager.isProviderEnabled(LocationManager.PASSIVE_PROVIDER)
-            Log.i(TAG, "  📱 被动提供者: ${if (isPassiveEnabled) "✅ 启用" else "❌ 禁用"}")
+            //Log.i(TAG, "  📱 被动提供者: ${if (isPassiveEnabled) "✅ 启用" else "❌ 禁用"}")
 
             // 获取所有提供者
             val allProviders = locationManager.allProviders
-            Log.i(TAG, "  📋 所有提供者: $allProviders")
+            //Log.i(TAG, "  📋 所有提供者: $allProviders")
 
             // 获取启用的提供者
             val enabledProviders = locationManager.getProviders(true)
-            Log.i(TAG, "  ✅ 启用的提供者: $enabledProviders")
+            //Log.i(TAG, "  ✅ 启用的提供者: $enabledProviders")
 
         } catch (e: Exception) {
             Log.e(TAG, "❌ 检查位置提供者状态失败: ${e.message}", e)
@@ -399,7 +399,7 @@ class LocationSensorManager(
         try {
             locationManager.removeUpdates(locationListener)
             sensorManager.unregisterListener(this)
-            Log.i(TAG, "✅ 位置和传感器服务已清理")
+            //Log.i(TAG, "✅ 位置和传感器服务已清理")
         } catch (e: Exception) {
             Log.e(TAG, "❌ 清理位置和传感器服务失败: ${e.message}", e)
         }
@@ -426,7 +426,7 @@ class LocationSensorManager(
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-        Log.d(TAG, "传感器精度变化: ${sensor?.name} -> $accuracy")
+        //Log.d(TAG, "传感器精度变化: ${sensor?.name} -> $accuracy")
     }
 
     /**
@@ -516,7 +516,7 @@ class LocationSensorManager(
     fun resetErrorState() {
         retryCount = 0
         consecutiveInvalidLocations = 0
-        Log.i(TAG, "🔄 位置错误状态已重置")
+        //Log.i(TAG, "🔄 位置错误状态已重置")
     }
 
     /**
@@ -525,9 +525,9 @@ class LocationSensorManager(
      */
     fun refreshGpsLocation() {
         try {
-            Log.i(TAG, "🔄 刷新GPS位置数据...")
+            //Log.i(TAG, "🔄 刷新GPS位置数据...")
             requestImmediateLocationUpdate()
-            Log.i(TAG, "✅ GPS位置刷新完成")
+            //Log.i(TAG, "✅ GPS位置刷新完成")
         } catch (e: Exception) {
             Log.e(TAG, "❌ GPS位置刷新失败: ${e.message}", e)
         }

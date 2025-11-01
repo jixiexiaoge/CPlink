@@ -226,21 +226,14 @@ class MainActivityUI(
             Column(
                 modifier = Modifier.fillMaxSize()
             ) {
-                
-                // 顶部控制按钮区域
-                VehicleControlButtons(
-                    onPageChange = { page -> 
-                        // 这里需要访问MainActivity的currentPage状态
-                        // 暂时用Log记录，后续可以通过其他方式实现
-                        android.util.Log.i("MainActivity", "页面切换请求: $page")
-                    },
-                    onSendCommand = onSendCommand,
-                    onSendRoadLimitSpeed = onSendRoadLimitSpeed,
-                    onLaunchAmap = onLaunchAmap,
-                    onSendNavConfirmation = onSendNavConfirmation, // 🆕 传递发送导航确认回调
-                    userType = userType,
-                    carrotManFields = carrotManFields
+                // 🔄 调整布局：实时数据组件移到顶部
+                // Comma3数据表格（可折叠）
+                Comma3DataTable(
+                    carrotManFields = carrotManFields,
+                    dataFieldManager = dataFieldManager
                 )
+                
+                Spacer(modifier = Modifier.height(8.dp))
                 
                 // 可滚动的内容区域
                 Column(
@@ -378,11 +371,20 @@ class MainActivityUI(
                     }
                 }
                 
-                // Comma3数据表格（可折叠）
-                Spacer(modifier = Modifier.height(16.dp))
-                Comma3DataTable(
-                    carrotManFields = carrotManFields,
-                    dataFieldManager = dataFieldManager
+                // 🔄 调整布局：控制按钮卡片移到底部
+                // 底部控制按钮区域（包含速度圆环和3个按钮）
+                VehicleControlButtons(
+                    onPageChange = { page -> 
+                        // 这里需要访问MainActivity的currentPage状态
+                        // 暂时用Log记录，后续可以通过其他方式实现
+                        android.util.Log.i("MainActivity", "页面切换请求: $page")
+                    },
+                    onSendCommand = onSendCommand,
+                    onSendRoadLimitSpeed = onSendRoadLimitSpeed,
+                    onLaunchAmap = onLaunchAmap,
+                    onSendNavConfirmation = onSendNavConfirmation, // 🆕 传递发送导航确认回调
+                    userType = userType,
+                    carrotManFields = carrotManFields
                 )
                 
                 // 添加底部安全间距
@@ -570,7 +572,7 @@ class MainActivityUI(
                     label = "",
                     onClick = {
                         android.util.Log.i("MainActivity", "🔧 主页：用户点击蓝色速度圆环，启动模拟导航")
-                        startSimulatedNavigation(context)
+                        startSimulatedNavigation(context, core.carrotManFields.value)
                     }
                 )
                 
@@ -1300,26 +1302,67 @@ class MainActivityUI(
     
     /**
      * 启动模拟导航功能
-     * 使用当前位置作为起点，上海东方明珠作为目的地
+     * 使用当前位置作为起点（从LocationSensorManager获取），上海东方明珠作为目的地
      */
-    private fun startSimulatedNavigation(context: android.content.Context) {
+    private fun startSimulatedNavigation(context: android.content.Context, carrotManFields: CarrotManFields) {
         try {
             android.util.Log.i("MainActivity", "🔧 启动模拟导航功能")
             
-            // 获取当前位置信息
-            val currentLat = getCurrentLocationLatitude(context)
-            val currentLon = getCurrentLocationLongitude(context)
+            // 🚀 修复：优先从LocationSensorManager获取实时GPS坐标
+            // 使用 vpPosPointLat/vpPosPointLon（主要GPS字段）或 latitude/longitude（备用GPS字段）
+            val currentLat = when {
+                carrotManFields.vpPosPointLat != 0.0 -> {
+                    android.util.Log.i("MainActivity", "✅ 使用实时GPS坐标（vpPosPointLat）: ${carrotManFields.vpPosPointLat}")
+                    carrotManFields.vpPosPointLat
+                }
+                carrotManFields.latitude != 0.0 -> {
+                    android.util.Log.i("MainActivity", "✅ 使用备用GPS坐标（latitude）: ${carrotManFields.latitude}")
+                    carrotManFields.latitude
+                }
+                else -> {
+                    // 如果GPS坐标不可用，尝试从SharedPreferences获取（向后兼容）
+                    val fallbackLat = getCurrentLocationLatitude(context)
+                    android.util.Log.w("MainActivity", "⚠️ GPS坐标不可用，使用SharedPreferences坐标: $fallbackLat")
+                    fallbackLat
+                }
+            }
+            
+            val currentLon = when {
+                carrotManFields.vpPosPointLon != 0.0 -> {
+                    android.util.Log.i("MainActivity", "✅ 使用实时GPS坐标（vpPosPointLon）: ${carrotManFields.vpPosPointLon}")
+                    carrotManFields.vpPosPointLon
+                }
+                carrotManFields.longitude != 0.0 -> {
+                    android.util.Log.i("MainActivity", "✅ 使用备用GPS坐标（longitude）: ${carrotManFields.longitude}")
+                    carrotManFields.longitude
+                }
+                else -> {
+                    // 如果GPS坐标不可用，尝试从SharedPreferences获取（向后兼容）
+                    val fallbackLon = getCurrentLocationLongitude(context)
+                    android.util.Log.w("MainActivity", "⚠️ GPS坐标不可用，使用SharedPreferences坐标: $fallbackLon")
+                    fallbackLon
+                }
+            }
+            
+            // 验证GPS坐标有效性
+            if (currentLat == 0.0 || currentLon == 0.0) {
+                android.util.Log.w("MainActivity", "⚠️ GPS坐标无效，使用默认起点坐标（北京）")
+                val defaultLat = 39.9042
+                val defaultLon = 116.4074
+                sendSimulatedNavigationIntent(context, defaultLat, defaultLon, 31.2397, 121.4998)
+                return
+            }
             
             // 设置目的地为上海东方明珠
             val destLat = 31.2397  // 上海东方明珠纬度
             val destLon = 121.4998  // 上海东方明珠经度
             
-            android.util.Log.i("MainActivity", "📍 起点坐标: lat=$currentLat, lon=$currentLon")
+            android.util.Log.i("MainActivity", "📍 起点坐标（当前位置）: lat=$currentLat, lon=$currentLon")
             android.util.Log.i("MainActivity", "🏗️ 目的地坐标（上海东方明珠）: lat=$destLat, lon=$destLon")
             
             // 检查起点和终点是否相同
-            if (currentLat == destLat && currentLon == destLon) {
-                android.util.Log.w("MainActivity", "⚠️ 起点和终点坐标相同，调整目的地位置")
+            if (kotlin.math.abs(currentLat - destLat) < 0.001 && kotlin.math.abs(currentLon - destLon) < 0.001) {
+                android.util.Log.w("MainActivity", "⚠️ 起点和终点坐标过于接近，调整目的地位置")
                 // 如果坐标相同，使用不同的目的地位置（深圳）
                 val adjustedDestLat = 22.5431
                 val adjustedDestLon = 114.0579

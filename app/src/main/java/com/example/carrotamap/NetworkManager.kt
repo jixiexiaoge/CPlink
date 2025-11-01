@@ -242,7 +242,7 @@ class NetworkManager(
 
             // 如果是重要状态变化，记录详细日志
             if (oldData.vEgoKph != statusData.vEgoKph || oldData.active != statusData.active) {
-                Log.i(TAG, "🔄 状态变化: 车速 ${oldData.vEgoKph} -> ${statusData.vEgoKph}, 激活 ${oldData.active} -> ${statusData.active}")
+                //Log.i(TAG, "🔄 状态变化: 车速 ${oldData.vEgoKph} -> ${statusData.vEgoKph}, 激活 ${oldData.active} -> ${statusData.active}")
             }
             
             // 自动发送逻辑已移除 - 改为手动点击"开地图"按钮触发

@@ -366,6 +366,7 @@ class AmapBroadcastManager(
 
     /**
      * 🔧 记录所有Intent额外数据（调试用）
+     * 🔑 优化：增强字段解析，确保所有类型都能正确输出
      */
     private fun logAllExtras(intent: Intent, keyType: Int = -1) {
         // 对于频繁的广播类型，抑制详细日志输出
@@ -387,23 +388,54 @@ class AmapBroadcastManager(
         val extras = intent.extras
         if (extras != null) {
             Log.d(TAG, "📋 Intent包含的所有数据:")
-            for (key in extras.keySet()) {
+            // 🔑 优化：按字母顺序排序，便于对比和查找
+            val sortedKeys = extras.keySet().sorted()
+            for (key in sortedKeys) {
                 val value: String = try {
-                    // 使用更安全的方式获取值，避免类型转换错误
+                    // 🔑 优化：使用更全面的类型检测和转换
                     @Suppress("DEPRECATION")
                     val obj = extras.get(key)
                     when (obj) {
-                        is String -> obj
+                        is String -> {
+                            // 空字符串也显示，用引号区分
+                            if (obj.isEmpty()) "\"\""
+                            else obj
+                        }
                         is Int -> obj.toString()
                         is Long -> obj.toString()
-                        is Double -> obj.toString()
-                        is Float -> obj.toString()
+                        is Double -> {
+                            // 保留小数点，避免科学计数法
+                            if (obj == obj.toLong().toDouble()) obj.toLong().toString()
+                            else obj.toString()
+                        }
+                        is Float -> {
+                            // Float类型：直接显示，保留小数点（如 14035.0 显示为 14035.0）
+                            obj.toString()
+                        }
                         is Boolean -> obj.toString()
                         is Byte -> obj.toString()
                         is Short -> obj.toString()
                         is Char -> obj.toString()
                         null -> "null"
-                        else -> "未知类型: ${obj.javaClass.simpleName} = $obj"
+                        is Array<*> -> {
+                            // 数组类型：显示数组长度和类型
+                            "${obj.javaClass.simpleName}[${obj.size}]"
+                        }
+                        is android.os.Bundle -> {
+                            // Bundle类型：显示包含的键数量
+                            "Bundle(${obj.keySet().size} keys)"
+                        }
+                        else -> {
+                            // 其他类型：显示类型和值
+                            val className = obj.javaClass.simpleName
+                            val objString = obj.toString()
+                            // 如果字符串太长，截断
+                            if (objString.length > 200) {
+                                "${className} = ${objString.take(200)}..."
+                            } else {
+                                "${className} = $objString"
+                            }
+                        }
                     }
                 } catch (e: Exception) {
                     "获取失败: ${e.message}"
