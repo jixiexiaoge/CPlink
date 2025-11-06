@@ -442,8 +442,15 @@ object MainActivityUIComponents {
                                                 if (!isOvertakeModeLoading) {
                                                     isOvertakeModeLoading = true
                                                     coroutineScope.launch {
-                                                        val nextMode = (overtakeMode + 1) % 3
-                                                        context.getSharedPreferences("CarrotAmap", android.content.Context.MODE_PRIVATE)
+                                                    val prefs = context.getSharedPreferences("CarrotAmap", android.content.Context.MODE_PRIVATE)
+                                                    val userType = prefs.getInt("userType", 0)
+                                                    val nextMode = if (userType == 4) {
+                                                        (overtakeMode + 1) % 3
+                                                    } else {
+                                                        // 用户类型3：只在0和1之间切换
+                                                        if (overtakeMode == 0) 1 else 0
+                                                    }
+                                                    prefs
                                                             .edit()
                                                             .putInt("overtake_mode", nextMode)
                                                             .apply()

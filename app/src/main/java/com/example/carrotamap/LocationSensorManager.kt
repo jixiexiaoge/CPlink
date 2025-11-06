@@ -241,11 +241,11 @@ class LocationSensorManager(
                 if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
                     locationManager.requestLocationUpdates(
                         LocationManager.GPS_PROVIDER,
-                        1000L, // 1秒更新一次，平衡实时性和电池消耗
-                        1.0f,  // 1米移动距离触发更新，避免GPS漂移
+                        200L, // 200ms 目标约5Hz
+                        0f,   // 距离阈值设为0以提高更新频率
                         locationListener
                     )
-                    //Log.i(TAG, "✅ GPS定位已启动 (高精度模式: 1s/1m)")
+                    //Log.i(TAG, "✅ GPS定位已启动 (高频模式: 200ms/0m)")
                 } else {
                     Log.w(TAG, "⚠️ GPS提供者未启用，跳过GPS定位")
                 }
@@ -254,11 +254,11 @@ class LocationSensorManager(
                 if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
                     locationManager.requestLocationUpdates(
                         LocationManager.NETWORK_PROVIDER,
-                        3000L, // 3秒更新一次（降低频率）
-                        5f,    // 5米移动距离触发更新
+                        500L, // 500ms 目标约2Hz（备用）
+                        1f,   // 1米阈值，避免无意义抖动
                         locationListener
                     )
-                    //Log.i(TAG, "✅ 网络定位已启动 (备用模式: 3s/5m)")
+                    //Log.i(TAG, "✅ 网络定位已启动 (备用模式: 500ms/1m)")
                 } else {
                     Log.w(TAG, "⚠️ 网络提供者未启用，跳过网络定位")
                 }

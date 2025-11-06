@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import com.example.carrotamap.XiaogeVehicleData
+import com.example.carrotamap.R
 import kotlin.math.abs
 import kotlin.math.ln
 import android.content.SharedPreferences
@@ -36,6 +37,8 @@ import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.text.TextStyle
 import kotlin.math.min
+import androidx.compose.ui.res.imageResource
+import androidx.compose.ui.graphics.ImageBitmap
 
 /**
  * 车辆和车道可视化弹窗组件 - 优化版
@@ -118,12 +121,20 @@ fun VehicleLaneVisualization(
                             ),
                             shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
                         ) {
+                            // 尝试按名称加载可选的车辆图片资源（car.png 放在 res/drawable/ 下）。
+                            // 若资源不存在，则返回 null 并使用绘制矢量作为回退，保证可编译。
+                            val carBitmap: ImageBitmap? = remember(context) {
+                                runCatching {
+                                    val resId = context.resources.getIdentifier("car", "drawable", context.packageName)
+                                    if (resId != 0) ImageBitmap.imageResource(context.resources, resId) else null
+                                }.getOrNull()
+                            }
                             Canvas(
                                 modifier = Modifier
                                     .fillMaxSize()
                                     .padding(8.dp)
                             ) {
-                                drawLaneVisualization(data)
+                                drawLaneVisualization(data, carBitmap)
                             }
                         }
                         
@@ -233,7 +244,7 @@ private fun TopBar(
 /**
  * 绘制车道可视化（优化版）
  */
-private fun DrawScope.drawLaneVisualization(data: XiaogeVehicleData?) {
+private fun DrawScope.drawLaneVisualization(data: XiaogeVehicleData?, carBitmap: ImageBitmap?) {
     val width = size.width
     val height = size.height
     
@@ -252,11 +263,18 @@ private fun DrawScope.drawLaneVisualization(data: XiaogeVehicleData?) {
     val laneWidth = width / 3.5f
     val centerX = width / 2f
     
-    // 车道线X位置
-    val lane1X = centerX - laneWidth * 1.5f
-    val lane2X = centerX - laneWidth * 0.5f
-    val lane3X = centerX + laneWidth * 0.5f
-    val lane4X = centerX + laneWidth * 1.5f
+    // 车道线底部和顶部的X位置（加入透视收敛效果）
+    val perspectiveScaleTop = 0.6f
+    val laneWidthTop = laneWidth * perspectiveScaleTop
+    // 底部（靠近用户）更宽，顶部更窄，营造后俯视透视
+    val lane1BottomX = centerX - laneWidth * 1.5f
+    val lane2BottomX = centerX - laneWidth * 0.5f
+    val lane3BottomX = centerX + laneWidth * 0.5f
+    val lane4BottomX = centerX + laneWidth * 1.5f
+    val lane1TopX = centerX - laneWidthTop * 1.5f
+    val lane2TopX = centerX - laneWidthTop * 0.5f
+    val lane3TopX = centerX + laneWidthTop * 0.5f
+    val lane4TopX = centerX + laneWidthTop * 1.5f
     
     // 获取数据
     val curvature = data?.modelV2?.curvature
@@ -284,10 +302,10 @@ private fun DrawScope.drawLaneVisualization(data: XiaogeVehicleData?) {
     val leftLaneProb = data?.modelV2?.laneLineProbs?.getOrNull(0) ?: 0f
     val rightLaneProb = data?.modelV2?.laneLineProbs?.getOrNull(1) ?: 0f
     
-    drawDashedLaneLine(lane1X, curvatureOffset, Color(0xFF64748B).copy(alpha = 0.4f))
-    drawDashedLaneLine(lane2X, curvatureOffset, Color(0xFFFBBF24).copy(alpha = leftLaneProb.coerceIn(0.3f, 1f)))
-    drawDashedLaneLine(lane3X, curvatureOffset, Color(0xFFFBBF24).copy(alpha = rightLaneProb.coerceIn(0.3f, 1f)))
-    drawDashedLaneLine(lane4X, curvatureOffset, Color(0xFF64748B).copy(alpha = 0.4f))
+    drawPerspectiveSolidLaneLine(lane1BottomX, lane1TopX, curvatureOffset, Color(0xFF64748B).copy(alpha = 0.5f))
+    drawPerspectiveSolidLaneLine(lane2BottomX, lane2TopX, curvatureOffset, Color(0xFFFBBF24).copy(alpha = leftLaneProb.coerceIn(0.5f, 1f)))
+    drawPerspectiveSolidLaneLine(lane3BottomX, lane3TopX, curvatureOffset, Color(0xFFFBBF24).copy(alpha = rightLaneProb.coerceIn(0.5f, 1f)))
+    drawPerspectiveSolidLaneLine(lane4BottomX, lane4TopX, curvatureOffset, Color(0xFF64748B).copy(alpha = 0.5f))
     
     // 绘制前车
     data?.modelV2?.lead0?.let { lead0 ->
@@ -303,7 +321,7 @@ private fun DrawScope.drawLaneVisualization(data: XiaogeVehicleData?) {
     }
     
     // 绘制当前车辆
-    drawCurrentVehicle(centerX, laneWidth)
+    drawCurrentVehicle(centerX, laneWidth, carBitmap)
 }
 
 /**
@@ -359,40 +377,38 @@ private fun calculateCurvatureOffset(
 /**
  * 绘制虚线车道线
  */
-private fun DrawScope.drawDashedLaneLine(
-    laneX: Float,
+private fun DrawScope.drawPerspectiveSolidLaneLine(
+    laneBottomX: Float,
+    laneTopX: Float,
     curvatureOffset: Float,
     color: Color
 ) {
     val height = size.height
-    val dashLength = 20f
-    val gapLength = 15f
-    val totalLength = dashLength + gapLength
-    val segments = (height / totalLength).toInt()
-    
-    for (i in 0..segments) {
-        val startY = height - (i * totalLength)
-        val endY = (startY - dashLength).coerceAtLeast(0f)
-        
-        if (startY >= 0) {
-            val progress = 1f - (startY / height)
-            val currentOffset = curvatureOffset * progress
-            
-            val path = Path().apply {
-                moveTo(laneX + currentOffset * (1f - progress), startY)
-                lineTo(laneX + currentOffset, endY)
-            }
-            
-            drawPath(
-                path = path,
-                color = color,
-                style = Stroke(
-                    width = 3.dp.toPx(),
-                    cap = StrokeCap.Round
-                )
-            )
+    val steps = 80
+    val path = Path()
+    for (i in 0..steps) {
+        val t = i / steps.toFloat()
+        val y = height * (1f - t)
+        val xBase = lerp(laneBottomX, laneTopX, t)
+        val x = xBase + curvatureOffset * t
+        if (i == 0) {
+            path.moveTo(x, y)
+        } else {
+            path.lineTo(x, y)
         }
     }
+    drawPath(
+        path = path,
+        color = color,
+        style = Stroke(
+            width = 3.dp.toPx(),
+            cap = StrokeCap.Round
+        )
+    )
+}
+
+private fun lerp(start: Float, stop: Float, fraction: Float): Float {
+    return (1 - fraction) * start + fraction * stop
 }
 
 /**
@@ -523,98 +539,69 @@ private fun DrawScope.drawLeadVehicle(
  */
 private fun DrawScope.drawCurrentVehicle(
     centerX: Float,
-    laneWidth: Float
+    laneWidth: Float,
+    carBitmap: ImageBitmap?
 ) {
     val height = size.height
     
-    val vehicleWidth = laneWidth * 0.65f
-    val vehicleHeight = vehicleWidth * 1.8f
-    val vehicleY = height - vehicleHeight / 2f - 30f
+    val vehicleWidth = laneWidth * 0.9f
+    val aspectRatio = if (carBitmap != null) carBitmap.height.toFloat() / carBitmap.width.toFloat() else 1.8f
+    val vehicleHeight = vehicleWidth * aspectRatio
+    val vehicleY = height - vehicleHeight / 2f - 24f
     
-    // 绘制车辆阴影（地面投影）
-    drawOval(
-        color = Color.Black.copy(alpha = 0.4f),
-        topLeft = Offset(centerX - vehicleWidth / 2f - 5f, vehicleY + vehicleHeight / 2f + 5f),
-        size = Size(vehicleWidth + 10f, 20f)
-    )
+    // 地面阴影（更轻、更小，避免显得一块黑色区域）
+    if (carBitmap == null) {
+        // 仅在无图片回退时绘制明显阴影
+        drawOval(
+            color = Color.Black.copy(alpha = 0.22f),
+            topLeft = Offset(centerX - vehicleWidth / 2f - 6f, vehicleY + vehicleHeight / 2f + 6f),
+            size = Size(vehicleWidth + 12f, 20f)
+        )
+    } else {
+        // 使用更轻的阴影以配合位图自带阴影/高光
+        drawOval(
+            color = Color.Black.copy(alpha = 0.12f),
+            topLeft = Offset(centerX - vehicleWidth / 2f - 4f, vehicleY + vehicleHeight / 2f + 4f),
+            size = Size(vehicleWidth + 8f, 16f)
+        )
+    }
     
-    // 绘制车辆主体（蓝色渐变）
-    drawRect(
-        brush = Brush.verticalGradient(
-            colors = listOf(
-                Color(0xFF60A5FA),
-                Color(0xFF3B82F6),
-                Color(0xFF2563EB)
-            )
-        ),
-        topLeft = Offset(centerX - vehicleWidth / 2f, vehicleY - vehicleHeight / 2f),
-        size = Size(vehicleWidth, vehicleHeight)
-    )
-    
-    // 绘制车辆高光
-    drawRect(
-        brush = Brush.horizontalGradient(
-            colors = listOf(
-                Color.Transparent,
-                Color.White.copy(alpha = 0.2f),
-                Color.Transparent
-            )
-        ),
-        topLeft = Offset(centerX - vehicleWidth / 2f, vehicleY - vehicleHeight / 2f),
-        size = Size(vehicleWidth, vehicleHeight * 0.6f)
-    )
-    
-    // 绘制车辆轮廓
-    drawRect(
-        color = Color(0xFF1E40AF),
-        topLeft = Offset(centerX - vehicleWidth / 2f, vehicleY - vehicleHeight / 2f),
-        size = Size(vehicleWidth, vehicleHeight),
-        style = Stroke(width = 2.5.dp.toPx())
-    )
-    
-    // 绘制前挡风玻璃
-    val windshieldWidth = vehicleWidth * 0.7f
-    val windshieldHeight = vehicleHeight * 0.2f
-    drawRect(
-        color = Color(0xFF1E293B).copy(alpha = 0.6f),
-        topLeft = Offset(centerX - windshieldWidth / 2f, vehicleY - vehicleHeight / 2f + 10f),
-        size = Size(windshieldWidth, windshieldHeight)
-    )
-    
-    // 绘制车灯
-    val lightRadius = 4f
-    drawCircle(
-        color = Color(0xFFFEF08A),
-        radius = lightRadius,
-        center = Offset(centerX - vehicleWidth / 3f, vehicleY - vehicleHeight / 2f + 5f)
-    )
-    drawCircle(
-        color = Color(0xFFFEF08A),
-        radius = lightRadius,
-        center = Offset(centerX + vehicleWidth / 3f, vehicleY - vehicleHeight / 2f + 5f)
-    )
-    
-    // 绘制车灯光晕
-    drawCircle(
-        brush = Brush.radialGradient(
-            colors = listOf(
-                Color(0xFFFEF08A).copy(alpha = 0.3f),
-                Color.Transparent
-            )
-        ),
-        radius = lightRadius * 2.5f,
-        center = Offset(centerX - vehicleWidth / 3f, vehicleY - vehicleHeight / 2f + 5f)
-    )
-    drawCircle(
-        brush = Brush.radialGradient(
-            colors = listOf(
-                Color(0xFFFEF08A).copy(alpha = 0.3f),
-                Color.Transparent
-            )
-        ),
-        radius = lightRadius * 2.5f,
-        center = Offset(centerX + vehicleWidth / 3f, vehicleY - vehicleHeight / 2f + 5f)
-    )
+    if (carBitmap != null) {
+        // 绘制车辆图片（从后俯视）
+        drawImage(
+            image = carBitmap,
+            dstSize = androidx.compose.ui.unit.IntSize(
+                vehicleWidth.toInt(),
+                vehicleHeight.toInt()
+            ),
+            dstOffset = androidx.compose.ui.unit.IntOffset(
+                (centerX - vehicleWidth / 2f).toInt(),
+                (vehicleY - vehicleHeight / 2f).toInt()
+            ),
+            alpha = 1.0f,
+            blendMode = BlendMode.SrcOver,
+            filterQuality = FilterQuality.High
+        )
+    } else {
+        // 资源缺失时的回退：绘制简化的蓝色渐变车身
+        drawRect(
+            brush = Brush.verticalGradient(
+                colors = listOf(
+                    Color(0xFF60A5FA),
+                    Color(0xFF3B82F6),
+                    Color(0xFF2563EB)
+                )
+            ),
+            topLeft = Offset(centerX - vehicleWidth / 2f, vehicleY - vehicleHeight / 2f),
+            size = Size(vehicleWidth, vehicleHeight)
+        )
+        drawRect(
+            color = Color(0xFF1E40AF),
+            topLeft = Offset(centerX - vehicleWidth / 2f, vehicleY - vehicleHeight / 2f),
+            size = Size(vehicleWidth, vehicleHeight),
+            style = Stroke(width = 2.5.dp.toPx())
+        )
+    }
 }
 
 /**
@@ -842,7 +829,7 @@ private fun DataInfoPanel(
                     )
                 }
                 
-                Divider(color = Color(0xFF475569).copy(alpha = 0.3f), thickness = 0.5.dp, modifier = Modifier.padding(vertical = 2.dp))
+                HorizontalDivider(color = Color(0xFF475569).copy(alpha = 0.3f), thickness = 0.5.dp, modifier = Modifier.padding(vertical = 2.dp))
                 
                 // 第二行：限速信息、道路类型、侧方车辆（压缩布局）
                 Row(
@@ -888,7 +875,7 @@ private fun DataInfoPanel(
                     )
                 }
                 
-                Divider(color = Color(0xFF475569).copy(alpha = 0.3f), thickness = 0.5.dp, modifier = Modifier.padding(vertical = 2.dp))
+                HorizontalDivider(color = Color(0xFF475569).copy(alpha = 0.3f), thickness = 0.5.dp, modifier = Modifier.padding(vertical = 2.dp))
                 
                 // 第三行：安全状态（盲区、车道线类型、变道状态）
                 Row(
@@ -940,7 +927,7 @@ private fun DataInfoPanel(
                     )
                 }
                 
-                Divider(color = Color(0xFF475569).copy(alpha = 0.3f), thickness = 0.5.dp, modifier = Modifier.padding(vertical = 2.dp))
+                HorizontalDivider(color = Color(0xFF475569).copy(alpha = 0.3f), thickness = 0.5.dp, modifier = Modifier.padding(vertical = 2.dp))
                 
                 // 第四行：曲率信息和系统状态
                 Row(
@@ -982,7 +969,7 @@ private fun DataInfoPanel(
                     )
                 }
                 
-                Divider(color = Color(0xFF475569).copy(alpha = 0.3f), thickness = 0.5.dp, modifier = Modifier.padding(vertical = 2.dp))
+                HorizontalDivider(color = Color(0xFF475569).copy(alpha = 0.3f), thickness = 0.5.dp, modifier = Modifier.padding(vertical = 2.dp))
                 
                 // 第五行：超车模式
                 Row(
