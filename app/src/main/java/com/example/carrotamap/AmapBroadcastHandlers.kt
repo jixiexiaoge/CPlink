@@ -182,38 +182,7 @@ class AmapBroadcastHandlers(
          * @param direction 方向信息 (用于区分左转等特殊情况)
          * @return CarrotMan协议交通状态
          */
-        private fun mapTrafficLightStatus(amapStatus: Int, direction: Int = 0): Int {
-            // 重要修正：基于实际UI观察数据分析
-            // trafficLightStatus: 1=红灯, 2=绿灯, -1=黄灯
-            // dir: 表示交通灯控制的方向（1=左转, 2=右转, 3=左转掉头, 4=直行, 5=右转掉头）
-            // CarrotMan状态：0=off, 1=red, 2=green, 3=left, -1=yellow
-            return when (amapStatus) {
-                -1 -> when (direction) {
-                    0 -> -1     // 直行黄灯（dir=0表示直行黄灯）
-                    else -> -1  // 其他方向黄灯
-                }
-                0 -> 0          // 未知/无信号 -> off
-                1 -> when (direction) {
-                    1 -> 1      // 左转红灯 -> red
-                    2 -> 1      // 右转红灯 -> red
-                    3 -> 1      // 左转掉头红灯 -> red
-                    4 -> 1      // 直行红灯 -> red
-                    5 -> 1      // 右转掉头红灯 -> red
-                    else -> 1   // 其他方向红灯 -> red
-                }
-                2 -> when (direction) {
-                    1 -> 3      // 左转绿灯 -> left
-                    2 -> 2      // 右转绿灯 -> green
-                    3 -> 3      // 左转掉头绿灯 -> left
-                    4 -> 2      // 直行绿灯 -> green
-                    5 -> 2      // 右转掉头绿灯 -> green
-                    else -> 2   // 其他方向绿灯 -> green
-                }
-                3 -> 1          // 红灯变体 -> red
-                4 -> 2          // 绿灯变体 -> green
-                else -> 0
-            }
-        }
+        // moved to AmapTrafficHandlers
     }
 
     // ===============================
@@ -1105,197 +1074,34 @@ class AmapBroadcastHandlers(
     /**
      * 处理路况信息广播 (KEY_TYPE: 10070)
      */
-    fun handleTrafficInfo(intent: Intent) {
-       // Log.d(TAG, "🚦 处理路况信息广播")
-        
-        try {
-            val trafficLevel = intent.getIntExtra("TRAFFIC_LEVEL", -1)
-            val trafficDescription = intent.getStringExtra("TRAFFIC_DESCRIPTION") ?: ""
-            
-            Log.d(TAG, "🚦 路况信息: 等级=$trafficLevel, 描述='$trafficDescription'")
-            
-            carrotManFields.value = carrotManFields.value.copy(
-                trafficLevel = trafficLevel,
-                trafficDescription = trafficDescription,
-                lastUpdateTime = System.currentTimeMillis()
-            )
-            
-        } catch (e: Exception) {
-            Log.e(TAG, "❌ 处理路况信息失败: ${e.message}", e)
-        }
-    }
+    // moved to AmapTrafficHandlers
 
     /**
      * 处理导航态势广播 (KEY_TYPE: 13003)
      */
-    fun handleNaviSituation(intent: Intent) {
-       // Log.d(TAG, "📊 处理导航态势广播")
-        
-        try {
-            val situationType = intent.getIntExtra("SITUATION_TYPE", -1)
-            val situationDistance = intent.getIntExtra("SITUATION_DISTANCE", 0)
-            val situationDescription = intent.getStringExtra("SITUATION_DESCRIPTION") ?: ""
-            
-            Log.d(TAG, "📊 导航态势: 类型=$situationType, 距离=${situationDistance}m, 描述='$situationDescription'")
-            
-            carrotManFields.value = carrotManFields.value.copy(
-                situationType = situationType,
-                situationDistance = situationDistance,
-                situationDescription = situationDescription,
-                lastUpdateTime = System.currentTimeMillis()
-            )
-
-        } catch (e: Exception) {
-            Log.e(TAG, "❌ 处理导航态势失败: ${e.message}", e)
-        }
-    }
+    // moved to AmapTrafficHandlers
 
     /**
      * 处理红绿灯信息广播 - KEY_TYPE: 60073
      * 基于JavaScript参考代码实现，使用正确的字段名
      */
-    fun handleTrafficLightInfo(intent: Intent) {
-        // 记录完整的原始广播内容，便于catlog分析（已注释以减少日志噪声）
-        // logTrafficLightIntentExtras(intent, "KEY_TYPE 60073 红绿灯信息广播 - 完整原始数据")
-
-        try {
-            // 使用JavaScript参考代码中的正确字段名
-            val trafficLightStatus = when {
-                intent.hasExtra("trafficLightStatus") -> intent.getIntExtra("trafficLightStatus", 0)
-                intent.hasExtra("TRAFFIC_LIGHT_STATUS") -> intent.getIntExtra("TRAFFIC_LIGHT_STATUS", 0)
-                intent.hasExtra("LIGHT_STATUS") -> intent.getIntExtra("LIGHT_STATUS", 0)
-                else -> 0
-            }
-
-            // 根据日志发现，需要分别处理红灯和绿灯倒计时
-            val redLightCountDown = intent.getIntExtra("redLightCountDownSeconds", 0)
-            val greenLightCountDown = intent.getIntExtra("greenLightLastSecond", 0)  // 关键修复：使用正确的字段名
-
-            // 重大发现：redLightCountDownSeconds 在绿灯状态时存储绿灯倒计时！
-            val trafficLightCountDownSeconds = when (trafficLightStatus) {
-                -1 -> 0                      // 黄灯状态：通常很短，没有倒计时
-                1 -> redLightCountDown       // 红灯状态：redLightCountDownSeconds 是红灯倒计时
-                2 -> redLightCountDown       // 绿灯状态：redLightCountDownSeconds 实际是绿灯倒计时！
-                3 -> redLightCountDown       // 红灯变体：红灯倒计时
-                4 -> redLightCountDown       // 绿灯变体：绿灯倒计时
-                else -> redLightCountDown    // 其他状态：使用该字段
-            }
-
-            // 关键理解：redLightCountDownSeconds 字段名有误导性，实际存储当前状态的倒计时
-
-            val direction = when {
-                intent.hasExtra("dir") -> intent.getIntExtra("dir", 0)
-                intent.hasExtra("TRAFFIC_LIGHT_DIRECTION") -> intent.getIntExtra("TRAFFIC_LIGHT_DIRECTION", 0)
-                intent.hasExtra("LIGHT_DIRECTION") -> intent.getIntExtra("LIGHT_DIRECTION", 0)
-                else -> 0
-            }
-
-            // 其他可能的字段
-            val trafficLightCount = intent.getIntExtra("TRAFFIC_LIGHT_COUNT", -1)
-            val trafficLightDistance = intent.getIntExtra("TRAFFIC_LIGHT_DISTANCE", 0)
-            val waitRound = intent.getIntExtra("waitRound", 0)
-
-            // 根据JavaScript参考代码和方向信息映射交通灯状态
-            var carrotTrafficState = mapTrafficLightStatus(trafficLightStatus, direction)
-
-            // 使用倒计时秒数作为剩余秒数（支持红灯和绿灯倒计时）
-            var leftSec = if (trafficLightCountDownSeconds > 0) {
-                trafficLightCountDownSeconds
-            } else {
-                carrotManFields.value.left_sec
-            }
-
-            // 特殊处理：当接收到状态0且倒计时0时，检查是否应该推断为绿灯状态
-            val previousTrafficState = carrotManFields.value.traffic_state
-            val previousLeftSec = carrotManFields.value.left_sec
-
-            if (carrotTrafficState == 0 && leftSec <= 0) {
-                // 如果之前是红灯状态且倒计时接近结束，可能应该转换为绿灯
-                if (previousTrafficState == 1 && previousLeftSec <= 3) {
-                    Log.w(TAG, "🚦 推断状态转换: 红灯倒计时结束，推断为绿灯状态")
-                    carrotTrafficState = 2  // 设置为绿灯
-                    leftSec = 30  // 设置默认绿灯倒计时
-                    //Log.i(TAG, "🟢 状态推断: 设置为绿灯状态，倒计时30秒")
-                }
-            }
-
-            // 检测交通灯状态变化（变量已在上面定义）
-            val stateChanged = (carrotTrafficState != previousTrafficState) || (leftSec != previousLeftSec)
-
-            // 更新CarrotMan字段
-            carrotManFields.value = carrotManFields.value.copy(
-                traffic_light_count = if (trafficLightCount >= 0) trafficLightCount else carrotManFields.value.traffic_light_count,
-                traffic_state = carrotTrafficState,
-                traffic_light_direction = direction,  // 添加方向字段
-                left_sec = leftSec,
-                max_left_sec = maxOf(leftSec, carrotManFields.value.max_left_sec),
-                carrot_left_sec = leftSec,
-                // 添加高德地图原始广播字段
-                amap_traffic_light_status = trafficLightStatus,
-                amap_traffic_light_dir = direction,
-                amap_green_light_last_second = greenLightCountDown,
-                amap_wait_round = waitRound,
-                lastUpdateTime = System.currentTimeMillis()
-            )
-
-            // 只在状态变化时记录关键信息
-            if (stateChanged) {
-                val directionDesc = getTrafficLightDirectionDesc(direction)
-                //Log.i(TAG, "🚦 交通灯状态: ${getTrafficLightStatusDesc(trafficLightStatus)} -> ${getCarrotTrafficStateDesc(carrotTrafficState)}, 倒计时: ${leftSec}s, 方向: $directionDesc")
-                //Log.i(TAG, "🔍 原始字段分析: trafficLightStatus=$trafficLightStatus, dir=$direction, greenLightLastSecond=$greenLightCountDown, waitRound=$waitRound")
-            }
-
-            // 已移除：DETECT 命令发送逻辑（保留在设备端实现）
-
-        } catch (e: Exception) {
-            Log.e(TAG, "处理红绿灯信息失败: ${e.message}", e)
-        }
-    }
+    // moved to AmapTrafficHandlers
 
     /**
      * 获取交通灯状态描述 (基于实际日志数据修正)
      */
-    private fun getTrafficLightStatusDesc(status: Int): String {
-        return when (status) {
-            -1 -> "黄灯"       // 黄灯状态
-            0 -> "未知"        // 未知状态
-            1 -> "红灯"        // 红灯状态
-            2 -> "绿灯"        // 绿灯状态（重要修正：2是绿灯，不是黄灯）
-            3 -> "红灯"        // 红灯变体
-            4 -> "绿灯"        // 绿灯变体
-            else -> "未知($status)"
-        }
-    }
+    // moved to AmapTrafficHandlers
 
     /**
      * 获取CarrotMan交通灯状态描述
      */
-    private fun getCarrotTrafficStateDesc(state: Int): String {
-        return when (state) {
-            -1 -> "黄灯(yellow)"
-            0 -> "关闭(off)"
-            1 -> "红灯(red)"
-            2 -> "绿灯(green)"
-            3 -> "左转绿灯(left)"
-            else -> "未知($state)"
-        }
-    }
+    // moved to AmapTrafficHandlers
 
     /**
      * 获取交通灯方向描述 (基于实际UI观察数据修正)
      * dir字段表示交通灯控制的方向，而不是车辆需要行驶的方向
      */
-    private fun getTrafficLightDirectionDesc(direction: Int): String {
-        return when (direction) {
-            0 -> "直行黄灯"    // 特殊：黄灯状态时dir=0表示直行黄灯
-            1 -> "左转"        // 左转方向交通灯
-            2 -> "右转"        // 右转方向交通灯
-            3 -> "左转掉头"    // 左转掉头方向交通灯
-            4 -> "直行"        // 直行方向交通灯
-            5 -> "右转掉头"    // 右转掉头方向交通灯
-            else -> "方向$direction"
-        }
-    }
+    // moved to AmapTrafficHandlers
 
     /**
      * 处理地理位置信息广播 (KEY_TYPE: 12205)
