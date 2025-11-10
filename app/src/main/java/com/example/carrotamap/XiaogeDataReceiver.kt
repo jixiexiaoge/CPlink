@@ -272,10 +272,12 @@ class XiaogeDataReceiver(
 
     private fun parseLeadData(json: JSONObject?): LeadData? {
         if (json == null) return null
+        // 注意：lead0 包含 a 字段，但 lead1 不包含 a 字段（Python端只发送 x, v, prob）
+        // 使用 optDouble 安全解析，如果字段不存在则返回默认值 0.0
         return LeadData(
             x = json.optDouble("x", 0.0).toFloat(),
             v = json.optDouble("v", 0.0).toFloat(),
-            a = json.optDouble("a", 0.0).toFloat(),
+            a = json.optDouble("a", 0.0).toFloat(),  // lead1 没有此字段，会返回 0.0
             prob = json.optDouble("prob", 0.0).toFloat()
         )
     }
@@ -363,12 +365,14 @@ class XiaogeDataReceiver(
     /**
      * 🆕 解析超车状态数据
      * 从 JSON 中解析超车状态信息，用于在 UI 中显示
-     * 注意：此数据需要在 openpilot 端的数据发送器中包含超车状态信息
+     * 注意：此数据由 Android 端的 AutoOvertakeManager 生成，Python 端不发送此数据
+     * 如果 Python 端未来发送此数据，此函数可以正确解析
      */
     private fun parseOvertakeStatus(json: JSONObject?): OvertakeStatusData? {
         if (json == null) return null
         
         val lastDirectionStr = json.optString("lastDirection", "")
+        val blockingReasonStr = json.optString("blockingReason", "")
         
         return OvertakeStatusData(
             statusText = json.optString("statusText", "监控中"),
@@ -378,7 +382,8 @@ class XiaogeDataReceiver(
             } else {
                 null
             },
-            lastDirection = lastDirectionStr.takeIf { it.isNotEmpty() }
+            lastDirection = lastDirectionStr.takeIf { it.isNotEmpty() },
+            blockingReason = blockingReasonStr.takeIf { it.isNotEmpty() }
         )
     }
 }
@@ -407,7 +412,8 @@ data class OvertakeStatusData(
     val statusText: String,           // 状态文本描述："监控中"/"可超车"/"冷却中"
     val canOvertake: Boolean,         // 是否可以超车
     val cooldownRemaining: Long?,     // 剩余冷却时间（毫秒），可选
-    val lastDirection: String?        // 上次超车方向（LEFT/RIGHT），可选
+    val lastDirection: String?,       // 上次超车方向（LEFT/RIGHT），可选
+    val blockingReason: String? = null // 🆕 阻止超车的原因（可选）
 )
 
 data class CarStateData(
