@@ -431,11 +431,14 @@ class MainActivityUI(
         }
         
         NavigationBar(
+            modifier = Modifier.fillMaxWidth(),
             containerColor = Color.White,
-            contentColor = Color(0xFF2196F3)
+            contentColor = Color(0xFF2196F3),
+            tonalElevation = 0.dp
         ) {
             pages.forEach { page ->
                 NavigationBarItem(
+                    modifier = Modifier.weight(1f),
                     icon = {
                         Icon(
                             imageVector = page.icon,

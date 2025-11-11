@@ -16,7 +16,6 @@ import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.Alignment
@@ -29,18 +28,12 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import com.example.carrotamap.XiaogeVehicleData
-import com.example.carrotamap.R
 import kotlin.math.abs
 import kotlin.math.ln
-import android.content.SharedPreferences
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import androidx.compose.ui.text.TextStyle
-import kotlin.math.min
-import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.res.imageResource
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import kotlinx.coroutines.delay
 
 /**
@@ -54,8 +47,7 @@ fun VehicleLaneVisualization(
     data: XiaogeVehicleData?,
     userType: Int,
     showDialog: Boolean, // 改为必需参数，由外部控制
-    onDismiss: () -> Unit, // 改为必需参数，添加关闭回调
-    modifier: Modifier = Modifier
+    onDismiss: () -> Unit // 改为必需参数，添加关闭回调
 ) {
     // 只有用户类型3或4才允许显示弹窗
     if (userType != 3 && userType != 4) {
@@ -135,7 +127,7 @@ fun VehicleLaneVisualization(
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(200.dp), // 使用固定高度，减少占用空间
+                                .height(300.dp), // 🆕 调整为1.5倍高度（200dp * 1.5 = 300dp）
                             colors = CardDefaults.cardColors(
                                 containerColor = Color(0xFF1E293B).copy(alpha = 0.6f)
                             ),
@@ -158,37 +150,12 @@ fun VehicleLaneVisualization(
                                 }.getOrNull()
                             }
                             
-                            // 🆕 性能优化：缓存曲率偏移计算（只在曲率变化时重新计算）
-                            val curvature = displayData?.modelV2?.curvature
-                            val curvatureRate = curvature?.maxOrientationRate ?: 0f
-                            val curvatureDirection = curvature?.direction ?: 0
-                            val vEgo = displayData?.carState?.vEgo ?: 20f
-                            
-                            // 🆕 性能优化：使用 remember 缓存曲率偏移（在 Composable 层）
-                            val cachedCurvatureOffset = remember(curvatureRate, curvatureDirection, vEgo) {
-                                // 使用固定宽度作为参考（实际绘制时会使用实际宽度）
-                                // 这里只是预计算，实际绘制时会根据实际 size.width 调整
-                                calculateCurvatureOffset(
-                                    curvatureRate,
-                                    curvatureDirection,
-                                    400f, // 使用固定参考宽度
-                                    vEgo
-                                )
-                            }
-                            
                             Canvas(
                                 modifier = Modifier
                                     .fillMaxSize()
                                     .padding(8.dp)
                             ) {
-                                // 根据实际宽度调整曲率偏移
-                                val actualWidth = size.width
-                                val curvatureOffset = if (actualWidth > 0f) {
-                                    cachedCurvatureOffset * (actualWidth / 400f)
-                                } else {
-                                    cachedCurvatureOffset
-                                }
-                                drawLaneVisualization(displayData, carBitmap, curvatureOffset)
+                                drawLaneVisualization(displayData, carBitmap)
                             }
                         }
                         
@@ -218,8 +185,6 @@ private fun TopBar(
     isDataStale: Boolean,
     onClose: () -> Unit
 ) {
-    val context = LocalContext.current
-    
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -304,59 +269,19 @@ private fun TopBar(
             }
         }
         
-        // 右侧：速度信息、网络状态和关闭按钮
+        // 右侧：网络状态和关闭按钮
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // 🆕 道路限速和期望速度
-            val vEgoKmh = (data?.carState?.vEgo ?: 0f) * 3.6f
-            val desiredSpeed = data?.carrotMan?.desiredSpeed ?: 0
-            val roadLimitSpeed = data?.carrotMan?.nRoadLimitSpeed ?: 0
-            
-            if (desiredSpeed > 0 || roadLimitSpeed > 0) {
-                Surface(
-                    shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
-                    color = Color(0xFF1E293B).copy(alpha = 0.6f)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(2.dp)
-                    ) {
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "${vEgoKmh.toInt()}",
-                                fontSize = 12.sp,
-                                color = Color(0xFF3B82F6),
-                                fontWeight = FontWeight.Bold
-                            )
-                            if (desiredSpeed > 0) {
-                                Text(
-                                    text = "/ ${desiredSpeed}",
-                                    fontSize = 10.sp,
-                                    color = Color(0xFF94A3B8),
-                                    fontWeight = FontWeight.Medium
-                                )
-                            }
-                        }
-                        if (roadLimitSpeed > 0) {
-                            Text(
-                                text = "限速: ${roadLimitSpeed}",
-                                fontSize = 9.sp,
-                                color = Color(0xFFF59E0B),
-                                fontWeight = FontWeight.Light
-                            )
-                        }
-                    }
-                }
-            }
-            
             // 🆕 网络连接状态
-            val networkColor = if (isDataStale) Color(0xFFEF4444) else Color(0xFF10B981)
+            // 如果数据延迟很大（超过5000ms），说明未接收到数据，显示"断开"
+            val isDisconnected = dataAge > 5000
+            val networkColor = when {
+                isDisconnected -> Color(0xFFEF4444)  // 断开：红色
+                isDataStale -> Color(0xFFF59E0B)     // 延迟：橙色
+                else -> Color(0xFF10B981)            // 正常：绿色
+            }
             Surface(
                 shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
                 color = networkColor.copy(alpha = 0.2f)
@@ -375,42 +300,13 @@ private fun TopBar(
                             )
                     )
                     Text(
-                        text = if (isDataStale) "${dataAge}ms" else "正常",
+                        text = when {
+                            isDisconnected -> "断开"
+                            isDataStale -> "${dataAge}ms"
+                            else -> "正常"
+                        },
                         fontSize = 10.sp,
                         color = networkColor,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-            }
-            
-            // 系统状态指示器
-            val enabled = data?.systemState?.enabled == true
-            val active = data?.systemState?.active == true
-            
-            Surface(
-                shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
-                color = if (enabled && active) 
-                    Color(0xFF10B981).copy(alpha = 0.2f) 
-                else 
-                    Color(0xFF64748B).copy(alpha = 0.2f)
-            ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(8.dp)
-                            .background(
-                                color = if (enabled && active) Color(0xFF10B981) else Color(0xFF64748B),
-                                shape = androidx.compose.foundation.shape.CircleShape
-                            )
-                    )
-                    Text(
-                        text = if (enabled && active) "激活" else "待机",
-                        fontSize = 12.sp,
-                        color = if (enabled && active) Color(0xFF10B981) else Color(0xFF94A3B8),
                         fontWeight = FontWeight.Medium
                     )
                 }
@@ -439,12 +335,10 @@ private fun TopBar(
 
 /**
  * 绘制车道可视化（优化版）
- * 🆕 性能优化：使用缓存的曲率偏移
  */
 private fun DrawScope.drawLaneVisualization(
     data: XiaogeVehicleData?, 
-    carBitmap: ImageBitmap?,
-    cachedCurvatureOffset: Float
+    carBitmap: ImageBitmap?
 ) {
     val width = size.width
     val height = size.height
@@ -481,7 +375,6 @@ private fun DrawScope.drawLaneVisualization(
     val curvature = data?.modelV2?.curvature
     val curvatureRate = curvature?.maxOrientationRate ?: 0f
     val curvatureDirection = curvature?.direction ?: 0
-    val vEgo = data?.carState?.vEgo ?: 20f
     
     // 绘制盲区高亮（需要随曲率弯曲）
     drawLaneBackgrounds(
@@ -494,9 +387,6 @@ private fun DrawScope.drawLaneVisualization(
         curvatureRate = curvatureRate,
         curvatureDirection = curvatureDirection
     )
-    
-    // 🆕 性能优化：使用缓存的曲率偏移（已在外部计算）
-    val curvatureOffset = cachedCurvatureOffset
     
     // 绘制距离标记
     drawDistanceMarkers(centerX, laneWidth * 1.5f)
@@ -516,18 +406,10 @@ private fun DrawScope.drawLaneVisualization(
     if (lead0 != null && lead0.prob > 0.5f && lead0.x > 0f) {
         val leadSpeedKmh = (leadOne?.vLead ?: 0f) * 3.6f
         val leadDistance = lead0.x
-        // 计算前车位置的曲率（根据前车距离）
-        val leadCurvatureAtDistance = calculateCurvatureAtDistance(
-            curvatureRate,
-            curvatureDirection,
-            leadDistance,
-            width
-        )
-        // 根据曲率计算前车的旋转角度
+        // 根据曲率计算前车的旋转角度（曲率偏移在 drawLeadVehicle 内部计算）
         val leadRotationAngle = calculateVehicleRotationAngle(
             curvatureRate,
-            curvatureDirection,
-            leadDistance
+            curvatureDirection
         )
         drawLeadVehicle(
             leadDistance = leadDistance,
@@ -575,27 +457,6 @@ private fun DrawScope.drawDistanceMarkers(centerX: Float, laneAreaWidth: Float) 
             strokeWidth = 1.dp.toPx()
         )
     }
-}
-
-/**
- * 计算曲率偏移量
- */
-private fun calculateCurvatureOffset(
-    curvatureRate: Float,
-    direction: Int,
-    width: Float,
-    vEgo: Float = 20f
-): Float {
-    if (abs(curvatureRate) < 0.01f || vEgo < 0.1f) return 0f
-    
-    val lateralAccel = abs(curvatureRate) * vEgo
-    val curvature = lateralAccel / (vEgo * vEgo)
-    
-    val maxOffset = width * 0.15f
-    val normalizedCurvature = (curvature / 0.02f).coerceIn(0f, 1f)
-    val offset = normalizedCurvature * maxOffset
-    
-    return if (direction > 0) offset else -offset
 }
 
 /**
@@ -696,45 +557,7 @@ private fun DrawScope.drawLaneBackgrounds(
         val leftLaneLeftTop = centerX - laneWidth * perspectiveScaleTop * 1.5f
         val leftLaneRightTop = centerX - laneWidth * perspectiveScaleTop * 0.5f
         
-        // 绘制左侧盲区（随曲率弯曲）
-        val leftPath = Path()
-        val rightPath = Path()
-        
-        for (i in 0..steps) {
-            val t = i / steps.toFloat()
-            val y = height * (1f - t)
-            val distance = t * maxDistance
-            
-            // 左侧边界
-            val leftXBase = lerp(leftLaneLeftBottom, leftLaneLeftTop, t)
-            val leftCurvatureOffset = calculateCurvatureAtDistance(
-                curvatureRate,
-                curvatureDirection,
-                distance,
-                width
-            )
-            val leftX = leftXBase + leftCurvatureOffset
-            
-            // 右侧边界
-            val rightXBase = lerp(leftLaneRightBottom, leftLaneRightTop, t)
-            val rightCurvatureOffset = calculateCurvatureAtDistance(
-                curvatureRate,
-                curvatureDirection,
-                distance,
-                width
-            )
-            val rightX = rightXBase + rightCurvatureOffset
-            
-            if (i == 0) {
-                leftPath.moveTo(leftX, y)
-                rightPath.moveTo(rightX, y)
-            } else {
-                leftPath.lineTo(leftX, y)
-                rightPath.lineTo(rightX, y)
-            }
-        }
-        
-        // 绘制渐变填充
+        // 绘制左侧盲区（随曲率弯曲，使用渐变填充）
         for (i in 0 until steps) {
             val t1 = i / steps.toFloat()
             val t2 = (i + 1) / steps.toFloat()
@@ -818,8 +641,7 @@ private fun DrawScope.drawLaneBackgrounds(
  */
 private fun calculateVehicleRotationAngle(
     curvatureRate: Float,
-    curvatureDirection: Int,
-    distance: Float = 0f  // 对于本车，距离为0；对于前车，使用实际距离
+    curvatureDirection: Int
 ): Float {
     if (abs(curvatureRate) < 0.01f) return 0f
     
@@ -886,9 +708,9 @@ private fun DrawScope.drawLeadVehicle(
         size = Size(vehicleWidth + 4f, 12f * (1f - normalizedDistance * 0.3f))
     )
     
+    // 🆕 使用车辆图片绘制前车，并随曲率旋转
+    // 使用 drawIntoCanvas 和 nativeCanvas 来应用旋转变换
     if (carBitmap != null) {
-        // 🆕 使用车辆图片绘制前车，并随曲率旋转
-        // 使用 drawIntoCanvas 和 nativeCanvas 来应用旋转变换
         drawIntoCanvas { canvas ->
             canvas.save()
             // 移动到旋转中心
@@ -898,7 +720,7 @@ private fun DrawScope.drawLeadVehicle(
             // 移回原点
             canvas.translate(-leadX, -leadY)
             
-            // 绘制车辆图片
+            // 绘制车辆图片（图片本身已包含所有视觉效果，无需额外绘制边框或车窗）
             drawImage(
                 image = carBitmap,
                 dstSize = androidx.compose.ui.unit.IntSize(
@@ -914,23 +736,10 @@ private fun DrawScope.drawLeadVehicle(
                 filterQuality = FilterQuality.High
             )
             
-            // 根据相对速度绘制颜色边框（可选，用于视觉提示）
-            val borderColor = when {
-                vRel < -5f -> Color(0xFFEF4444) // 接近过快，红色
-                vRel < -2f -> Color(0xFFF59E0B) // 接近中等，橙色
-                else -> Color(0xFF10B981) // 安全，绿色
-            }
-            drawRect(
-                color = borderColor.copy(alpha = 0.3f),
-                topLeft = Offset(leadX - vehicleWidth / 2f, leadY - vehicleHeight / 2f),
-                size = Size(vehicleWidth, vehicleHeight),
-                style = Stroke(width = 2.dp.toPx())
-            )
-            
             canvas.restore()
         }
     } else {
-        // 回退：如果没有车辆图片，使用颜色矩形
+        // 回退方案：如果没有车辆图片，使用简化的颜色矩形（仅用于开发/调试）
         val vehicleColor = when {
             vRel < -5f -> Color(0xFFEF4444) // 接近过快，红色
             vRel < -2f -> Color(0xFFF59E0B) // 接近中等，橙色
@@ -956,15 +765,6 @@ private fun DrawScope.drawLeadVehicle(
             topLeft = Offset(leadX - vehicleWidth / 2f, leadY - vehicleHeight / 2f),
             size = Size(vehicleWidth, vehicleHeight),
             style = Stroke(width = 2.dp.toPx())
-        )
-        
-        // 绘制车窗
-        val windowWidth = vehicleWidth * 0.6f
-        val windowHeight = vehicleHeight * 0.25f
-        drawRect(
-            color = Color(0xFF1E293B).copy(alpha = 0.7f),
-            topLeft = Offset(leadX - windowWidth / 2f, leadY - windowHeight / 2f),
-            size = Size(windowWidth, windowHeight)
         )
     }
     
@@ -1038,7 +838,7 @@ private fun DrawScope.drawCurrentVehicle(
     }
     
     // 🆕 计算本车的旋转角度（根据曲率）
-    val rotationAngle = calculateVehicleRotationAngle(curvatureRate, curvatureDirection, 0f)
+    val rotationAngle = calculateVehicleRotationAngle(curvatureRate, curvatureDirection)
     
     if (carBitmap != null) {
         // 🆕 绘制车辆图片（从后俯视），并随曲率旋转
@@ -1157,24 +957,13 @@ private fun DataInfoPanel(
                         .padding(12.dp),
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "变道中...",
-                            fontSize = 12.sp,
-                            color = Color(0xFF3B82F6),
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            text = "进行中",
-                            fontSize = 10.sp,
-                            color = Color(0xFF94A3B8),
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
+                    Text(
+                        text = "变道中...",
+                        fontSize = 12.sp,
+                        color = Color(0xFF3B82F6),
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.fillMaxWidth()
+                    )
                     // 进度条（使用不确定进度，因为 openpilot 可能不提供精确进度）
                     LinearProgressIndicator(
                         modifier = Modifier
@@ -1187,14 +976,18 @@ private fun DataInfoPanel(
             }
         }
         
-        // 第一行：左车道、前车状态、右车道
+        // 第一行：前车相对速度、前车状态、系统状态
+        // 🆕 优化：显示前车相对速度，更实用
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            // 🆕 左侧车道信息（合并盲区状态和侧方车辆信息）
-            val leadLeft = data?.radarState?.leadLeft
-            val leftBlindspot = data?.carState?.leftBlindspot == true
+            // 🆕 前车相对速度（替换本车加速度）
+            val lead0 = data?.modelV2?.lead0
+            val leadOne = data?.radarState?.leadOne
+            // 判断是否有前车：lead0存在且置信度>0.5且距离>0，或者leadOne状态为true
+            val hasLead = (lead0 != null && lead0.prob > 0.5f && lead0.x > 0f) || (leadOne?.status == true)
+            
             Card(
                 modifier = Modifier.weight(1f),
                 colors = CardDefaults.cardColors(
@@ -1210,56 +1003,62 @@ private fun DataInfoPanel(
                     verticalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
                     Text(
-                        text = "左车道",
+                        text = "相对速度",
                         fontSize = 10.sp,
                         color = Color(0xFF94A3B8),
                         fontWeight = FontWeight.Medium
                     )
-                    if (leadLeft != null && leadLeft.status) {
-                        val leadLeftSpeedKmh = (leadLeft.vRel + (data?.carState?.vEgo ?: 0f)) * 3.6f
+                    if (hasLead) {
+                        // 有前车时显示相对速度
+                        val vRel = leadOne?.vRel ?: 0f  // 相对速度 (m/s)，正值表示前车更快，负值表示本车更快
+                        val vRelKmh = vRel * 3.6f  // 转换为 km/h
+                        val vRelText = when {
+                            vRel > 2f -> "远离"
+                            vRel < -2f -> "接近"
+                            else -> "保持"
+                        }
+                        val vRelValue = String.format("%.1f", abs(vRelKmh))
+                        val vRelColor = when {
+                            vRel < -5f -> Color(0xFFEF4444)  // 接近过快：红色
+                            vRel < -2f -> Color(0xFFF59E0B)  // 接近：橙色
+                            vRel > 5f -> Color(0xFF3B82F6)   // 远离过快：蓝色
+                            else -> Color(0xFF10B981)        // 保持：绿色
+                        }
                         Text(
-                            text = "${leadLeft.dRel.toInt()}m",
+                            text = vRelText,
                             fontSize = 12.sp,
-                            color = Color(0xFF3B82F6),
+                            color = vRelColor,
                             fontWeight = FontWeight.Bold
                         )
-                        Text(
-                            text = "${leadLeftSpeedKmh.toInt()}km/h",
-                            fontSize = 9.sp,
-                            color = Color(0xFF94A3B8),
-                            fontWeight = FontWeight.Medium
-                        )
-                    } else if (leftBlindspot) {
-                        // 盲区有车但雷达未检测到（显示盲区警告）
-                        Text(
-                            text = "盲区有车",
-                            fontSize = 12.sp,
-                            color = Color(0xFFEF4444),
-                            fontWeight = FontWeight.Bold
-                        )
+                        if (abs(vRelKmh) > 0.5f) {
+                            Text(
+                                text = "${if (vRel > 0) "+" else "-"}${vRelValue}km/h",
+                                fontSize = 9.sp,
+                                color = Color(0xFF94A3B8),
+                                fontWeight = FontWeight.Medium
+                            )
+                        } else {
+                            Text(
+                                text = "0km/h",
+                                fontSize = 9.sp,
+                                color = Color(0xFF94A3B8),
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
                     } else {
+                        // 无前车时显示"无车"
                         Text(
                             text = "无车",
                             fontSize = 12.sp,
-                            color = Color(0xFF10B981),
+                            color = Color(0xFF94A3B8),
                             fontWeight = FontWeight.Bold
                         )
                     }
                 }
             }
             
-            // 🆕 前车加速度指示（移动到中间）
-            val lead0Accel = data?.modelV2?.lead0?.a ?: 0f
-            val accelText = when {
-                lead0Accel > 0.5f -> "加速"
-                lead0Accel < -0.5f -> "减速"
-                else -> "匀速"
-            }
-            val accelColor = when {
-                lead0Accel > 0.5f -> Color(0xFF10B981)
-                lead0Accel < -0.5f -> Color(0xFFEF4444)
-                else -> Color(0xFF94A3B8)
-            }
+            // 前车状态（保留在中间）
+            // 🆕 修复：只有在有前车时才显示前车状态，否则显示"无车"
             Card(
                 modifier = Modifier.weight(1f),
                 colors = CardDefaults.cardColors(
@@ -1280,18 +1079,40 @@ private fun DataInfoPanel(
                         color = Color(0xFF94A3B8),
                         fontWeight = FontWeight.Medium
                     )
-                    Text(
-                        text = accelText,
-                        fontSize = 12.sp,
-                        color = accelColor,
-                        fontWeight = FontWeight.Bold
-                    )
+                    if (hasLead) {
+                        // 有前车时显示前车加速度状态
+                        val lead0Accel = data?.modelV2?.lead0?.a ?: 0f
+                        val leadAccelText = when {
+                            lead0Accel > 0.5f -> "加速"
+                            lead0Accel < -0.5f -> "减速"
+                            else -> "匀速"
+                        }
+                        val leadAccelColor = when {
+                            lead0Accel > 0.5f -> Color(0xFF10B981)
+                            lead0Accel < -0.5f -> Color(0xFFEF4444)
+                            else -> Color(0xFF94A3B8)
+                        }
+                        Text(
+                            text = leadAccelText,
+                            fontSize = 12.sp,
+                            color = leadAccelColor,
+                            fontWeight = FontWeight.Bold
+                        )
+                    } else {
+                        // 无前车时显示"无车"
+                        Text(
+                            text = "无车",
+                            fontSize = 12.sp,
+                            color = Color(0xFF94A3B8),
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
             
-            // 🆕 右侧车道信息（合并盲区状态和侧方车辆信息）
-            val leadRight = data?.radarState?.leadRight
-            val rightBlindspot = data?.carState?.rightBlindspot == true
+            // 🆕 系统状态（从顶部移动到底部）
+            val enabled = data?.systemState?.enabled == true
+            val active = data?.systemState?.active == true
             Card(
                 modifier = Modifier.weight(1f),
                 colors = CardDefaults.cardColors(
@@ -1307,38 +1128,27 @@ private fun DataInfoPanel(
                     verticalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
                     Text(
-                        text = "右车道",
+                        text = "系统状态",
                         fontSize = 10.sp,
                         color = Color(0xFF94A3B8),
                         fontWeight = FontWeight.Medium
                     )
-                    if (leadRight != null && leadRight.status) {
-                        val leadRightSpeedKmh = (leadRight.vRel + (data?.carState?.vEgo ?: 0f)) * 3.6f
-                        Text(
-                            text = "${leadRight.dRel.toInt()}m",
-                            fontSize = 12.sp,
-                            color = Color(0xFF3B82F6),
-                            fontWeight = FontWeight.Bold
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(6.dp)
+                                .background(
+                                    color = if (enabled && active) Color(0xFF10B981) else Color(0xFF64748B),
+                                    shape = androidx.compose.foundation.shape.CircleShape
+                                )
                         )
                         Text(
-                            text = "${leadRightSpeedKmh.toInt()}km/h",
-                            fontSize = 9.sp,
-                            color = Color(0xFF94A3B8),
-                            fontWeight = FontWeight.Medium
-                        )
-                    } else if (rightBlindspot) {
-                        // 盲区有车但雷达未检测到（显示盲区警告）
-                        Text(
-                            text = "盲区有车",
+                            text = if (enabled && active) "激活" else "待机",
                             fontSize = 12.sp,
-                            color = Color(0xFFEF4444),
-                            fontWeight = FontWeight.Bold
-                        )
-                    } else {
-                        Text(
-                            text = "无车",
-                            fontSize = 12.sp,
-                            color = Color(0xFF10B981),
+                            color = if (enabled && active) Color(0xFF10B981) else Color(0xFF94A3B8),
                             fontWeight = FontWeight.Bold
                         )
                     }
@@ -1346,18 +1156,31 @@ private fun DataInfoPanel(
             }
         }
         
-        // 第二行：变道状态、超车模式、道路类型
+        // 第二行：曲率信息、超车设置、道路类型
+        // 🆕 优化：移除重复的"变道状态"（顶部已显示），改为显示曲率信息
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            // 变道状态
-            val laneChangeState = data?.modelV2?.meta?.laneChangeState ?: 0
-            val laneChangeDirection = data?.modelV2?.meta?.laneChangeDirection ?: 0
-            val laneChangeText = when(laneChangeState) {
-                0 -> "未变道"
-                1 -> if (laneChangeDirection > 0) "左变道中" else if (laneChangeDirection < 0) "右变道中" else "变道中"
-                else -> "状态:$laneChangeState"
+            // 🆕 曲率信息（替换变道状态）
+            val curvature = data?.modelV2?.curvature
+            val curvatureRate = curvature?.maxOrientationRate ?: 0f
+            val curvatureDirection = curvature?.direction ?: 0
+            val curvatureText = when {
+                abs(curvatureRate) < 0.01f -> "直道"
+                curvatureDirection > 0 -> "左弯"  // direction: 1=左转
+                curvatureDirection < 0 -> "右弯"  // direction: -1=右转
+                else -> "直道"
+            }
+            val curvatureValue = if (abs(curvatureRate) > 0.01f) {
+                String.format("%.3f", abs(curvatureRate))
+            } else {
+                "0.000"
+            }
+            val curvatureColor = when {
+                abs(curvatureRate) < 0.01f -> Color(0xFF94A3B8)
+                abs(curvatureRate) < 0.02f -> Color(0xFF3B82F6)
+                else -> Color(0xFFF59E0B)
             }
             Card(
                 modifier = Modifier.weight(1f),
@@ -1374,21 +1197,29 @@ private fun DataInfoPanel(
                     verticalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
                     Text(
-                        text = "变道状态",
+                        text = "道路曲率",
                         fontSize = 10.sp,
                         color = Color(0xFF94A3B8),
                         fontWeight = FontWeight.Medium
                     )
                     Text(
-                        text = laneChangeText,
+                        text = curvatureText,
                         fontSize = 12.sp,
-                        color = if (laneChangeState == 0) Color(0xFF94A3B8) else Color(0xFF3B82F6),
+                        color = curvatureColor,
                         fontWeight = FontWeight.Bold
                     )
+                    if (abs(curvatureRate) > 0.01f) {
+                        Text(
+                            text = curvatureValue,
+                            fontSize = 9.sp,
+                            color = Color(0xFF94A3B8),
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
                 }
             }
             
-            // 超车模式
+            // 🆕 超车设置（重命名，使其更清晰这是设置值）
             val prefs = context.getSharedPreferences("CarrotAmap", android.content.Context.MODE_PRIVATE)
             val overtakeMode = prefs.getInt("overtake_mode", 0)
             val overtakeModeNames = arrayOf("禁止超车", "拨杆超车", "自动超车")
@@ -1412,7 +1243,7 @@ private fun DataInfoPanel(
                     verticalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
                     Text(
-                        text = "超车模式",
+                        text = "超车设置",
                         fontSize = 10.sp,
                         color = Color(0xFF94A3B8),
                         fontWeight = FontWeight.Medium
@@ -1426,7 +1257,7 @@ private fun DataInfoPanel(
                 }
             }
             
-            // 🆕 道路类型指示
+            // 道路类型指示
             val roadcate = data?.carrotMan?.roadcate ?: 0
             val roadTypeText = when (roadcate) {
                 1 -> "高速"
@@ -1468,8 +1299,9 @@ private fun DataInfoPanel(
         }
         
         // 🆕 超车决策原因显示（仅在不能超车且有原因时显示）
-        val overtakeStatus = data?.overtakeStatus
-        if (overtakeStatus != null && !overtakeStatus.canOvertake && overtakeStatus.blockingReason != null) {
+        // 注意：overtakeStatus 已在 TopBar 中获取，但这里需要独立获取以显示详细信息
+        val overtakeStatusForReason = data?.overtakeStatus
+        if (overtakeStatusForReason != null && !overtakeStatusForReason.canOvertake && overtakeStatusForReason.blockingReason != null) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
@@ -1496,7 +1328,7 @@ private fun DataInfoPanel(
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = overtakeStatus.blockingReason,
+                            text = overtakeStatusForReason.blockingReason,
                             fontSize = 10.sp,
                             color = Color(0xFF94A3B8),
                             fontWeight = FontWeight.Medium
@@ -1546,88 +1378,3 @@ private fun DataInfoPanel(
     }
 }
 
-/**
- * 指标卡片组件
- */
-@Composable
-private fun MetricCard(
-    label: String,
-    value: String,
-    unit: String,
-    color: Color,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier,
-        colors = CardDefaults.cardColors(
-            containerColor = Color(0xFF1E293B).copy(alpha = 0.8f)
-        ),
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(2.dp)
-        ) {
-            Text(
-                text = label,
-                fontSize = 9.sp,
-                color = Color(0xFF94A3B8),
-                fontWeight = FontWeight.Medium
-            )
-            Row(
-                verticalAlignment = Alignment.Bottom,
-                horizontalArrangement = Arrangement.spacedBy(2.dp)
-            ) {
-                Text(
-                    text = value,
-                    fontSize = 20.sp,
-                    color = color,
-                    fontWeight = FontWeight.Bold
-                )
-                if (unit.isNotEmpty()) {
-                    Text(
-                        text = unit,
-                        fontSize = 10.sp,
-                        color = color.copy(alpha = 0.7f),
-                        fontWeight = FontWeight.Medium,
-                        modifier = Modifier.padding(bottom = 1.dp)
-                    )
-                }
-            }
-        }
-    }
-}
-
-/**
- * 信息项组件
- */
-@Composable
-private fun InfoItem(
-    label: String,
-    value: String,
-    valueColor: Color,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(1.dp)
-    ) {
-        Text(
-            text = label,
-            fontSize = 8.sp,
-            color = Color(0xFF94A3B8),
-            fontWeight = FontWeight.Normal,
-            lineHeight = 10.sp
-        )
-        Text(
-            text = value,
-            fontSize = 11.sp,
-            color = valueColor,
-            fontWeight = FontWeight.SemiBold,
-            lineHeight = 13.sp
-        )
-    }
-}

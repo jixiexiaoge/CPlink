@@ -48,7 +48,7 @@ object MainActivityUIComponents {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 6.dp),
+                .padding(vertical = 6.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White),
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
             shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
