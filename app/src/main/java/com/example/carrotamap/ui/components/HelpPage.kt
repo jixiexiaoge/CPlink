@@ -246,7 +246,7 @@ fun HelpPage(
         
         Spacer(modifier = Modifier.height(16.dp))
         
-        // 排行榜、管理器和看哨兵按钮 - 三按钮并排布局
+        //致谢榜、管理器和看哨兵按钮 - 三按钮并排布局
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -271,7 +271,7 @@ fun HelpPage(
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Text(
-                        text = "排行榜",
+                        text = "致谢榜",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium
                     )
@@ -343,8 +343,8 @@ fun HelpPage(
     if (showFullscreenBrowser) {
         FullscreenBrowserDialog(
             onDismiss = { showFullscreenBrowser = false },
-            url = "https://app.mspa.shop/",
-            title = "CP搭子排行榜"
+            url = "https://jixiexiaoge.github.io/CPlink/",
+            title = "CP搭子赞助致谢榜"
         )
     }
     
