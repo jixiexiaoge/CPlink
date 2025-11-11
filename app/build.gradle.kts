@@ -131,6 +131,9 @@ dependencies {
     implementation("androidx.media3:media3-exoplayer:1.2.1")
     implementation("androidx.media3:media3-ui:1.2.1")
     implementation("androidx.media3:media3-common:1.2.1")
+    
+    // ZMQ客户端 - 用于与Comma3设备通信
+    implementation("org.zeromq:jeromq:0.5.4")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

@@ -118,6 +118,8 @@ class MainActivityCore(
     lateinit var permissionManager: PermissionManager
     // 网络管理器
     lateinit var networkManager: NetworkManager
+    // ZMQ客户端
+    val zmqClient = ZmqClient()
     // 数据字段管理器
     val dataFieldManager = DataFieldManager()
     

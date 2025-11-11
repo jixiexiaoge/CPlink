@@ -90,6 +90,10 @@ class MainActivityUI(
                                         networkManager = core.networkManager,
                                         amapBroadcastManager = core.amapBroadcastManager
                                     )
+                            4 -> CommandPage(
+                                networkManager = core.networkManager,
+                                zmqClient = core.zmqClient
+                            )
                         }
                         
                         // 下载弹窗
@@ -410,7 +414,7 @@ class MainActivityUI(
         onPageChange: (Int) -> Unit,
         userType: Int = 0
     ) {
-        // 根据用户类型决定是否显示数据页面
+        // 根据用户类型决定是否显示数据页面和命令页面
         val basePages = listOf(
             BottomNavItem("主页", Icons.Default.Home, 0),
             BottomNavItem("帮助", Icons.Default.Info, 1),
@@ -418,11 +422,12 @@ class MainActivityUI(
         )
         
         val pages = if (userType == 4) {
-            // 铁粉用户可以看到数据页面
-            basePages + BottomNavItem("数据", Icons.Default.Settings, 3)
+            // 铁粉用户可以看到数据页面和命令页面
+            basePages + BottomNavItem("数据", Icons.Default.Settings, 3) + 
+                       BottomNavItem("命令", Icons.Default.Build, 4)
         } else {
-            // 其他用户类型不显示数据页面
-            basePages
+            // 其他用户类型不显示数据页面，但可以显示命令页面
+            basePages + BottomNavItem("命令", Icons.Default.Build, 4)
         }
         
         NavigationBar(
