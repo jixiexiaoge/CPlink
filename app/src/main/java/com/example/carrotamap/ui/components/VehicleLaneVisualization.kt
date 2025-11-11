@@ -1,5 +1,6 @@
 package com.example.carrotamap.ui.components
 
+import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -36,11 +37,13 @@ import androidx.compose.ui.res.imageResource
 import androidx.compose.runtime.LaunchedEffect
 import kotlinx.coroutines.delay
 
+private const val CURVATURE_LOG_TAG = "VehicleLaneVis"
+private const val CURVATURE_DEBUG_DISTANCE_THRESHOLD = 60f
+private const val ENABLE_CURVATURE_LOG = false
+
 /**
- * 车辆和车道可视化弹窗组件 - 优化版
- * 绘制4条车道线（3个车道），当前车辆，前车，曲率弯曲，盲区高亮
- * 并显示核心数据信息
- * 只有用户类型3（赞助者）或4（铁粉）才自动显示
+ * 车辆和车道可视化弹窗组件，绘制车道、车辆及核心状态。
+ * 仅用户类型 3 或 4 显示。
  */
 @Composable
 fun VehicleLaneVisualization(
@@ -49,7 +52,6 @@ fun VehicleLaneVisualization(
     showDialog: Boolean, // 改为必需参数，由外部控制
     onDismiss: () -> Unit // 改为必需参数，添加关闭回调
 ) {
-    // 只有用户类型3或4才允许显示弹窗
     if (userType != 3 && userType != 4) {
         return
     }
@@ -68,16 +70,14 @@ fun VehicleLaneVisualization(
             val screenWidth = context.resources.displayMetrics.widthPixels
             val dialogWidth = with(density) { (screenWidth * 0.9f).toDp() }  // 宽度为屏幕的90%
             
-            // 🆕 数据更新频率控制：限制为10Hz（每100ms更新一次）
+            // 限制界面刷新频率在 10Hz
             var displayData by remember { mutableStateOf(data) }
             LaunchedEffect(data) {
                 delay(100) // 限制为10Hz
                 displayData = data
             }
             
-            // 🆕 数据一致性检查：计算数据年龄和延迟
-            // 注意：由于网络延迟和数据处理时间，正常延迟可能在1000-2000ms范围内
-            // 只有当延迟超过2000ms时才认为数据异常
+            // 计算数据延迟，超过 2000ms 视为异常
             val currentTime = System.currentTimeMillis()
             val dataTimestamp = (displayData?.timestamp ?: 0.0) * 1000.0 // 转换为毫秒
             val dataAge = currentTime - dataTimestamp.toLong()
@@ -123,17 +123,16 @@ fun VehicleLaneVisualization(
                             onClose = onDismiss
                         )
                         
-                        // 车道可视化画布（占据较小区域）
+                        // 车道可视化画布
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(300.dp), // 🆕 调整为1.5倍高度（200dp * 1.5 = 300dp）
+                                .height(300.dp), // 调整为 1.5 倍高度
                             colors = CardDefaults.cardColors(
                                 containerColor = Color(0xFF1E293B).copy(alpha = 0.6f)
                             ),
                             shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
                         ) {
-                            // 🆕 优化车辆图片资源处理：支持多种格式和分辨率
                             val carBitmap: ImageBitmap? = remember(context) {
                                 runCatching {
                                     // 优先尝试加载 drawable 资源
@@ -174,10 +173,7 @@ fun VehicleLaneVisualization(
     }
 }
 
-/**
- * 顶部标题栏
- * 🆕 优化：添加超车状态指示和数据延迟显示
- */
+/** 顶部标题栏，展示超车状态与数据延迟。 */
 @Composable
 private fun TopBar(
     data: XiaogeVehicleData?,
@@ -214,7 +210,6 @@ private fun TopBar(
             else -> Color(0xFF94A3B8)  // 监控中：灰色
         }
         
-        // 🆕 显示超车决策原因（如果有）
         val blockingReason = overtakeStatus?.blockingReason
         
         Surface(
@@ -255,7 +250,7 @@ private fun TopBar(
                         )
                     }
                 }
-                // 🆕 显示阻止原因（如果有）
+                // 显示阻止原因（如果有）
                 blockingReason?.let { reason ->
                     Text(
                         text = reason,
@@ -274,8 +269,7 @@ private fun TopBar(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // 🆕 网络连接状态
-            // 如果数据延迟很大（超过5000ms），说明未接收到数据，显示"断开"
+            // 根据延迟推断网络状态
             val isDisconnected = dataAge > 5000
             val networkColor = when {
                 isDisconnected -> Color(0xFFEF4444)  // 断开：红色
@@ -391,7 +385,7 @@ private fun DrawScope.drawLaneVisualization(
     // 绘制距离标记
     drawDistanceMarkers(centerX, laneWidth * 1.5f)
     
-    // 🆕 绘制弯曲车道线（根据曲率逐点弯曲）
+    // 绘制随曲率变化的车道线
     val leftLaneProb = data?.modelV2?.laneLineProbs?.getOrNull(0) ?: 0f
     val rightLaneProb = data?.modelV2?.laneLineProbs?.getOrNull(1) ?: 0f
     
@@ -418,7 +412,6 @@ private fun DrawScope.drawLaneVisualization(
             laneWidth = laneWidth,
             curvatureRate = curvatureRate,
             curvatureDirection = curvatureDirection,
-            width = width,
             vRel = leadOne?.vRel ?: 0f,
             carBitmap = carBitmap,
             rotationAngle = leadRotationAngle
@@ -459,10 +452,7 @@ private fun DrawScope.drawDistanceMarkers(centerX: Float, laneAreaWidth: Float) 
     }
 }
 
-/**
- * 🆕 绘制弯曲车道线（根据曲率逐点弯曲，参考 openpilot 实现）
- * 每个点的偏移量随距离变化，形成真实的曲线效果
- */
+/** 绘制随曲率逐点弯曲的车道线。 */
 private fun DrawScope.drawPerspectiveCurvedLaneLine(
     laneBottomX: Float,
     laneTopX: Float,
@@ -479,8 +469,8 @@ private fun DrawScope.drawPerspectiveCurvedLaneLine(
         val t = i / steps.toFloat()
         val y = height * (1f - t)
         val xBase = lerp(laneBottomX, laneTopX, t)
-        
-        // 🆕 根据距离计算曲率偏移（参考 openpilot 的实现）
+
+        // 根据距离计算曲率偏移
         val distance = t * maxDistance
         val curvatureAtDistance = calculateCurvatureAtDistance(
             curvatureRate,
@@ -506,10 +496,7 @@ private fun DrawScope.drawPerspectiveCurvedLaneLine(
     )
 }
 
-/**
- * 🆕 计算特定距离处的曲率偏移（参考 openpilot 的曲率计算）
- * 使用二次函数模拟曲线，让车道线根据距离逐渐弯曲
- */
+/** 计算特定距离处的曲率偏移。 */
 private fun calculateCurvatureAtDistance(
     curvatureRate: Float,
     direction: Int,
@@ -517,16 +504,34 @@ private fun calculateCurvatureAtDistance(
     width: Float
 ): Float {
     if (abs(curvatureRate) < 0.01f || distance < 0.1f) return 0f
-    
-    // 使用二次函数模拟曲线（参考 openpilot 的曲率计算）
-    // 曲率随距离的平方增长，模拟真实的道路弯曲
-    // 🆕 修复：减小曲率系数，避免曲率过大
-    val curvature = curvatureRate * 0.3f  // 从0.5f减小到0.3f
+
+    val curvature = curvatureRate * 0.3f
     val normalizedCurvature = (curvature / 0.02f).coerceIn(-1f, 1f)
-    val maxOffset = width * 0.12f  // 从0.15f减小到0.12f
-    val offset = normalizedCurvature * distance * distance * 0.005f * maxOffset  // 从0.01f减小到0.005f
-    
-    return if (direction > 0) offset else -offset
+    val maxOffset = width * 0.12f
+    val maxDistance = 80f
+    val distanceFactor = (distance / maxDistance).coerceIn(0f, 1f)
+    val easedFactor = distanceFactor * (0.6f + 0.4f * distanceFactor)
+    val offset = normalizedCurvature * maxOffset * easedFactor
+
+    val signedOffset = when {
+        direction > 0 -> -offset
+        direction < 0 -> offset
+        else -> 0f
+    }
+
+    if (
+        ENABLE_CURVATURE_LOG &&
+        direction != 0 &&
+        distance >= CURVATURE_DEBUG_DISTANCE_THRESHOLD &&
+        distance % 5f < 0.5f
+    ) {
+        Log.d(
+            CURVATURE_LOG_TAG,
+            "curvatureRate=${"%.4f".format(curvatureRate)}, direction=$direction, distance=${"%.1f".format(distance)}, offset=${"%.1f".format(signedOffset)}"
+        )
+    }
+
+    return signedOffset
 }
 
 private fun lerp(start: Float, stop: Float, fraction: Float): Float {
@@ -534,8 +539,7 @@ private fun lerp(start: Float, stop: Float, fraction: Float): Float {
 }
 
 /**
- * 绘制车道背景（盲区高亮）
- * 🆕 修复：盲区高亮随曲率弯曲，而不是简单的矩形
+ * 绘制随曲率弯曲的盲区高亮背景。
  */
 private fun DrawScope.drawLaneBackgrounds(
     leftBlindspot: Boolean,
@@ -660,12 +664,7 @@ private fun calculateVehicleRotationAngle(
     return if (curvatureDirection > 0) rotationDegrees else -rotationDegrees
 }
 
-/**
- * 绘制前车（优化版，使用车辆图片）
- * 🆕 修复：前车使用车辆图片，并随曲率弯曲
- * 🆕 优化：在前车图片下方显示"车速/距离"文本
- * 🆕 优化：车辆图片随道路曲率微调方向
- */
+/** 绘制前车，支持位图渲染并随曲率旋转。 */
 private fun DrawScope.drawLeadVehicle(
     leadDistance: Float,
     leadSpeedKmh: Float,
@@ -673,7 +672,6 @@ private fun DrawScope.drawLeadVehicle(
     laneWidth: Float,
     curvatureRate: Float,
     curvatureDirection: Int,
-    width: Float,
     vRel: Float,
     carBitmap: ImageBitmap?,
     rotationAngle: Float
@@ -688,7 +686,7 @@ private fun DrawScope.drawLeadVehicle(
         0f
     }
     val leadY = height * (1f - logMappedDistance) * 0.7f
-    // 🆕 使用弯曲车道线的曲率计算方式，让前车位置也随距离弯曲
+    // 根据曲率调整前车横向位置
     val curvatureAtDistance = calculateCurvatureAtDistance(
         curvatureRate,
         curvatureDirection,
@@ -708,8 +706,7 @@ private fun DrawScope.drawLeadVehicle(
         size = Size(vehicleWidth + 4f, 12f * (1f - normalizedDistance * 0.3f))
     )
     
-    // 🆕 使用车辆图片绘制前车，并随曲率旋转
-    // 使用 drawIntoCanvas 和 nativeCanvas 来应用旋转变换
+    // 使用车辆图片并随曲率旋转
     if (carBitmap != null) {
         drawIntoCanvas { canvas ->
             canvas.save()
@@ -739,7 +736,7 @@ private fun DrawScope.drawLeadVehicle(
             canvas.restore()
         }
     } else {
-        // 回退方案：如果没有车辆图片，使用简化的颜色矩形（仅用于开发/调试）
+        // 回退方案：若没有车辆图片则用渐变矩形
         val vehicleColor = when {
             vRel < -5f -> Color(0xFFEF4444) // 接近过快，红色
             vRel < -2f -> Color(0xFFF59E0B) // 接近中等，橙色
@@ -768,7 +765,7 @@ private fun DrawScope.drawLeadVehicle(
         )
     }
     
-    // 🆕 在前车图片下方绘制"车速/距离"文本
+    // 在前车图片下方绘制"车速/距离"文本
     val textY = leadY + vehicleHeight / 2f + 8f
     val fontSize = 10.dp.toPx() * (1f - normalizedDistance * 0.2f).coerceIn(0.7f, 1f)  // 根据距离调整字体大小
     val text = if (leadSpeedKmh > 0.1f) {
@@ -801,9 +798,7 @@ private fun DrawScope.drawLeadVehicle(
 }
 
 /**
- * 绘制当前车辆（优化版，3D效果）
- * 🆕 优化：在车辆图片下方显示车速文本
- * 🆕 优化：车辆图片随道路曲率微调方向
+ * 绘制当前车辆，包含车速文本和曲率旋转。
  */
 private fun DrawScope.drawCurrentVehicle(
     centerX: Float,
@@ -837,12 +832,11 @@ private fun DrawScope.drawCurrentVehicle(
         )
     }
     
-    // 🆕 计算本车的旋转角度（根据曲率）
+    // 计算本车的旋转角度（根据曲率）
     val rotationAngle = calculateVehicleRotationAngle(curvatureRate, curvatureDirection)
     
     if (carBitmap != null) {
-        // 🆕 绘制车辆图片（从后俯视），并随曲率旋转
-        // 使用 drawIntoCanvas 和 nativeCanvas 来应用旋转变换
+        // 绘制车辆图片（从后俯视）并随曲率旋转
         drawIntoCanvas { canvas ->
             canvas.save()
             // 移动到旋转中心
@@ -891,7 +885,7 @@ private fun DrawScope.drawCurrentVehicle(
         )
     }
     
-    // 🆕 在当前车辆图片下方绘制车速文本
+    // 在当前车辆图片下方绘制车速文本
     val textY = vehicleY + vehicleHeight / 2f + 10f
     val fontSize = 12.dp.toPx()
     val text = "${vEgoKmh.toInt()}km/h"
@@ -919,10 +913,7 @@ private fun DrawScope.drawCurrentVehicle(
     }
 }
 
-/**
- * 数据信息面板（优化版）
- * 🆕 优化：添加数据延迟显示
- */
+/** 数据信息面板，展示关键决策信息。 */
 @Composable
 private fun DataInfoPanel(
     data: XiaogeVehicleData?,
@@ -936,14 +927,9 @@ private fun DataInfoPanel(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        // 🆕 简化数据信息显示：只保留核心决策数据
-        // 注意：车速、前车距离、前车速度已显示在车辆图片下方，这里不再重复显示
-        
-        // 🆕 车道变更进度条（当变道中时显示）
+        // 变道中时显示进度条
         val laneChangeState = data?.modelV2?.meta?.laneChangeState ?: 0
         if (laneChangeState == 1) {
-            // 变道中，显示进度条（模拟进度，实际需要从 openpilot 获取）
-            // 注意：openpilot 可能不提供精确的进度值，这里使用时间估算
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
@@ -977,12 +963,11 @@ private fun DataInfoPanel(
         }
         
         // 第一行：前车相对速度、前车状态、系统状态
-        // 🆕 优化：显示前车相对速度，更实用
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            // 🆕 前车相对速度（替换本车加速度）
+            // 前车相对速度
             val lead0 = data?.modelV2?.lead0
             val leadOne = data?.radarState?.leadOne
             // 判断是否有前车：lead0存在且置信度>0.5且距离>0，或者leadOne状态为true
@@ -1057,8 +1042,7 @@ private fun DataInfoPanel(
                 }
             }
             
-            // 前车状态（保留在中间）
-            // 🆕 修复：只有在有前车时才显示前车状态，否则显示"无车"
+            // 前车状态
             Card(
                 modifier = Modifier.weight(1f),
                 colors = CardDefaults.cardColors(
@@ -1110,7 +1094,7 @@ private fun DataInfoPanel(
                 }
             }
             
-            // 🆕 系统状态（从顶部移动到底部）
+            // 系统状态
             val enabled = data?.systemState?.enabled == true
             val active = data?.systemState?.active == true
             Card(
@@ -1157,12 +1141,11 @@ private fun DataInfoPanel(
         }
         
         // 第二行：曲率信息、超车设置、道路类型
-        // 🆕 优化：移除重复的"变道状态"（顶部已显示），改为显示曲率信息
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            // 🆕 曲率信息（替换变道状态）
+            // 曲率信息
             val curvature = data?.modelV2?.curvature
             val curvatureRate = curvature?.maxOrientationRate ?: 0f
             val curvatureDirection = curvature?.direction ?: 0
@@ -1219,7 +1202,7 @@ private fun DataInfoPanel(
                 }
             }
             
-            // 🆕 超车设置（重命名，使其更清晰这是设置值）
+            // 超车设置
             val prefs = context.getSharedPreferences("CarrotAmap", android.content.Context.MODE_PRIVATE)
             val overtakeMode = prefs.getInt("overtake_mode", 0)
             val overtakeModeNames = arrayOf("禁止超车", "拨杆超车", "自动超车")
@@ -1298,8 +1281,7 @@ private fun DataInfoPanel(
             }
         }
         
-        // 🆕 超车决策原因显示（仅在不能超车且有原因时显示）
-        // 注意：overtakeStatus 已在 TopBar 中获取，但这里需要独立获取以显示详细信息
+        // 超车决策原因（仅在不能超车且有原因时显示）
         val overtakeStatusForReason = data?.overtakeStatus
         if (overtakeStatusForReason != null && !overtakeStatusForReason.canOvertake && overtakeStatusForReason.blockingReason != null) {
             Card(
@@ -1338,43 +1320,6 @@ private fun DataInfoPanel(
             }
         }
         
-        // 🆕 可选第三行：数据延迟警告（仅在异常时显示）
-        if (isDataStale) {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFFEF4444).copy(alpha = 0.2f)
-                ),
-                shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "⚠️",
-                        fontSize = 16.sp
-                    )
-                    Column {
-                        Text(
-                            text = "数据延迟警告",
-                            fontSize = 12.sp,
-                            color = Color(0xFFEF4444),
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            text = "数据延迟: ${dataAge}ms (超过2000ms)",
-                            fontSize = 10.sp,
-                            color = Color(0xFF94A3B8),
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
-                }
-            }
-        }
     }
 }
 
