@@ -1,1030 +1,626 @@
 {
-  "export_time": "2025-11-11 14:06:22",
-  "transactions": [
+  "export_time": "2025-11-11 13:54:53",
+  "summary": [
     {
       "id": 1,
-      "transaction_time": "2025-11-10 23:13:15",
-      "transaction_counterparty": "翔宇",
-      "amount": 18.8,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202511101612394512787",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "哒哒要睡觉咯🌚",
+      "total_amount": 632.4,
+      "transaction_count": 11,
+      "last_transaction_time": "2025-11-02 12:03:25",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 2,
-      "transaction_time": "2025-11-10 20:31:51",
-      "transaction_counterparty": "紫薯",
-      "amount": 6.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202511101823253904090",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "苏州东古电镀设备-张战",
+      "total_amount": 188.0,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-11-08 10:42:42",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 3,
-      "transaction_time": "2025-11-10 11:27:34",
-      "transaction_counterparty": "徵羽天翔💰",
-      "amount": 88.8,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202511101723134022336",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "  ＂「赵」",
+      "total_amount": 188.0,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-11-03 21:19:34",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 4,
-      "transaction_time": "2025-11-10 07:30:04",
-      "transaction_counterparty": "翔宇",
-      "amount": 18.8,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202511101910417937097",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "吳鵬飛",
+      "total_amount": 133.2,
+      "transaction_count": 2,
+      "last_transaction_time": "2025-11-09 11:39:27",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 5,
-      "transaction_time": "2025-11-10 07:29:12",
-      "transaction_counterparty": "生",
-      "amount": 6.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202511101510123008961",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "首发经济达人",
+      "total_amount": 95.39999999999999,
+      "transaction_count": 2,
+      "last_transaction_time": "2025-11-03 20:52:41",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 6,
-      "transaction_time": "2025-11-09 19:04:59",
-      "transaction_counterparty": "ROXi",
-      "amount": 88.8,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202511091713423921764",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "Yxxxx",
+      "total_amount": 95.39999999999999,
+      "transaction_count": 2,
+      "last_transaction_time": "2025-11-08 20:23:54",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 7,
-      "transaction_time": "2025-11-09 12:39:11",
-      "transaction_counterparty": "qian yu",
-      "amount": 38.8,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202511091923894070738",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "🍃煙灰の結ぐ鋦🍂",
+      "total_amount": 88.8,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-10-27 16:34:47",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 8,
-      "transaction_time": "2025-11-09 12:13:45",
-      "transaction_counterparty": "qian yu",
-      "amount": 6.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202511091822073899560",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "高浩杰",
+      "total_amount": 88.8,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-11-08 23:16:30",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 9,
-      "transaction_time": "2025-11-09 11:39:27",
-      "transaction_counterparty": "吳鵬飛",
-      "amount": 66.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202511091722679781510",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "陈遥",
+      "total_amount": 88.8,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-10-27 20:18:40",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 10,
-      "transaction_time": "2025-11-08 23:16:30",
-      "transaction_counterparty": "高浩杰",
-      "amount": 88.8,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202511081513603998511",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "徵羽天翔💰",
+      "total_amount": 88.8,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-11-10 11:27:34",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 11,
-      "transaction_time": "2025-11-08 22:37:29",
-      "transaction_counterparty": "Sariel",
-      "amount": 1.0,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202511081722599324171",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "小林",
+      "total_amount": 88.8,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-11-08 09:37:55",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 12,
-      "transaction_time": "2025-11-08 22:35:06",
-      "transaction_counterparty": "Sariel",
-      "amount": 1.0,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202511081822304860597",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "Zz",
+      "total_amount": 88.8,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-10-26 18:13:48",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 13,
-      "transaction_time": "2025-11-08 20:23:54",
-      "transaction_counterparty": "Yxxxx",
-      "amount": 88.8,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202511081722067925272",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "ROXi",
+      "total_amount": 88.8,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-11-09 19:04:59",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 14,
-      "transaction_time": "2025-11-08 14:27:55",
-      "transaction_counterparty": "Yxxxx",
-      "amount": 6.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202511081821014054789",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "Don",
+      "total_amount": 88.8,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-10-26 21:26:28",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 15,
-      "transaction_time": "2025-11-08 12:35:09",
-      "transaction_counterparty": "杨天彬",
-      "amount": 18.8,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202511081810650729386",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "qian yu",
+      "total_amount": 84.19999999999999,
+      "transaction_count": 3,
+      "last_transaction_time": "2025-11-09 12:39:11",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 16,
-      "transaction_time": "2025-11-08 12:25:52",
-      "transaction_counterparty": "王加兵",
-      "amount": 6.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202511081810758818141",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "火炎焱燚韦",
+      "total_amount": 73.19999999999999,
+      "transaction_count": 2,
+      "last_transaction_time": "2025-11-06 12:59:10",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 17,
-      "transaction_time": "2025-11-08 12:11:20",
-      "transaction_counterparty": "王加兵",
-      "amount": 18.8,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202511081813123182094",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "ʚLHYTSɞ.",
+      "total_amount": 73.19999999999999,
+      "transaction_count": 2,
+      "last_transaction_time": "2025-11-07 22:32:53",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 18,
-      "transaction_time": "2025-11-08 10:42:42",
-      "transaction_counterparty": "苏州东古电镀设备-张战",
-      "amount": 188.0,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202511081621819734318",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "  我爱钓大鱼",
+      "total_amount": 73.19999999999999,
+      "transaction_count": 2,
+      "last_transaction_time": "2025-11-02 19:53:47",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 19,
-      "transaction_time": "2025-11-08 09:37:55",
-      "transaction_counterparty": "小林",
-      "amount": 88.8,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202511081921849478601",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "讲道理",
+      "total_amount": 66.6,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-10-25 14:48:13",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 20,
-      "transaction_time": "2025-11-07 22:32:53",
-      "transaction_counterparty": "ʚLHYTSɞ.",
-      "amount": 66.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202511071712907152174",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "言午禾乃JU",
+      "total_amount": 66.6,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-10-03 10:39:59",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 21,
-      "transaction_time": "2025-11-07 21:20:24",
-      "transaction_counterparty": "雨落倾城",
-      "amount": 18.8,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202511071922687838727",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "筱羽智能工程有限公司(搏浪科技)",
+      "total_amount": 66.6,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-10-05 14:05:06",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 22,
-      "transaction_time": "2025-11-06 12:59:10",
-      "transaction_counterparty": "火炎焱燚韦",
-      "amount": 66.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202511061820768650359",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "爱东",
+      "total_amount": 66.6,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-10-03 11:19:16",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 23,
-      "transaction_time": "2025-11-05 09:13:24",
-      "transaction_counterparty": "火炎焱燚韦",
-      "amount": 6.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202511051520904231506",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "刘京文",
+      "total_amount": 66.6,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-10-05 15:08:36",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 24,
-      "transaction_time": "2025-11-04 18:19:00",
-      "transaction_counterparty": "🇵  🇪   🇹  🇪cium",
-      "amount": 38.8,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202511041610069518924",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "先相信后看见",
+      "total_amount": 66.6,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-10-16 22:43:12",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 25,
-      "transaction_time": "2025-11-03 21:19:34",
-      "transaction_counterparty": "  ＂「赵」",
-      "amount": 188.0,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202511031611399862591",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "A01重庆市印务",
+      "total_amount": 66.6,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-10-20 15:59:49",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 26,
-      "transaction_time": "2025-11-03 20:52:41",
-      "transaction_counterparty": "首发经济达人",
-      "amount": 88.8,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202511031712394544431",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "🇵  🇪   🇹  🇪cium",
+      "total_amount": 57.599999999999994,
+      "transaction_count": 2,
+      "last_transaction_time": "2025-11-04 18:19:00",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 27,
-      "transaction_time": "2025-11-02 19:53:47",
-      "transaction_counterparty": "  我爱钓大鱼",
-      "amount": 66.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202511021921399219189",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "斌哥哥",
+      "total_amount": 45.4,
+      "transaction_count": 2,
+      "last_transaction_time": "2025-10-14 20:48:02",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 28,
-      "transaction_time": "2025-11-02 13:31:24",
-      "transaction_counterparty": "qian yu",
-      "amount": 38.8,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202511021821878399562",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "翔宇",
+      "total_amount": 44.2,
+      "transaction_count": 3,
+      "last_transaction_time": "2025-11-10 23:13:15",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 29,
-      "transaction_time": "2025-11-02 12:03:25",
-      "transaction_counterparty": "哒哒要睡觉咯🌚",
-      "amount": 38.8,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202511021720600345074",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "🍉",
+      "total_amount": 38.8,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-10-25 10:30:33",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 30,
-      "transaction_time": "2025-10-31 16:37:10",
-      "transaction_counterparty": "哒哒要睡觉咯🌚",
-      "amount": 88.8,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510311522240402159",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "美国",
+      "total_amount": 38.8,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-10-24 15:06:26",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 31,
-      "transaction_time": "2025-10-30 09:26:07",
-      "transaction_counterparty": "哒哒要睡觉咯🌚",
-      "amount": 66.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510301620560633583",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "李永明",
+      "total_amount": 38.8,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-10-21 14:17:16",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 32,
-      "transaction_time": "2025-10-27 20:18:40",
-      "transaction_counterparty": "陈遥",
-      "amount": 88.8,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510271722781781335",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "mate",
+      "total_amount": 38.8,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-10-05 20:58:08",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 33,
-      "transaction_time": "2025-10-27 16:34:47",
-      "transaction_counterparty": "🍃煙灰の結ぐ鋦🍂",
-      "amount": 88.8,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510271612203876896",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "王加兵",
+      "total_amount": 38.6,
+      "transaction_count": 4,
+      "last_transaction_time": "2025-11-08 12:25:52",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 34,
-      "transaction_time": "2025-10-26 21:26:28",
-      "transaction_counterparty": "Don",
-      "amount": 88.8,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510261522469402700",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "生",
+      "total_amount": 25.4,
+      "transaction_count": 2,
+      "last_transaction_time": "2025-11-10 07:29:12",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 35,
-      "transaction_time": "2025-10-26 18:13:48",
-      "transaction_counterparty": "Zz",
-      "amount": 88.8,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510261612945338001",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "杨天彬",
+      "total_amount": 25.4,
+      "transaction_count": 2,
+      "last_transaction_time": "2025-11-08 12:35:09",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 36,
-      "transaction_time": "2025-10-26 16:54:26",
-      "transaction_counterparty": "梦忆づ路",
-      "amount": 6.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510261921323310171",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "鹏翥夹具许凤山18601670048",
+      "total_amount": 18.8,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-10-11 13:32:07",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 37,
-      "transaction_time": "2025-10-25 14:48:13",
-      "transaction_counterparty": "讲道理",
-      "amount": 66.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510251811265296217",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "雨落倾城",
+      "total_amount": 18.8,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-11-07 21:20:24",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 38,
-      "transaction_time": "2025-10-25 10:30:33",
-      "transaction_counterparty": "🍉",
-      "amount": 38.8,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510251624215394691",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "覃普",
+      "total_amount": 18.8,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-10-06 09:16:02",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 39,
-      "transaction_time": "2025-10-24 18:52:24",
-      "transaction_counterparty": "🇵  🇪   🇹  🇪cium",
-      "amount": 18.8,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510241712734250378",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "码上飞扬",
+      "total_amount": 18.8,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-10-11 11:14:51",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 40,
-      "transaction_time": "2025-10-24 15:06:26",
-      "transaction_counterparty": "美国",
-      "amount": 38.8,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510241814235811662",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "心情",
+      "total_amount": 18.8,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-10-08 08:40:24",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 41,
-      "transaction_time": "2025-10-24 08:29:53",
-      "transaction_counterparty": "哒哒要睡觉咯🌚",
-      "amount": 38.8,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510241723349862296",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "孤狼",
+      "total_amount": 18.8,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-10-06 08:44:27",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 42,
-      "transaction_time": "2025-10-23 22:03:33",
-      "transaction_counterparty": "吉祥",
-      "amount": 6.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510231520698968409",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "威",
+      "total_amount": 18.8,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-10-06 08:45:13",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 43,
-      "transaction_time": "2025-10-22 18:42:05",
-      "transaction_counterparty": "翔宇",
-      "amount": 6.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510221811924583703",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": " ",
+      "total_amount": 18.8,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-10-07 10:54:35",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 44,
-      "transaction_time": "2025-10-22 17:25:33",
-      "transaction_counterparty": "哒哒要睡觉咯🌚",
-      "amount": 38.8,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510221922989096719",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "sl",
+      "total_amount": 18.8,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-10-14 17:29:43",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 45,
-      "transaction_time": "2025-10-21 14:17:16",
-      "transaction_counterparty": "李永明",
-      "amount": 38.8,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510211611520922885",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "ZRMCR",
+      "total_amount": 18.8,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-10-05 23:15:19",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 46,
-      "transaction_time": "2025-10-20 15:59:49",
-      "transaction_counterparty": "A01重庆市印务",
-      "amount": 66.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510201711537295081",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "A  大格局",
+      "total_amount": 18.8,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-10-03 10:28:28",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 47,
-      "transaction_time": "2025-10-18 22:47:50",
-      "transaction_counterparty": "Mc",
-      "amount": 6.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510181622245747583",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "吴敏明",
+      "total_amount": 16.6,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-10-09 07:45:53",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 48,
-      "transaction_time": "2025-10-18 22:19:28",
-      "transaction_counterparty": "杨天彬",
-      "amount": 6.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510181713753515028",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "Mc",
+      "total_amount": 13.2,
+      "transaction_count": 2,
+      "last_transaction_time": "2025-10-18 22:47:50",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 49,
-      "transaction_time": "2025-10-18 18:12:01",
-      "transaction_counterparty": "哒哒要睡觉咯🌚",
-      "amount": 38.8,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510181921152730554",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "罗前锋",
+      "total_amount": 8.8,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-10-06 08:46:45",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 50,
-      "transaction_time": "2025-10-18 12:20:57",
-      "transaction_counterparty": "永恒",
-      "amount": 6.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510181911711473972",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "Biparwa",
+      "total_amount": 8.8,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-10-05 23:38:57",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 51,
-      "transaction_time": "2025-10-17 16:23:06",
-      "transaction_counterparty": "哒哒要睡觉咯🌚",
-      "amount": 38.8,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510171820769080467",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "集思",
+      "total_amount": 6.6,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-10-10 14:32:25",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 52,
-      "transaction_time": "2025-10-17 16:16:56",
-      "transaction_counterparty": "ʚLHYTSɞ.",
-      "amount": 6.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510171613266863107",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "陈毅",
+      "total_amount": 6.6,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-10-05 14:04:18",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 53,
-      "transaction_time": "2025-10-16 22:43:12",
-      "transaction_counterparty": "先相信后看见",
-      "amount": 66.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510161612628047125",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "通通",
+      "total_amount": 6.6,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-10-04 11:26:57",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 54,
-      "transaction_time": "2025-10-16 12:37:32",
-      "transaction_counterparty": "哒哒要睡觉咯🌚",
-      "amount": 38.8,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510161621371109771",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "追过梦想又怎样ᯤ ²ᴳ⁺",
+      "total_amount": 6.6,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-10-06 12:07:02",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 55,
-      "transaction_time": "2025-10-15 08:32:19",
-      "transaction_counterparty": "哒哒要睡觉咯🌚",
-      "amount": 66.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510151821331104677",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "财富八斗",
+      "total_amount": 6.6,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-10-05 15:09:34",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 56,
-      "transaction_time": "2025-10-14 20:48:02",
-      "transaction_counterparty": "斌哥哥",
-      "amount": 38.8,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510141610891396956",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "褔安小蛋髙嗷髙",
+      "total_amount": 6.6,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-10-03 15:33:16",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 57,
-      "transaction_time": "2025-10-14 17:29:58",
-      "transaction_counterparty": "Mc",
-      "amount": 6.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510141920046836168",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "若初SoIe",
+      "total_amount": 6.6,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-10-06 08:43:44",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 58,
-      "transaction_time": "2025-10-14 17:29:43",
-      "transaction_counterparty": "sl",
-      "amount": 18.8,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510141920660394792",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "红色水晶",
+      "total_amount": 6.6,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-10-04 12:39:34",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 59,
-      "transaction_time": "2025-10-13 10:41:19",
-      "transaction_counterparty": "YZF",
-      "amount": 6.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510131522954208936",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "紫薯",
+      "total_amount": 6.6,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-11-10 20:31:51",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 60,
-      "transaction_time": "2025-10-12 22:10:06",
-      "transaction_counterparty": "哒哒要睡觉咯🌚",
-      "amount": 88.8,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510121520335327309",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "王月生白水",
+      "total_amount": 6.6,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-10-02 13:36:53",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 61,
-      "transaction_time": "2025-10-11 13:32:07",
-      "transaction_counterparty": "鹏翥夹具许凤山18601670048",
-      "amount": 18.8,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510111723666516232",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "猴猴",
+      "total_amount": 6.6,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-10-03 08:59:53",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 62,
-      "transaction_time": "2025-10-11 13:07:13",
-      "transaction_counterparty": "华成风",
-      "amount": 6.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510111712091961694",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "狼族盟约",
+      "total_amount": 6.6,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-10-05 14:19:09",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 63,
-      "transaction_time": "2025-10-11 11:14:51",
-      "transaction_counterparty": "码上飞扬",
-      "amount": 18.8,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510111611483386076",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "永恒",
+      "total_amount": 6.6,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-10-18 12:20:57",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 64,
-      "transaction_time": "2025-10-10 14:32:25",
-      "transaction_counterparty": "集思",
-      "amount": 6.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510101521866818637",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "梦忆づ路",
+      "total_amount": 6.6,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-10-26 16:54:26",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 65,
-      "transaction_time": "2025-10-09 07:45:53",
-      "transaction_counterparty": "吴敏明",
-      "amount": 16.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510091623592818609",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "怂怂戴",
+      "total_amount": 6.6,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-10-05 14:03:45",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 66,
-      "transaction_time": "2025-10-09 01:58:42",
-      "transaction_counterparty": "斌哥哥",
-      "amount": 6.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510091712274240151",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "太阳",
+      "total_amount": 6.6,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-10-01 20:33:44",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 67,
-      "transaction_time": "2025-10-08 08:40:24",
-      "transaction_counterparty": "心情",
-      "amount": 18.8,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510081813170326575",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "周建伟",
+      "total_amount": 6.6,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-10-03 15:33:12",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 68,
-      "transaction_time": "2025-10-07 10:54:35",
-      "transaction_counterparty": " ",
-      "amount": 18.8,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510071822932506961",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "呀呀呀呀呀",
+      "total_amount": 6.6,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-10-05 19:05:26",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 69,
-      "transaction_time": "2025-10-06 12:07:02",
-      "transaction_counterparty": "追过梦想又怎样ᯤ ²ᴳ⁺",
-      "amount": 6.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510061810274861944",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "吉祥",
+      "total_amount": 6.6,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-10-23 22:03:33",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 70,
-      "transaction_time": "2025-10-06 09:16:02",
-      "transaction_counterparty": "覃普",
-      "amount": 18.8,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510061512448404420",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "华成风",
+      "total_amount": 6.6,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-10-11 13:07:13",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 71,
-      "transaction_time": "2025-10-06 08:46:45",
-      "transaction_counterparty": "罗前锋",
-      "amount": 8.8,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510061723974811191",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "凊颩飛婸",
+      "total_amount": 6.6,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-10-05 23:32:58",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 72,
-      "transaction_time": "2025-10-06 08:45:13",
-      "transaction_counterparty": "威",
-      "amount": 18.8,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510061511924746770",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "做自己",
+      "total_amount": 6.6,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-10-05 14:10:45",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 73,
-      "transaction_time": "2025-10-06 08:44:27",
-      "transaction_counterparty": "孤狼",
-      "amount": 18.8,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510061621898630925",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "k",
+      "total_amount": 6.6,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-10-05 14:09:17",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 74,
-      "transaction_time": "2025-10-06 08:43:44",
-      "transaction_counterparty": "若初SoIe",
-      "amount": 6.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510061821233859392",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "YZF",
+      "total_amount": 6.6,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-10-13 10:41:19",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 75,
-      "transaction_time": "2025-10-05 23:38:57",
-      "transaction_counterparty": "Biparwa",
-      "amount": 8.8,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510051521547621661",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "X",
+      "total_amount": 6.6,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-10-03 16:46:31",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 76,
-      "transaction_time": "2025-10-05 23:32:58",
-      "transaction_counterparty": "凊颩飛婸",
-      "amount": 6.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510051812432631633",
-      "created_at": "2025-11-11 05:54:11"
+      "counterparty": "Lotus",
+      "total_amount": 6.6,
+      "transaction_count": 1,
+      "last_transaction_time": "2025-10-05 14:06:37",
+      "updated_at": "2025-11-11 05:54:11"
     },
     {
       "id": 77,
-      "transaction_time": "2025-10-05 23:15:19",
-      "transaction_counterparty": "ZRMCR",
-      "amount": 18.8,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510051920085351722",
-      "created_at": "2025-11-11 05:54:11"
-    },
-    {
-      "id": 78,
-      "transaction_time": "2025-10-05 20:58:08",
-      "transaction_counterparty": "mate",
-      "amount": 38.8,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510051622852953550",
-      "created_at": "2025-11-11 05:54:11"
-    },
-    {
-      "id": 79,
-      "transaction_time": "2025-10-05 19:05:26",
-      "transaction_counterparty": "呀呀呀呀呀",
-      "amount": 6.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510051712737514752",
-      "created_at": "2025-11-11 05:54:11"
-    },
-    {
-      "id": 80,
-      "transaction_time": "2025-10-05 16:26:41",
-      "transaction_counterparty": "王加兵",
-      "amount": 6.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510051912077891966",
-      "created_at": "2025-11-11 05:54:11"
-    },
-    {
-      "id": 81,
-      "transaction_time": "2025-10-05 15:09:34",
-      "transaction_counterparty": "财富八斗",
-      "amount": 6.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510051621344060501",
-      "created_at": "2025-11-11 05:54:11"
-    },
-    {
-      "id": 82,
-      "transaction_time": "2025-10-05 15:08:36",
-      "transaction_counterparty": "刘京文",
-      "amount": 66.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510051822304955510",
-      "created_at": "2025-11-11 05:54:11"
-    },
-    {
-      "id": 83,
-      "transaction_time": "2025-10-05 14:47:30",
-      "transaction_counterparty": "  我爱钓大鱼",
-      "amount": 6.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510051923724717632",
-      "created_at": "2025-11-11 05:54:11"
-    },
-    {
-      "id": 84,
-      "transaction_time": "2025-10-05 14:19:09",
-      "transaction_counterparty": "狼族盟约",
-      "amount": 6.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510051922844311190",
-      "created_at": "2025-11-11 05:54:11"
-    },
-    {
-      "id": 85,
-      "transaction_time": "2025-10-05 14:10:45",
-      "transaction_counterparty": "做自己",
-      "amount": 6.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510051521382463280",
-      "created_at": "2025-11-11 05:54:11"
-    },
-    {
-      "id": 86,
-      "transaction_time": "2025-10-05 14:09:17",
-      "transaction_counterparty": "k",
-      "amount": 6.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510051612656803781",
-      "created_at": "2025-11-11 05:54:11"
-    },
-    {
-      "id": 87,
-      "transaction_time": "2025-10-05 14:07:58",
-      "transaction_counterparty": "生",
-      "amount": 18.8,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510051913396133905",
-      "created_at": "2025-11-11 05:54:11"
-    },
-    {
-      "id": 88,
-      "transaction_time": "2025-10-05 14:06:37",
-      "transaction_counterparty": "Lotus",
-      "amount": 6.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510051723451054848",
-      "created_at": "2025-11-11 05:54:11"
-    },
-    {
-      "id": 89,
-      "transaction_time": "2025-10-05 14:05:06",
-      "transaction_counterparty": "筱羽智能工程有限公司(搏浪科技)",
-      "amount": 66.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510051913614708472",
-      "created_at": "2025-11-11 05:54:11"
-    },
-    {
-      "id": 90,
-      "transaction_time": "2025-10-05 14:04:18",
-      "transaction_counterparty": "陈毅",
-      "amount": 6.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510051810751723809",
-      "created_at": "2025-11-11 05:54:11"
-    },
-    {
-      "id": 91,
-      "transaction_time": "2025-10-05 14:04:14",
-      "transaction_counterparty": "首发经济达人",
-      "amount": 6.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510051713055886185",
-      "created_at": "2025-11-11 05:54:11"
-    },
-    {
-      "id": 92,
-      "transaction_time": "2025-10-05 14:03:45",
-      "transaction_counterparty": "怂怂戴",
-      "amount": 6.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510051520706408130",
-      "created_at": "2025-11-11 05:54:11"
-    },
-    {
-      "id": 93,
-      "transaction_time": "2025-10-04 12:39:34",
-      "transaction_counterparty": "红色水晶",
-      "amount": 6.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510041722969345899",
-      "created_at": "2025-11-11 05:54:11"
-    },
-    {
-      "id": 94,
-      "transaction_time": "2025-10-04 11:26:57",
-      "transaction_counterparty": "通通",
-      "amount": 6.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510041923554219822",
-      "created_at": "2025-11-11 05:54:11"
-    },
-    {
-      "id": 95,
-      "transaction_time": "2025-10-03 16:46:31",
-      "transaction_counterparty": "X",
-      "amount": 6.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510031523399062281",
-      "created_at": "2025-11-11 05:54:11"
-    },
-    {
-      "id": 96,
-      "transaction_time": "2025-10-03 15:33:16",
-      "transaction_counterparty": "褔安小蛋髙嗷髙",
-      "amount": 6.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510031521799775047",
-      "created_at": "2025-11-11 05:54:11"
-    },
-    {
-      "id": 97,
-      "transaction_time": "2025-10-03 15:33:12",
-      "transaction_counterparty": "周建伟",
-      "amount": 6.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510031611529332609",
-      "created_at": "2025-11-11 05:54:11"
-    },
-    {
-      "id": 98,
-      "transaction_time": "2025-10-03 11:19:16",
-      "transaction_counterparty": "爱东",
-      "amount": 66.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510031921559425638",
-      "created_at": "2025-11-11 05:54:11"
-    },
-    {
-      "id": 99,
-      "transaction_time": "2025-10-03 10:39:59",
-      "transaction_counterparty": "言午禾乃JU",
-      "amount": 66.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510031521814491993",
-      "created_at": "2025-11-11 05:54:11"
-    },
-    {
-      "id": 100,
-      "transaction_time": "2025-10-03 10:28:28",
-      "transaction_counterparty": "A  大格局",
-      "amount": 18.8,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510031623346247502",
-      "created_at": "2025-11-11 05:54:11"
-    },
-    {
-      "id": 101,
-      "transaction_time": "2025-10-03 08:59:53",
-      "transaction_counterparty": "猴猴",
-      "amount": 6.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510031824291621645",
-      "created_at": "2025-11-11 05:54:11"
-    },
-    {
-      "id": 102,
-      "transaction_time": "2025-10-03 08:53:59",
-      "transaction_counterparty": "王加兵",
-      "amount": 6.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510031610340576820",
-      "created_at": "2025-11-11 05:54:11"
-    },
-    {
-      "id": 103,
-      "transaction_time": "2025-10-02 13:36:53",
-      "transaction_counterparty": "王月生白水",
-      "amount": 6.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510021624239840023",
-      "created_at": "2025-11-11 05:54:11"
-    },
-    {
-      "id": 104,
-      "transaction_time": "2025-10-01 20:33:44",
-      "transaction_counterparty": "太阳",
-      "amount": 6.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510011912952154442",
-      "created_at": "2025-11-11 05:54:11"
-    },
-    {
-      "id": 105,
-      "transaction_time": "2025-10-01 16:24:01",
-      "transaction_counterparty": "吳鵬飛",
-      "amount": 66.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510011821369398357",
-      "created_at": "2025-11-11 05:54:11"
-    },
-    {
-      "id": 106,
-      "transaction_time": "2025-10-01 12:31:30",
-      "transaction_counterparty": "哒哒要睡觉咯🌚",
-      "amount": 88.8,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202510011921342307358",
-      "created_at": "2025-11-11 05:54:11"
-    },
-    {
-      "id": 107,
-      "transaction_time": "2025-09-30 12:53:42",
-      "transaction_counterparty": "CYF",
-      "amount": 18.8,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202509301711624881631",
-      "created_at": "2025-11-11 06:05:04"
-    },
-    {
-      "id": 108,
-      "transaction_time": "2025-09-29 23:48:06",
-      "transaction_counterparty": "Zz",
-      "amount": 6.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202509291712336806427",
-      "created_at": "2025-11-11 06:05:04"
-    },
-    {
-      "id": 109,
-      "transaction_time": "2025-09-29 21:39:49",
-      "transaction_counterparty": "太阳",
-      "amount": 18.8,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202509291612640392841",
-      "created_at": "2025-11-11 06:05:04"
-    },
-    {
-      "id": 110,
-      "transaction_time": "2025-09-29 16:02:07",
-      "transaction_counterparty": "空城",
-      "amount": 6.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202509291820580829180",
-      "created_at": "2025-11-11 06:05:04"
-    },
-    {
-      "id": 111,
-      "transaction_time": "2025-09-26 16:48:23",
-      "transaction_counterparty": "ㅤㅤ",
-      "amount": 6.6,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202509261820414938453",
-      "created_at": "2025-11-11 06:05:04"
-    },
-    {
-      "id": 112,
-      "transaction_time": "2025-09-13 18:00:12",
-      "transaction_counterparty": "薛定谔的猫",
-      "amount": 49.0,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202509131713798257698",
-      "created_at": "2025-11-11 06:05:04"
-    },
-    {
-      "id": 113,
-      "transaction_time": "2025-08-03 09:41:01",
-      "transaction_counterparty": "熙哥",
-      "amount": 19.0,
-      "payment_method": "零钱",
-      "transaction_id": "1000108101202508031610931501873",
-      "created_at": "2025-11-11 06:05:04"
+      "counterparty": "Sariel",
+      "total_amount": 2.0,
+      "transaction_count": 2,
+      "last_transaction_time": "2025-11-08 22:37:29",
+      "updated_at": "2025-11-11 05:54:11"
     }
   ],
   "statistics": {
-    "total_transactions": 113,
-    "total_amount": 3757.8,
-    "date_range": {
-      "start": "2025-08-03 09:41:01",
-      "end": "2025-11-10 23:13:15"
-    }
+    "total_donors": 77,
+    "total_amount": 3632.3999999999996,
+    "total_transactions": 106
   }
 }
