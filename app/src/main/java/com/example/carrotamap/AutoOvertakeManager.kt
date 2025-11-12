@@ -56,7 +56,8 @@ class AutoOvertakeManager(
         private const val MAX_STEERING_ANGLE = 15.0f       // 最大方向盘角度 (度)
         
         // 道路类型
-        private val ALLOWED_ROAD_TYPES = listOf(1, 6)      // 1=高速, 6=快速路
+        // 🆕 修复：roadcate=10,11 表示高速公路，roadcate=6 表示非高速公路
+        private val ALLOWED_ROAD_TYPES = listOf(10, 11)    // 10,11=高速公路（很宽道路，四车道及以上）
         
         // 时间参数
         private const val DEBOUNCE_FRAMES = 3             // 防抖帧数
@@ -295,7 +296,7 @@ class AutoOvertakeManager(
         if (!checkLeadVehicleMinSpeed(data)) {
             val leadSpeedKmh = lead0.v * 3.6f
             val roadcate = carrotMan.roadcate
-            val minSpeed = if (roadcate == 1 || roadcate == 6) 35 else 20
+            val minSpeed = if (roadcate == 10 || roadcate == 11) 35 else 20
             return Pair(false, "前车速度过低 (< $minSpeed km/h)")
         }
         
@@ -593,8 +594,8 @@ class AutoOvertakeManager(
         // 道路类型调整
         val roadcate = data?.carrotMan?.roadcate ?: 0
         cooldown = when {
-            roadcate == 1 || roadcate == 6 -> (cooldown * 0.8).toLong()  // 高速/快速路：×0.8
-            else -> (cooldown * 1.2).toLong()                            // 普通道路：×1.2
+            roadcate == 10 || roadcate == 11 -> (cooldown * 0.8).toLong()  // 高速公路：×0.8
+            else -> (cooldown * 1.2).toLong()                              // 普通道路：×1.2
         }
         
         return cooldown
@@ -610,8 +611,8 @@ class AutoOvertakeManager(
         
         // 根据道路类型设置最低速度
         val minSpeed = when {
-            roadcate == 1 || roadcate == 6 -> HIGHWAY_LEAD_MIN_SPEED_KPH  // 高速/快速路：≥35 km/h
-            else -> NORMAL_LEAD_MIN_SPEED_KPH                            // 普通道路：≥20 km/h
+            roadcate == 10 || roadcate == 11 -> HIGHWAY_LEAD_MIN_SPEED_KPH  // 高速公路：≥35 km/h
+            else -> NORMAL_LEAD_MIN_SPEED_KPH                               // 普通道路：≥20 km/h
         }
         
         if (leadSpeedKph < minSpeed) {
@@ -627,8 +628,8 @@ class AutoOvertakeManager(
      */
     private fun checkEarlyOvertakeConditions(data: XiaogeVehicleData): Boolean {
         val roadcate = data.carrotMan?.roadcate ?: 0
-        // 只在高速/快速路启用
-        if (roadcate != 1 && roadcate != 6) return false
+        // 只在高速公路启用
+        if (roadcate != 10 && roadcate != 11) return false
         
         val carState = data.carState ?: return false
         val lead0 = data.modelV2?.lead0 ?: return false
