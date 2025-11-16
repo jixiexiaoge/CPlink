@@ -96,14 +96,21 @@ class MainActivityUI(
                             )
                         }
                         
-                        // 下载弹窗
-                        if (core.showDownloadDialog.value) {
-                            CarrotAmapDownloadDialog(
-                                onDismiss = { core.showDownloadDialog.value = false },
-                                onDownload = { 
-                                    core.showDownloadDialog.value = false
-                                    core.openGitHubWebsite()
-                                }
+                        // 功能说明弹窗（仅用户类型为2时显示）
+                        var showFeatureDialog by remember { mutableStateOf(false) }
+                        var hasShownDialog by remember { mutableStateOf(false) }
+                        
+                        // 当用户类型为2时，自动显示功能说明弹窗（仅显示一次）
+                        LaunchedEffect(core.userType.value) {
+                            if (core.userType.value == 2 && !hasShownDialog) {
+                                showFeatureDialog = true
+                                hasShownDialog = true
+                            }
+                        }
+                        
+                        if (showFeatureDialog && core.userType.value == 2) {
+                            AppFeatureDialog(
+                                onDismiss = { showFeatureDialog = false }
                             )
                         }
                     }
@@ -134,36 +141,44 @@ class MainActivityUI(
                     )
                 )
         ) {
-            // 使用LazyColumn替代Column + verticalScroll
-            LazyColumn(
+            // 使用Column布局，让数据表格可以独立滚动
+            Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // 状态卡片
-                item {
-                    CompactStatusCard(
-                        receiverStatus = amapBroadcastManager.receiverStatus.value,
-                        totalBroadcastCount = amapBroadcastManager.totalBroadcastCount.intValue,
-                        carrotManFields = carrotManFields,
-                        networkStatus = networkManager.getNetworkConnectionStatus(),
-                        networkStats = networkManager.getNetworkStatistics(),
-                        onClearDataClick = {
-                            amapBroadcastManager.clearBroadcastData()
-                        }
-                    )
-                }
+                // 状态卡片（固定高度，不滚动）
+                CompactStatusCard(
+                    receiverStatus = amapBroadcastManager.receiverStatus.value,
+                    totalBroadcastCount = amapBroadcastManager.totalBroadcastCount.intValue,
+                    carrotManFields = carrotManFields,
+                    networkStatus = networkManager.getNetworkConnectionStatus(),
+                    networkStats = networkManager.getNetworkStatistics(),
+                    onClearDataClick = {
+                        amapBroadcastManager.clearBroadcastData()
+                    }
+                )
                 
-                // 数据表格
-                item {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                // 数据表格（可滚动）
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f), // 占据剩余空间
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                ) {
+                    // 使用可滚动的Column，让用户可以滑动查看所有数据
+                    // Box确保滚动容器有明确的高度约束
+                    Box(
+                        modifier = Modifier.fillMaxSize()
                     ) {
+                        val scrollState = rememberScrollState()
                         Column(
-                            modifier = Modifier.padding(16.dp)
+                            modifier = Modifier
+                                .fillMaxSize() // 填充整个Box，确保有明确的高度
+                                .padding(16.dp)
+                                .verticalScroll(scrollState) // 添加垂直滚动功能
                         ) {
                             // 数据表格
                             DataTable(
@@ -466,18 +481,17 @@ class MainActivityUI(
     }
 
     /**
-     * CarrotAmap下载弹窗组件
+     * 应用功能说明弹窗组件（仅用户类型为2时显示）
      */
     @Composable
-    private fun CarrotAmapDownloadDialog(
-        onDismiss: () -> Unit,
-        onDownload: () -> Unit
+    private fun AppFeatureDialog(
+        onDismiss: () -> Unit
     ) {
         AlertDialog(
             onDismissRequest = onDismiss,
             title = {
                 Text(
-                    text = "🚗 请使用 CarrotAmap",
+                    text = "🚗 CP搭子功能说明",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF1E293B)
@@ -488,60 +502,61 @@ class MainActivityUI(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Text(
-                        text = "感谢您的支持！作为支持者，您需要使用 CarrotAmap 应用来获得完整的导航功能。",
+                        text = "感谢您的支持！CP搭子是一个智能驾驶助手应用，为您提供以下功能：",
                         fontSize = 14.sp,
                         color = Color(0xFF64748B),
                         lineHeight = 20.sp
                     )
                     
                     Text(
-                        text = "CarrotAmap 是基于高德地图的增强导航应用，提供：",
+                        text = "核心功能：",
                         fontSize = 14.sp,
                         color = Color(0xFF64748B),
                         fontWeight = FontWeight.Medium
                     )
                     
                     Column(
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         listOf(
-                            "🚗 自动按导航变道和转弯",
-                            "🗺️ 自动沿导航路线行驶", 
-                            "📊 根据限速自动调整车速",
-                            "🚦 红灯自动减速停车",
-                            "🛣️ 弯道自动减速"
+                            "🗺️ 高德地图导航集成 - 与高德地图车机版无缝对接",
+                            "🚗 智能驾驶辅助 - 自动按导航变道和转弯", 
+                            "📊 限速自动调整 - 根据道路限速自动调整车速",
+                            "🚦 交通灯识别 - 红灯自动减速停车",
+                            "🛣️ 弯道智能减速 - 根据弯道曲率自动调整速度",
+                            "📡 实时数据监控 - 查看车辆和导航实时数据",
+                            "🎮 手动控制命令 - 支持手动发送控制指令"
                         ).forEach { feature ->
                             Text(
                                 text = feature,
                                 fontSize = 13.sp,
                                 color = Color(0xFF475569),
-                                modifier = Modifier.padding(start = 8.dp)
+                                modifier = Modifier.padding(start = 8.dp),
+                                lineHeight = 18.sp
                             )
                         }
                     }
+                    
+                    Text(
+                        text = "使用提示：在主页可以查看实时数据，使用控制按钮发送指令，在「我的」页面查看使用统计。",
+                        fontSize = 12.sp,
+                        color = Color(0xFF94A3B8),
+                        lineHeight = 18.sp,
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
                 }
             },
             confirmButton = {
                 Button(
-                    onClick = onDownload,
+                    onClick = onDismiss,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFF3B82F6)
                     )
                 ) {
                     Text(
-                        text = "立即下载",
+                        text = "我知道了",
                         color = Color.White,
                         fontWeight = FontWeight.Medium
-                    )
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = onDismiss
-                ) {
-                    Text(
-                        text = "稍后再说",
-                        color = Color(0xFF64748B)
                     )
                 }
             },

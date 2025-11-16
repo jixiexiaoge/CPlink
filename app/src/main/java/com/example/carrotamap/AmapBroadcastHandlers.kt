@@ -10,11 +10,13 @@ import kotlin.math.max
 /**
  * 高德地图广播处理器扩展
  * 包含各种类型广播的具体处理逻辑
+ * 🎯 整合了AmapDataProcessor、AmapDestinationManager、AmapNavigationManager、AmapTrafficHandlers的功能
  */
 class AmapBroadcastHandlers(
     private val carrotManFields: MutableState<CarrotManFields>,
     private val networkManager: NetworkManager? = null,
-    private val context: android.content.Context? = null
+    private val context: android.content.Context? = null,
+    private val updateUI: ((String) -> Unit)? = null
 ) {
     companion object {
         private const val TAG = "AmapBroadcastHandlers"
@@ -183,7 +185,29 @@ class AmapBroadcastHandlers(
          * @param direction 方向信息 (用于区分左转等特殊情况)
          * @return CarrotMan协议交通状态
          */
-        // moved to AmapTrafficHandlers
+        private fun mapTrafficLightStatus(amapStatus: Int, direction: Int = 0): Int {
+            return when (amapStatus) {
+                -1 -> -1
+                0 -> 0
+                1 -> 1
+                2 -> if (direction == 1 || direction == 3) 3 else 2
+                3 -> 1
+                4 -> 2
+                else -> 0
+            }
+        }
+
+        private fun getTrafficLightDirectionDesc(direction: Int): String {
+            return when (direction) {
+                0 -> "直行黄灯"
+                1 -> "左转"
+                2 -> "右转"
+                3 -> "左转掉头"
+                4 -> "直行"
+                5 -> "右转掉头"
+                else -> "方向$direction"
+            }
+        }
     }
 
     // ===============================
@@ -1029,7 +1053,7 @@ class AmapBroadcastHandlers(
             Log.d(TAG, "📷 电子眼信息: 类型=$cameraType, 距离=${cameraDistance}m, 限速=${cameraSpeedLimit}km/h")
             
             // 映射高德CAMERA_TYPE到Python nSdiType
-            val mappedSdiType = if (cameraType >= 0) mapAmapCameraTypeToSdi(cameraType) else carrotManFields.value.nSdiType
+            val mappedSdiType = if (cameraType >= 0) Companion.mapAmapCameraTypeToSdi(cameraType) else carrotManFields.value.nSdiType
             
             // 根据距离判断是否需要清空SDI信息 - 距离小于20米时清空
             val shouldClearSdi = cameraDistance <= 20
@@ -1078,37 +1102,427 @@ class AmapBroadcastHandlers(
         }
     }
 
+    // ===============================
+    // 交通相关处理（整合自AmapTrafficHandlers）
+    // ===============================
+    // 注意：handleSpeedLimit、handleCameraInfo、handleSdiPlusInfo已在上面实现，这里不再重复
+    // 需要添加：handleTrafficInfo、handleNaviSituation、handleTrafficLightInfo
+
     /**
      * 处理路况信息广播 (KEY_TYPE: 10070)
      */
-    // moved to AmapTrafficHandlers
+    fun handleTrafficInfo(intent: Intent) {
+        try {
+            val trafficLevel = intent.getIntExtra("TRAFFIC_LEVEL", -1)
+            val trafficDescription = intent.getStringExtra("TRAFFIC_DESCRIPTION") ?: ""
+
+            carrotManFields.value = carrotManFields.value.copy(
+                trafficLevel = trafficLevel,
+                trafficDescription = trafficDescription,
+                lastUpdateTime = System.currentTimeMillis()
+            )
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ 处理路况信息失败: ${e.message}", e)
+        }
+    }
 
     /**
      * 处理导航态势广播 (KEY_TYPE: 13003)
      */
-    // moved to AmapTrafficHandlers
+    fun handleNaviSituation(intent: Intent) {
+        try {
+            val situationType = intent.getIntExtra("SITUATION_TYPE", -1)
+            val situationDistance = intent.getIntExtra("SITUATION_DISTANCE", 0)
+            val situationDescription = intent.getStringExtra("SITUATION_DESCRIPTION") ?: ""
+
+            carrotManFields.value = carrotManFields.value.copy(
+                situationType = situationType,
+                situationDistance = situationDistance,
+                situationDescription = situationDescription,
+                lastUpdateTime = System.currentTimeMillis()
+            )
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ 处理导航态势失败: ${e.message}", e)
+        }
+    }
 
     /**
      * 处理红绿灯信息广播 - KEY_TYPE: 60073
-     * 基于JavaScript参考代码实现，使用正确的字段名
      */
-    // moved to AmapTrafficHandlers
+    fun handleTrafficLightInfo(intent: Intent) {
+        try {
+            val trafficLightStatus = when {
+                intent.hasExtra("trafficLightStatus") -> intent.getIntExtra("trafficLightStatus", 0)
+                intent.hasExtra("TRAFFIC_LIGHT_STATUS") -> intent.getIntExtra("TRAFFIC_LIGHT_STATUS", 0)
+                intent.hasExtra("LIGHT_STATUS") -> intent.getIntExtra("LIGHT_STATUS", 0)
+                else -> 0
+            }
+
+            val redLightCountDown = intent.getIntExtra("redLightCountDownSeconds", 0)
+            val greenLightCountDown = intent.getIntExtra("greenLightLastSecond", 0)
+            val direction = when {
+                intent.hasExtra("dir") -> intent.getIntExtra("dir", 0)
+                intent.hasExtra("TRAFFIC_LIGHT_DIRECTION") -> intent.getIntExtra("TRAFFIC_LIGHT_DIRECTION", 0)
+                intent.hasExtra("LIGHT_DIRECTION") -> intent.getIntExtra("LIGHT_DIRECTION", 0)
+                else -> 0
+            }
+            val waitRound = intent.getIntExtra("waitRound", 0)
+
+            var carrotTrafficState = Companion.mapTrafficLightStatus(trafficLightStatus, direction)
+            var leftSec = if (trafficLightStatus == 1 || trafficLightStatus == 3 || trafficLightStatus == 2 || trafficLightStatus == 4) redLightCountDown else redLightCountDown
+
+            val previousTrafficState = carrotManFields.value.traffic_state
+            val previousLeftSec = carrotManFields.value.left_sec
+
+            if (carrotTrafficState == 0 && leftSec <= 0) {
+                if (previousTrafficState == 1 && previousLeftSec <= 3) {
+                    carrotTrafficState = 2
+                    leftSec = 30
+                }
+            }
+
+            val stateChanged = (carrotTrafficState != previousTrafficState) || (leftSec != previousLeftSec)
+
+            carrotManFields.value = carrotManFields.value.copy(
+                traffic_light_count = intent.getIntExtra("TRAFFIC_LIGHT_COUNT", -1).takeIf { it >= 0 }
+                    ?: carrotManFields.value.traffic_light_count,
+                traffic_state = carrotTrafficState,
+                traffic_light_direction = direction,
+                left_sec = leftSec,
+                max_left_sec = maxOf(leftSec, carrotManFields.value.max_left_sec),
+                carrot_left_sec = leftSec,
+                amap_traffic_light_status = trafficLightStatus,
+                amap_traffic_light_dir = direction,
+                amap_green_light_last_second = greenLightCountDown,
+                amap_wait_round = waitRound,
+                lastUpdateTime = System.currentTimeMillis()
+            )
+
+            if (stateChanged) {
+                val directionDesc = Companion.getTrafficLightDirectionDesc(direction)
+               // Log.v(TAG, "🚦 交通灯状态变化: state=$carrotTrafficState, left=$leftSec, dir=$directionDesc")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "处理红绿灯信息失败: ${e.message}", e)
+        }
+    }
+
+    // ===============================
+    // 目的地和导航管理（整合自AmapDestinationManager和AmapNavigationManager）
+    // ===============================
+
+    // 目的地缓存
+    private val destinationCache = mutableMapOf<String, Triple<Double, Double, String>>()
 
     /**
-     * 获取交通灯状态描述 (基于实际日志数据修正)
+     * 🎯 处理和验证目的地信息
+     * 从高德地图获取目的地信息并自动发送给comma3设备
      */
-    // moved to AmapTrafficHandlers
+    fun handleDestinationInfo(intent: Intent) {
+        // 从高德地图获取目的地信息
+        val endPOIName = intent.getStringExtra("endPOIName") ?: ""
+        val endPOIAddr = intent.getStringExtra("endPOIAddr") ?: ""
+        val endPOILatitude = intent.getDoubleExtra("endPOILatitude", 0.0)
+        val endPOILongitude = intent.getDoubleExtra("endPOILongitude", 0.0)
+
+        // 获取导航路线信息
+        val destinationName = intent.getStringExtra("DESTINATION_NAME") ?: endPOIName
+        val routeRemainDis = intent.getIntExtra("ROUTE_REMAIN_DIS", 0)
+        val routeRemainTime = intent.getIntExtra("ROUTE_REMAIN_TIME", 0)
+
+        // 验证目的地信息有效性
+        if (validateDestination(endPOILongitude, endPOILatitude, endPOIName)) {
+            val currentDestination = carrotManFields.value
+
+            // 检查目的地是否发生变化
+            if (shouldUpdateDestination(
+                    currentDestination.goalPosX, currentDestination.goalPosY, currentDestination.szGoalName,
+                    endPOILongitude, endPOILatitude, endPOIName
+                )) {
+
+                Log.i(TAG, "🎯 目的地信息更新:")
+                Log.d(TAG, "   名称: $endPOIName")
+                Log.d(TAG, "   地址: $endPOIAddr")
+                Log.d(TAG, "   坐标: ($endPOILatitude, $endPOILongitude)")
+                Log.d(TAG, "   剩余距离: ${routeRemainDis}米")
+                Log.d(TAG, "   预计时间: ${routeRemainTime}秒")
+
+                // 更新CarrotMan字段
+                carrotManFields.value = carrotManFields.value.copy(
+                    goalPosX = endPOILongitude,
+                    goalPosY = endPOILatitude,
+                    szGoalName = endPOIName.takeIf { it.isNotEmpty() } ?: destinationName,
+                    nGoPosDist = routeRemainDis.takeIf { it > 0 } ?: carrotManFields.value.nGoPosDist,
+                    nGoPosTime = routeRemainTime.takeIf { it > 0 } ?: carrotManFields.value.nGoPosTime,
+                    lastUpdateTime = System.currentTimeMillis(),
+                    dataQuality = "good"
+                )
+
+                // 🎯 自动发送目的地信息给comma3（修复坐标顺序：经度，纬度）
+                sendDestinationToComma3(endPOILongitude, endPOILatitude, endPOIName, endPOIAddr)
+
+                // 缓存目的地信息
+                cacheDestination("current_destination", endPOILongitude, endPOILatitude, endPOIName)
+
+                // 更新UI显示
+                updateUI?.invoke("目的地已更新: $endPOIName")
+            }
+        } else {
+            Log.w(TAG, "⚠️ 目的地信息无效: 坐标($endPOILatitude, $endPOILongitude), 名称: $endPOIName")
+        }
+    }
 
     /**
-     * 获取CarrotMan交通灯状态描述
+     * 处理收藏点数据
      */
-    // moved to AmapTrafficHandlers
+    fun handleFavoriteData(favoriteData: String) {
+        try {
+            val json = JSONObject(favoriteData)
+            val latitude = json.optDouble("latitude", 0.0)
+            val longitude = json.optDouble("longitude", 0.0)
+            val name = json.optString("name", "")
+            val type = json.optString("type", "favorite")
+
+            if (validateDestination(longitude, latitude, name)) {
+                Log.i(TAG, "🌟 收藏点数据: $name ($latitude, $longitude)")
+
+                carrotManFields.value = carrotManFields.value.copy(
+                    goalPosX = longitude,
+                    goalPosY = latitude,
+                    szGoalName = name,
+                    lastUpdateTime = System.currentTimeMillis()
+                )
+
+                sendDestinationToComma3(longitude, latitude, name, "收藏点: $type")
+                cacheDestination("favorite_$type", longitude, latitude, name)
+                updateUI?.invoke("收藏点已设置: $name")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "解析收藏点数据失败: ${e.message}", e)
+        }
+    }
 
     /**
-     * 获取交通灯方向描述 (基于实际UI观察数据修正)
-     * dir字段表示交通灯控制的方向，而不是车辆需要行驶的方向
+     * 处理家庭/公司地址数据
      */
-    // moved to AmapTrafficHandlers
+    fun handleHomeCompanyAddress(type: String, intent: Intent) {
+        val latitude = intent.getDoubleExtra("latitude", 0.0)
+        val longitude = intent.getDoubleExtra("longitude", 0.0)
+        val address = intent.getStringExtra("address") ?: ""
+        val name = if (type == "home") "家" else "公司"
+
+        if (validateDestination(longitude, latitude, name)) {
+            Log.i(TAG, "🏠 ${name}地址: $address ($latitude, $longitude)")
+
+            carrotManFields.value = carrotManFields.value.copy(
+                goalPosX = longitude,
+                goalPosY = latitude,
+                szGoalName = name,
+                lastUpdateTime = System.currentTimeMillis()
+            )
+
+            sendDestinationToComma3(longitude, latitude, name, address)
+            cacheDestination(type + "_address", longitude, latitude, name)
+
+            updateUI?.invoke("${name}地址已设置: $address")
+        }
+    }
+
+    /**
+     * 处理家庭/公司导航请求
+     */
+    fun handleHomeCompanyNavigation(intent: Intent) {
+        val navigationType = intent.getStringExtra("navigation_type") ?: ""
+        when (navigationType.lowercase()) {
+            "home" -> {
+                Log.i(TAG, "🏠 处理回家导航请求")
+                handleHomeCompanyAddress("home", intent)
+            }
+            "company" -> {
+                Log.i(TAG, "🏢 处理到公司导航请求")
+                handleHomeCompanyAddress("company", intent)
+            }
+            else -> {
+                Log.w(TAG, "⚠️ 未知的家庭/公司导航类型: $navigationType")
+            }
+        }
+    }
+
+    /**
+     * 处理收藏点结果
+     */
+    fun handleFavoriteResult(intent: Intent) {
+        val favoriteData = intent.getStringExtra("FAVORITE_DATA")
+        if (!favoriteData.isNullOrEmpty()) {
+            Log.i(TAG, "🌟 处理收藏点结果")
+            handleFavoriteData(favoriteData)
+        } else {
+            val name = intent.getStringExtra("favorite_name") ?: ""
+            val latitude = intent.getDoubleExtra("favorite_latitude", 0.0)
+            val longitude = intent.getDoubleExtra("favorite_longitude", 0.0)
+
+            if (name.isNotEmpty() && latitude != 0.0 && longitude != 0.0) {
+                Log.i(TAG, "🌟 从分散字段获取收藏点信息: $name")
+                val syntheticJson = JSONObject().apply {
+                    put("name", name)
+                    put("latitude", latitude)
+                    put("longitude", longitude)
+                    put("type", "favorite")
+                }
+                handleFavoriteData(syntheticJson.toString())
+            }
+        }
+    }
+
+    /**
+     * 🎯 处理路线规划
+     */
+    fun handleRoutePlanning(intent: Intent) {
+        Log.i(TAG, "🗺️ 处理路线规划")
+
+        val startLat = intent.getDoubleExtra("start_latitude", 0.0)
+        val startLon = intent.getDoubleExtra("start_longitude", 0.0)
+        val endLat = intent.getDoubleExtra("end_latitude", 0.0)
+        val endLon = intent.getDoubleExtra("end_longitude", 0.0)
+        val endName = intent.getStringExtra("end_name") ?: ""
+
+        if (endLat != 0.0 && endLon != 0.0) {
+            Log.d(TAG, "   起点: ($startLat, $startLon)")
+            Log.d(TAG, "   终点: $endName ($endLat, $endLon)")
+
+            // 创建合成的目的地Intent并处理
+            val syntheticIntent = Intent().apply {
+                putExtra("endPOIName", endName)
+                putExtra("endPOILatitude", endLat)
+                putExtra("endPOILongitude", endLon)
+                putExtra("ROUTE_REMAIN_DIS", 0)  // 规划阶段暂无距离信息
+                putExtra("ROUTE_REMAIN_TIME", 0)
+            }
+
+            handleDestinationInfo(syntheticIntent)
+        }
+    }
+
+    /**
+     * 🎯 处理开始导航
+     */
+    fun handleStartNavigation(intent: Intent) {
+        Log.i(TAG, "🚀 开始导航")
+
+        carrotManFields.value = carrotManFields.value.copy(
+            isNavigating = true,
+            active_carrot = 1,
+            lastUpdateTime = System.currentTimeMillis()
+        )
+
+        // 如果有目的地信息，重新发送到comma3
+        val currentFields = carrotManFields.value
+        if (currentFields.goalPosX != 0.0 && currentFields.goalPosY != 0.0 && currentFields.szGoalName.isNotEmpty()) {
+            // 通过destinationManager发送目的地信息
+            val syntheticIntent = Intent().apply {
+                putExtra("endPOIName", currentFields.szGoalName)
+                putExtra("endPOILatitude", currentFields.goalPosY)
+                putExtra("endPOILongitude", currentFields.goalPosX)
+                putExtra("endPOIAddr", "导航开始")
+            }
+            handleDestinationInfo(syntheticIntent)
+        }
+
+        updateUI?.invoke("导航已开始")
+    }
+
+    /**
+     * 🎯 处理停止导航
+     */
+    fun handleStopNavigation(intent: Intent) {
+        Log.i(TAG, "🛑 停止导航")
+
+        carrotManFields.value = carrotManFields.value.copy(
+            isNavigating = false,
+            active_carrot = 0,
+            nGoPosDist = 0,
+            nGoPosTime = 0,
+            nTBTDist = 0,
+            szTBTMainText = "",
+            lastUpdateTime = System.currentTimeMillis()
+        )
+
+        updateUI?.invoke("导航已停止")
+    }
+
+    /**
+     * 道路限速更新 - 直接映射到CarrotMan字段（整合自AmapDataProcessor）
+     */
+    fun updateRoadSpeedLimit(newLimit: Int) {
+        if (newLimit <= 0) return
+
+        // 直接更新到carrotManFields，不进行变化检测
+        carrotManFields.value = carrotManFields.value.copy(
+            nRoadLimitSpeed = newLimit,
+            lastUpdateTime = System.currentTimeMillis()
+        )
+        
+        Log.d(TAG, "🚦 限速已更新: ${newLimit}km/h (实时更新到carrotManFields)")
+    }
+
+    // ===============================
+    // 私有辅助方法
+    // ===============================
+
+    /**
+     * 自动发送目的地信息给comma3设备
+     */
+    private fun sendDestinationToComma3(longitude: Double, latitude: Double, name: String, address: String = "") {
+        try {
+            networkManager?.sendDestinationToComma3(longitude, latitude, name, address)
+        } catch (e: Exception) {
+            Log.w(TAG, "⚠️ 发送目的地信息失败: ${e.message}")
+        }
+    }
+
+    /**
+     * 缓存目的地信息
+     */
+    private fun cacheDestination(key: String, longitude: Double, latitude: Double, name: String) {
+        destinationCache[key] = Triple(longitude, latitude, name)
+        Log.d(TAG, "📝 目的地已缓存: $key -> $name")
+    }
+
+    /**
+     * 验证目的地坐标和信息的有效性
+     */
+    private fun validateDestination(longitude: Double, latitude: Double, name: String): Boolean {
+        val isValidLongitude = longitude in -180.0..180.0
+        val isValidLatitude = latitude in -90.0..90.0
+        val isValidName = name.isNotEmpty() && name.length <= 100
+        val isNonZeroCoordinates = longitude != 0.0 && latitude != 0.0
+        return isValidLongitude && isValidLatitude && isValidName && isNonZeroCoordinates
+    }
+
+    /**
+     * 检查是否需要更新目的地信息
+     */
+    private fun shouldUpdateDestination(
+        currentLon: Double, currentLat: Double, currentName: String,
+        newLon: Double, newLat: Double, newName: String
+    ): Boolean {
+        val distance = haversineDistance(currentLat, currentLon, newLat, newLon)
+        return currentName != newName || distance > 100.0 || (currentLon == 0.0 && currentLat == 0.0)
+    }
+
+    /**
+     * 计算两点间距离（哈弗辛公式），单位：米
+     */
+    private fun haversineDistance(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
+        val R = 6371000.0 // 地球半径（米）
+        val dLat = Math.toRadians(lat2 - lat1)
+        val dLon = Math.toRadians(lon2 - lon1)
+        val a = kotlin.math.sin(dLat / 2) * kotlin.math.sin(dLat / 2) +
+                kotlin.math.cos(Math.toRadians(lat1)) * kotlin.math.cos(Math.toRadians(lat2)) *
+                kotlin.math.sin(dLon / 2) * kotlin.math.sin(dLon / 2)
+        val c = 2 * kotlin.math.atan2(kotlin.math.sqrt(a), kotlin.math.sqrt(1 - a))
+        return R * c
+    }
 
     /**
      * 处理地理位置信息广播 (KEY_TYPE: 12205)

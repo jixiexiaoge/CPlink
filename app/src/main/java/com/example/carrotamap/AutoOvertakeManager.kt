@@ -191,8 +191,7 @@ class AutoOvertakeManager(
                 val other = if (isLeft) "RIGHT" else "LEFT"
                 val carStateSafe = data.carState ?: return createOvertakeStatus(data, "冷却中", false, lastOvertakeDirection, cooldownRemaining)
                 val modelV2Safe = data.modelV2 ?: return createOvertakeStatus(data, "冷却中", false, lastOvertakeDirection, cooldownRemaining)
-                val radarStateSafe = data.radarState ?: return createOvertakeStatus(data, "冷却中", false, lastOvertakeDirection, cooldownRemaining)
-                val canOther = if (isLeft) checkRightOvertakeFeasibility(carStateSafe, modelV2Safe, radarStateSafe) else checkLeftOvertakeFeasibility(carStateSafe, modelV2Safe, radarStateSafe)
+                val canOther = if (isLeft) checkRightOvertakeFeasibility(carStateSafe, modelV2Safe) else checkLeftOvertakeFeasibility(carStateSafe, modelV2Safe)
                 if (canOther != null) {
                     val lead0Safe = modelV2Safe?.lead0
                     if (overtakeMode == 2) {
@@ -405,6 +404,20 @@ class AutoOvertakeManager(
             return Pair(false, "方向盘角度过大")
         }
         
+        // 9. 🆕 Cut-in 检测：检查是否有车辆即将切入当前车道
+        val cutin = data.modelV2?.cutin
+        if (cutin != null && cutin.status) {
+            // 如果未来车道内概率 > 0.5，说明车辆可能切入
+            if (cutin.inLaneProbFuture > 0.5f) {
+                // 根据距离判断危险程度
+                if (cutin.dRel < 50f) {
+                    return Pair(false, "检测到切入车辆（近距离）")
+                } else if (cutin.dRel < 80f && cutin.inLaneProbFuture > 0.7f) {
+                    return Pair(false, "检测到切入车辆（高概率）")
+                }
+            }
+        }
+        
         return Pair(true, null)
     }
     
@@ -415,7 +428,6 @@ class AutoOvertakeManager(
     private fun shouldOvertake(data: XiaogeVehicleData): Pair<Boolean, String?> {
         val carState = data.carState ?: return Pair(false, "车辆状态缺失")
         val lead0 = data.modelV2?.lead0 ?: return Pair(false, "前车数据缺失")
-        val radarState = data.radarState
         
         // 方案3：远距离超车支持（优先检查）
         if (checkEarlyOvertakeConditions(data)) {
@@ -424,7 +436,8 @@ class AutoOvertakeManager(
         
         val vEgo = carState.vEgo
         val vLead = lead0.v
-        val vRel = radarState?.leadOne?.vRel ?: (vLead - vEgo)
+        // 从 modelV2.lead0.vRel 获取相对速度（纯视觉方案）
+        val vRel = lead0.vRel ?: (vLead - vEgo)
         
         // 限速检查已移除（carrotMan.nRoadLimitSpeed 不再可用）
         
@@ -458,13 +471,12 @@ class AutoOvertakeManager(
     private fun checkOvertakeConditions(data: XiaogeVehicleData): OvertakeDecision? {
         val carState = data.carState ?: return null
         val modelV2 = data.modelV2 ?: return null
-        val radarState = data.radarState ?: return null
         
-        // 检查左超车可行性
-        val leftOvertake = checkLeftOvertakeFeasibility(carState, modelV2, radarState)
+        // 检查左超车可行性（使用 modelV2 数据，纯视觉方案）
+        val leftOvertake = checkLeftOvertakeFeasibility(carState, modelV2)
         
-        // 检查右超车可行性
-        val rightOvertake = checkRightOvertakeFeasibility(carState, modelV2, radarState)
+        // 检查右超车可行性（使用 modelV2 数据，纯视觉方案）
+        val rightOvertake = checkRightOvertakeFeasibility(carState, modelV2)
         
         // 选择最优方向（优先左超车，符合中国交通规则）
         return when {
@@ -475,12 +487,11 @@ class AutoOvertakeManager(
     }
     
     /**
-     * 检查左超车可行性
+     * 检查左超车可行性（纯视觉方案）
      */
     private fun checkLeftOvertakeFeasibility(
         carState: CarStateData,
-        modelV2: ModelV2Data,
-        radarState: RadarStateData
+        modelV2: ModelV2Data
     ): OvertakeDecision? {
         // 左车道线置信度
         val leftLaneProb = modelV2.laneLineProbs.getOrNull(0) ?: return null
@@ -508,25 +519,43 @@ class AutoOvertakeManager(
         }
         
         // 左侧无近距离车辆，且无快速接近车辆（动态调整接近速度阈值）
-        val leadLeft = radarState.leadLeft
+        // 使用 modelV2.leadLeft（纯视觉方案）
+        val leadLeft = modelV2.leadLeft
         if (leadLeft != null && leadLeft.status) {
+            // 🆕 使用车道内概率调整安全距离：低概率表示车辆可能在车道边缘，需要更大安全距离
             val minSafeDistance = getMinSafeDistanceM()
-            if (leadLeft.dRel < minSafeDistance) return null
+            val adjustedSafeDistance = if (leadLeft.inLaneProb < 0.3f) {
+                // 低车道内概率（可能在车道边缘），增加50%安全距离
+                minSafeDistance * 1.5f
+            } else {
+                minSafeDistance
+            }
+            
+            if (leadLeft.dRel < adjustedSafeDistance) return null
+            
             // 根据本车速度动态调整安全相对速度阈值
             val safeVrel = -kotlin.math.max(5f, carState.vEgo * 0.3f)
             if (leadLeft.vRel < safeVrel) return null
+            
+            // 🆕 检查横向速度：如果侧方车辆正在向我们车道移动（正值表示向右移动，即向我们车道）
+            // yvRel > 0.5 m/s 表示有明显的切入趋势
+            if (leadLeft.yvRel > 0.5f) {
+                // 如果距离较近且横向速度较大，不安全
+                if (leadLeft.dRel < 60f) {
+                    return null
+                }
+            }
         }
         
         return OvertakeDecision("LEFT", "左超车条件满足")
     }
     
     /**
-     * 检查右超车可行性
+     * 检查右超车可行性（纯视觉方案）
      */
     private fun checkRightOvertakeFeasibility(
         carState: CarStateData,
-        modelV2: ModelV2Data,
-        radarState: RadarStateData
+        modelV2: ModelV2Data
     ): OvertakeDecision? {
         // 右车道线置信度
         val rightLaneProb = modelV2.laneLineProbs.getOrNull(1) ?: return null
@@ -554,13 +583,32 @@ class AutoOvertakeManager(
         }
         
         // 右侧无近距离车辆，且无快速接近车辆（动态调整接近速度阈值）
-        val leadRight = radarState.leadRight
+        // 使用 modelV2.leadRight（纯视觉方案）
+        val leadRight = modelV2.leadRight
         if (leadRight != null && leadRight.status) {
+            // 🆕 使用车道内概率调整安全距离：低概率表示车辆可能在车道边缘，需要更大安全距离
             val minSafeDistance = getMinSafeDistanceM()
-            if (leadRight.dRel < minSafeDistance) return null
+            val adjustedSafeDistance = if (leadRight.inLaneProb < 0.3f) {
+                // 低车道内概率（可能在车道边缘），增加50%安全距离
+                minSafeDistance * 1.5f
+            } else {
+                minSafeDistance
+            }
+            
+            if (leadRight.dRel < adjustedSafeDistance) return null
+            
             // 根据本车速度动态调整安全相对速度阈值
             val safeVrel = -kotlin.math.max(5f, carState.vEgo * 0.3f)
             if (leadRight.vRel < safeVrel) return null
+            
+            // 🆕 检查横向速度：如果侧方车辆正在向我们车道移动（负值表示向左移动，即向我们车道）
+            // yvRel < -0.5 m/s 表示有明显的切入趋势
+            if (leadRight.yvRel < -0.5f) {
+                // 如果距离较近且横向速度较大，不安全
+                if (leadRight.dRel < 60f) {
+                    return null
+                }
+            }
         }
         
         return OvertakeDecision("RIGHT", "右超车条件满足")
@@ -753,19 +801,34 @@ class AutoOvertakeManager(
      * 优化：不仅检查侧方车辆，还检查原车道前车是否已在后方
      */
     private fun hasCompletelyOvertaken(data: XiaogeVehicleData): Boolean {
+        // 使用 modelV2 数据（纯视觉方案）
         val targetSide = if (netLaneChanges > 0) "right" else "left"
         val targetLead = if (targetSide == "right") {
-            data.radarState?.leadRight
+            data.modelV2?.leadRight
         } else {
-            data.radarState?.leadLeft
+            data.modelV2?.leadLeft
         }
         
-        // 检查原车道前车是否已在后方（优化：添加前车位置检查）
+        // 检查原车道前车是否已在后方（优化：结合横向位置判断）
         val lead0 = data.modelV2?.lead0
-        if (lead0 != null && lead0.prob > 0.5f && lead0.x < 20f) {
-            // 前车仍在前方20米内，未完全超越
-            overtakeCompleteTimer = 0L
-            return false
+        if (lead0 != null && lead0.prob > 0.5f) {
+            // 🆕 使用横向位置判断前车是否在原车道
+            // netLaneChanges > 0 表示在左侧，原车道在右侧（y > 0）
+            // netLaneChanges < 0 表示在右侧，原车道在左侧（y < 0）
+            val targetY = if (netLaneChanges > 0) {
+                // 在左侧，原车道在右侧，y 应该接近 0 或正值
+                0.5f
+            } else {
+                // 在右侧，原车道在左侧，y 应该接近 0 或负值
+                -0.5f
+            }
+            
+            // 如果前车距离较近（< 20m）且横向位置接近原车道（|y - targetY| < 1.5m），说明仍在原车道前方
+            if (lead0.x < 20f && kotlin.math.abs(lead0.y - targetY) < 1.5f) {
+                // 前车仍在前方20米内且在原车道，未完全超越
+                overtakeCompleteTimer = 0L
+                return false
+            }
         }
         
         // 目标侧无车或距离很远，已超越
@@ -791,11 +854,12 @@ class AutoOvertakeManager(
         // 巡航速度已移除（carrotMan.desiredSpeed 不再可用），使用当前速度作为参考
         
         // 获取目标车道（返回方向）的速度预期
+        // 使用 modelV2 数据（纯视觉方案）
         val targetSide = if (netLaneChanges > 0) "right" else "left"
         val targetLead = if (targetSide == "right") {
-            data.radarState?.leadRight
+            data.modelV2?.leadRight
         } else {
-            data.radarState?.leadLeft
+            data.modelV2?.leadLeft
         }
         
         val targetSpeed = if (targetLead == null || !targetLead.status) {
@@ -823,11 +887,12 @@ class AutoOvertakeManager(
      * 方案5：检查返回安全
      */
     private fun isReturnSafe(data: XiaogeVehicleData): Boolean {
+        // 使用 modelV2 数据（纯视觉方案）
         val targetSide = if (netLaneChanges > 0) "right" else "left"
         val targetLead = if (targetSide == "right") {
-            data.radarState?.leadRight
+            data.modelV2?.leadRight
         } else {
-            data.radarState?.leadLeft
+            data.modelV2?.leadLeft
         }
         
         val blindspot = if (targetSide == "right") {
@@ -944,7 +1009,6 @@ class AutoOvertakeManager(
     private fun generateBlockingReason(data: XiaogeVehicleData): String? {
         val carState = data.carState ?: return "车辆状态缺失"
         val modelV2 = data.modelV2 ?: return "模型数据缺失"
-        val radarState = data.radarState ?: return "雷达数据缺失"
         
         // 检查左超车失败原因
         val leftLaneProb = modelV2.laneLineProbs.getOrNull(0) ?: 0f
@@ -958,10 +1022,22 @@ class AutoOvertakeManager(
             return "左侧盲区有车"
         }
         
-        val leadLeft = radarState.leadLeft
-        val minSafeDistanceLeft = getMinSafeDistanceM()
-        if (leadLeft != null && leadLeft.status && leadLeft.dRel < minSafeDistanceLeft) {
-            return "左侧车辆距离过近"
+        // 使用 modelV2.leadLeft（纯视觉方案）
+        val leadLeft = modelV2.leadLeft
+        if (leadLeft != null && leadLeft.status) {
+            val minSafeDistanceLeft = getMinSafeDistanceM()
+            val adjustedSafeDistance = if (leadLeft.inLaneProb < 0.3f) {
+                minSafeDistanceLeft * 1.5f
+            } else {
+                minSafeDistanceLeft
+            }
+            if (leadLeft.dRel < adjustedSafeDistance) {
+                return "左侧车辆距离过近"
+            }
+            // 检查横向速度
+            if (leadLeft.yvRel > 0.5f && leadLeft.dRel < 60f) {
+                return "左侧车辆正在切入"
+            }
         }
         
         // 检查右超车失败原因
@@ -976,10 +1052,28 @@ class AutoOvertakeManager(
             return "右侧盲区有车"
         }
         
-        val leadRight = radarState.leadRight
-        val minSafeDistanceRight = getMinSafeDistanceM()
-        if (leadRight != null && leadRight.status && leadRight.dRel < minSafeDistanceRight) {
-            return "右侧车辆距离过近"
+        // 使用 modelV2.leadRight（纯视觉方案）
+        val leadRight = modelV2.leadRight
+        if (leadRight != null && leadRight.status) {
+            val minSafeDistanceRight = getMinSafeDistanceM()
+            val adjustedSafeDistance = if (leadRight.inLaneProb < 0.3f) {
+                minSafeDistanceRight * 1.5f
+            } else {
+                minSafeDistanceRight
+            }
+            if (leadRight.dRel < adjustedSafeDistance) {
+                return "右侧车辆距离过近"
+            }
+            // 检查横向速度
+            if (leadRight.yvRel < -0.5f && leadRight.dRel < 60f) {
+                return "右侧车辆正在切入"
+            }
+        }
+        
+        // 🆕 检查 Cut-in 检测
+        val cutin = modelV2.cutin
+        if (cutin != null && cutin.status && cutin.inLaneProbFuture > 0.5f) {
+            return "检测到切入车辆"
         }
         
         return "左右车道均不可用"

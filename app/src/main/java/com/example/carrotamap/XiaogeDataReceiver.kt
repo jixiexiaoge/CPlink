@@ -274,6 +274,9 @@ class XiaogeDataReceiver(
         
         val lead0Obj = json.optJSONObject("lead0")
         val lead1Obj = json.optJSONObject("lead1")
+        val leadLeftObj = json.optJSONObject("leadLeft")
+        val leadRightObj = json.optJSONObject("leadRight")
+        val cutinObj = json.optJSONObject("cutin")
         val metaObj = json.optJSONObject("meta")
         val curvatureObj = json.optJSONObject("curvature")
         val laneLineProbsArray = json.optJSONArray("laneLineProbs")
@@ -288,6 +291,11 @@ class XiaogeDataReceiver(
         return ModelV2Data(
             lead0 = parseLeadData(lead0Obj),
             lead1 = parseLeadData(lead1Obj),
+            leadLeft = parseSideLeadDataExtended(leadLeftObj),
+            leadRight = parseSideLeadDataExtended(leadRightObj),
+            cutin = parseCutinData(cutinObj),
+            modelVEgo = if (json.has("modelVEgo")) json.optDouble("modelVEgo", 0.0).toFloat() else null,
+            laneWidth = if (json.has("laneWidth")) json.optDouble("laneWidth", 0.0).toFloat() else null,
             laneLineProbs = laneLineProbs,
             meta = parseMetaData(metaObj),
             curvature = parseCurvatureData(curvatureObj)
@@ -296,14 +304,19 @@ class XiaogeDataReceiver(
 
     private fun parseLeadData(json: JSONObject?): LeadData? {
         if (json == null) return null
-        // 注意：lead0 包含 a 字段（加速度），但 lead1 不包含 a 字段
-        // Python 端只对 lead0 发送 a 字段，lead1 只发送 x, v, prob
+        // 注意：lead0 和 lead1 都包含 a 字段（加速度）
+        // Python 端对 lead0 和 lead1 都发送 a 字段，与 lead0 保持一致
         // 使用 optDouble 安全解析，如果字段不存在则返回默认值 0.0
-        // 因此 lead1.a 将始终为 0.0，这是预期的行为
         return LeadData(
             x = json.optDouble("x", 0.0).toFloat(),
+            dRel = json.optDouble("dRel", json.optDouble("x", 0.0)).toFloat(), // 如果没有 dRel，使用 x 作为后备
+            y = json.optDouble("y", 0.0).toFloat(),
+            yRel = json.optDouble("yRel", -json.optDouble("y", 0.0)).toFloat(), // 如果没有 yRel，从 y 计算
             v = json.optDouble("v", 0.0).toFloat(),
-            a = json.optDouble("a", 0.0).toFloat(),  // lead1 没有此字段，始终返回 0.0
+            a = json.optDouble("a", 0.0).toFloat(),  // lead0 和 lead1 都包含此字段
+            vRel = json.optDouble("vRel", 0.0).toFloat(),
+            dPath = json.optDouble("dPath", 0.0).toFloat(),
+            inLaneProb = json.optDouble("inLaneProb", 1.0).toFloat(), // 默认 1.0 表示在当前车道
             prob = json.optDouble("prob", 0.0).toFloat()
         )
     }
@@ -325,6 +338,11 @@ class XiaogeDataReceiver(
         )
     }
 
+    /**
+     * 解析雷达状态数据（向后兼容）
+     * 注意：Python 端已改为纯视觉方案，不再发送 radarState
+     * 此函数保留用于向后兼容，但数据可能为空
+     */
     private fun parseRadarState(json: JSONObject?): RadarStateData? {
         if (json == null) return null
         return RadarStateData(
@@ -347,6 +365,46 @@ class XiaogeDataReceiver(
         return SideLeadData(
             dRel = json.optDouble("dRel", 0.0).toFloat(),
             vRel = json.optDouble("vRel", 0.0).toFloat(),
+            status = json.optBoolean("status", false)
+        )
+    }
+
+    /**
+     * 解析扩展的侧方车辆数据（纯视觉方案）
+     */
+    private fun parseSideLeadDataExtended(json: JSONObject?): SideLeadDataExtended? {
+        if (json == null) return null
+        return SideLeadDataExtended(
+            x = json.optDouble("x", 0.0).toFloat(),
+            dRel = json.optDouble("dRel", 0.0).toFloat(),
+            y = json.optDouble("y", 0.0).toFloat(),
+            yRel = json.optDouble("yRel", 0.0).toFloat(),
+            v = json.optDouble("v", 0.0).toFloat(),
+            vRel = json.optDouble("vRel", 0.0).toFloat(),
+            yvRel = json.optDouble("yvRel", 0.0).toFloat(),
+            dPath = json.optDouble("dPath", 0.0).toFloat(),
+            inLaneProb = json.optDouble("inLaneProb", 0.0).toFloat(),
+            inLaneProbFuture = json.optDouble("inLaneProbFuture", 0.0).toFloat(),
+            prob = json.optDouble("prob", 0.0).toFloat(),
+            status = json.optBoolean("status", false)
+        )
+    }
+
+    /**
+     * 解析 Cut-in 检测数据
+     */
+    private fun parseCutinData(json: JSONObject?): CutinData? {
+        if (json == null) return null
+        return CutinData(
+            x = json.optDouble("x", 0.0).toFloat(),
+            dRel = json.optDouble("dRel", 0.0).toFloat(),
+            v = json.optDouble("v", 0.0).toFloat(),
+            y = json.optDouble("y", 0.0).toFloat(),
+            vRel = json.optDouble("vRel", 0.0).toFloat(),
+            dPath = json.optDouble("dPath", 0.0).toFloat(),
+            inLaneProb = json.optDouble("inLaneProb", 0.0).toFloat(),
+            inLaneProbFuture = json.optDouble("inLaneProbFuture", 0.0).toFloat(),
+            prob = json.optDouble("prob", 0.0).toFloat(),
             status = json.optBoolean("status", false)
         )
     }
@@ -428,15 +486,26 @@ data class CarStateData(
 data class ModelV2Data(
     val lead0: LeadData?,         // 第一前车
     val lead1: LeadData?,         // 第二前车
+    val leadLeft: SideLeadDataExtended?,  // 左侧车辆（纯视觉方案）
+    val leadRight: SideLeadDataExtended?, // 右侧车辆（纯视觉方案）
+    val cutin: CutinData?,        // Cut-in 检测数据
+    val modelVEgo: Float?,        // 模型估计的自车速度
+    val laneWidth: Float?,         // 实际车道宽度（从车道线计算）
     val laneLineProbs: List<Float>, // [左车道线置信度, 右车道线置信度]
     val meta: MetaData?,
     val curvature: CurvatureData?
 )
 
 data class LeadData(
-    val x: Float,    // 距离 (m)
+    val x: Float,    // 距离 (m) - 相对于相机的距离
+    val dRel: Float, // 相对于雷达的距离（已考虑 RADAR_TO_CAMERA 偏移）
+    val y: Float,    // 横向位置（modelV2.leadsV3[i].y）
+    val yRel: Float, // 相对于相机的横向位置（yRel = -y）
     val v: Float,    // 速度 (m/s)
     val a: Float,    // 加速度
+    val vRel: Float, // 相对速度 (m/s)
+    val dPath: Float, // 路径偏移（相对于规划路径的横向偏移）
+    val inLaneProb: Float, // 车道内概率
     val prob: Float  // 置信度
 )
 
@@ -465,6 +534,42 @@ data class SideLeadData(
     val dRel: Float,
     val vRel: Float,
     val status: Boolean
+)
+
+/**
+ * 扩展的侧方车辆数据（纯视觉方案）
+ * 包含车道内概率、路径偏移等新字段，用于更精确的侧方车辆检测
+ */
+data class SideLeadDataExtended(
+    val x: Float,              // 距离 (m) - 相对于相机的距离
+    val dRel: Float,           // 相对于雷达的距离（已考虑 RADAR_TO_CAMERA 偏移）
+    val y: Float,              // 横向位置
+    val yRel: Float,            // 相对于相机的横向位置
+    val v: Float,              // 速度 (m/s)
+    val vRel: Float,           // 相对速度 (m/s)
+    val yvRel: Float,          // 横向速度 (m/s) - 用于未来位置预测
+    val dPath: Float,          // 路径偏移（相对于规划路径的横向偏移）
+    val inLaneProb: Float,     // 车道内概率（当前时刻）
+    val inLaneProbFuture: Float, // 未来车道内概率（用于 Cut-in 检测）
+    val prob: Float,           // 置信度
+    val status: Boolean        // 是否有车辆
+)
+
+/**
+ * Cut-in 检测数据
+ * 用于检测可能切入当前车道的车辆
+ */
+data class CutinData(
+    val x: Float,              // 距离 (m)
+    val dRel: Float,           // 相对于雷达的距离
+    val v: Float,              // 速度 (m/s)
+    val y: Float,              // 横向位置
+    val vRel: Float,           // 相对速度 (m/s)
+    val dPath: Float,          // 路径偏移
+    val inLaneProb: Float,     // 车道内概率（当前时刻）
+    val inLaneProbFuture: Float, // 未来车道内概率
+    val prob: Float,           // 置信度
+    val status: Boolean        // 是否有切入车辆
 )
 
 data class SystemStateData(

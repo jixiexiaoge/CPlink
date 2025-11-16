@@ -28,7 +28,6 @@ import androidx.compose.material3.IconButton
 import com.example.carrotamap.XiaogeVehicleData
 import com.example.carrotamap.CarrotManFields
 import com.example.carrotamap.LeadData
-import com.example.carrotamap.LeadOneData
 import androidx.compose.runtime.LaunchedEffect
 import kotlinx.coroutines.delay
 import kotlin.math.abs
@@ -154,8 +153,20 @@ private fun getOvertakeHintInfo(
     overtakeMode: Int,
     overtakeStatus: com.example.carrotamap.OvertakeStatusData?,
     laneChangeState: Int,
-    laneChangeDirection: Int
+    laneChangeDirection: Int,
+    cutin: com.example.carrotamap.CutinData? = null  // 🆕 添加Cut-in检测参数
 ): OvertakeHintInfo {
+    // 🆕 优先检查Cut-in检测：如果检测到切入车辆，优先显示警告
+    if (cutin?.status == true && cutin.inLaneProbFuture > 0.5f) {
+        return OvertakeHintInfo(
+            cardColor = UIConstants.COLOR_DANGER.copy(alpha = 0.2f),
+            icon = "⚠️",
+            title = "检测到切入车辆",
+            detail = "距离: ${String.format("%.1f", cutin.dRel)}m, 未来概率: ${String.format("%.0f", cutin.inLaneProbFuture * 100)}%",
+            titleColor = UIConstants.COLOR_DANGER
+        )
+    }
+    
     return when {
         // 自动超车模式（模式2）且满足超车条件
         overtakeMode == 2 && overtakeStatus?.canOvertake == true -> OvertakeHintInfo(
@@ -332,11 +343,14 @@ fun VehicleLaneVisualization(
                         val contextForPrefs = LocalContext.current
                         val prefsForHint = contextForPrefs.getSharedPreferences("CarrotAmap", android.content.Context.MODE_PRIVATE)
                         val overtakeModeForHint = prefsForHint.getInt("overtake_mode", 0)
+                        // 🆕 获取Cut-in检测数据
+                        val cutin = displayData?.modelV2?.cutin
                         val hintInfo = getOvertakeHintInfo(
                             overtakeMode = overtakeModeForHint,
                             overtakeStatus = displayData?.overtakeStatus,
                             laneChangeState = displayData?.modelV2?.meta?.laneChangeState ?: 0,
-                            laneChangeDirection = displayData?.modelV2?.meta?.laneChangeDirection ?: 0
+                            laneChangeDirection = displayData?.modelV2?.meta?.laneChangeDirection ?: 0,
+                            cutin = cutin  // 🆕 传递Cut-in检测数据
                         )
                         
                         // 获取额外的信息行（冷却时间、阻止原因）
@@ -563,18 +577,18 @@ private fun RowScope.InfoCard(
 }
 
 /**
- * 前车相对速度卡片组件
+ * 前车相对速度卡片组件（纯视觉方案）
  */
 @Composable
 private fun RowScope.LeadVehicleSpeedCard(
     lead0: LeadData?,
-    leadOne: LeadOneData?,
     hasLead: Boolean,
     modifier: Modifier = Modifier
 ) {
     
     if (hasLead && lead0 != null) {
-        val vRel = leadOne?.vRel ?: 0f
+        // 从 modelV2.lead0.vRel 获取相对速度（纯视觉方案）
+        val vRel = lead0.vRel
         val vRelKmh = vRel * 3.6f
         val distance = lead0.x
         
@@ -711,7 +725,7 @@ private fun DataInfoPanel(
     val carState = data?.carState
     val modelV2 = data?.modelV2
     val lead0 = modelV2?.lead0
-    val leadOne = data?.radarState?.leadOne
+    // 使用 modelV2.lead0.vRel 获取相对速度（纯视觉方案）
     val hasLead = lead0 != null && lead0.prob > 0.5f && lead0.x > 0f
     val systemState = data?.systemState
     val laneChangeState = data?.modelV2?.meta?.laneChangeState ?: 0
@@ -795,6 +809,12 @@ private fun DataInfoPanel(
             val laneWidthRight = meta?.laneWidthRight ?: 0f
             val currentLaneWidth = (laneWidthLeft + laneWidthRight) / 2f  // 当前车道宽度取平均值
             
+            // 🆕 车道线置信度信息
+            val laneLineProbs = modelV2?.laneLineProbs
+            val laneProbInfo = if (laneLineProbs != null && laneLineProbs.size >= 2) {
+                "左${String.format("%.0f", laneLineProbs[0] * 100)}% 右${String.format("%.0f", laneLineProbs[1] * 100)}%"
+            } else null
+            
             // 构建道路宽度信息字符串：左/当前/右（紧凑格式）
             val widthInfo = if (laneWidthLeft > 0f || laneWidthRight > 0f) {
                 "左${String.format("%.1f", laneWidthLeft)} 中${String.format("%.1f", currentLaneWidth)} 右${String.format("%.1f", laneWidthRight)}"
@@ -802,11 +822,14 @@ private fun DataInfoPanel(
                 null
             }
             
+            // 🆕 合并宽度和置信度信息（如果有置信度，优先显示）
+            val subtitleInfo = laneProbInfo ?: widthInfo
+            
             InfoCard(
                 title = "道路类型",
                 value = roadTypeText,
                 valueColor = ColorMapper.forRoadType(roadType),
-                subtitle = widthInfo  // 显示道路宽度信息
+                subtitle = subtitleInfo  // 🆕 显示车道线置信度或道路宽度信息
             )
         }
         
@@ -834,8 +857,108 @@ private fun DataInfoPanel(
             
             LeadVehicleSpeedCard(
                 lead0 = lead0,
-                leadOne = leadOne,
                 hasLead = hasLead
+            )
+        }
+        
+        // 🆕 第三行：侧方车辆信息（左侧和右侧）
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            // 左侧车辆
+            val leadLeft = modelV2?.leadLeft
+            val leftVehicleText = if (leadLeft?.status == true) {
+                "${String.format("%.1f", leadLeft.dRel)}m"
+            } else {
+                "无车"
+            }
+            val leftVehicleColor = if (leadLeft?.status == true) {
+                ColorMapper.forLeadDistance(leadLeft.dRel)
+            } else {
+                UIConstants.COLOR_NEUTRAL
+            }
+            val leftVehicleSubtitle = if (leadLeft?.status == true) {
+                // 显示车道内概率和相对速度
+                val probText = "概率: ${String.format("%.0f", leadLeft.inLaneProb * 100)}%"
+                val vRelText = if (abs(leadLeft.vRel) > 0.1f) {
+                    val vRelKmh = leadLeft.vRel * 3.6f
+                    "${if (vRelKmh > 0) "+" else ""}${String.format("%.1f", abs(vRelKmh))}km/h"
+                } else {
+                    null
+                }
+                if (vRelText != null) {
+                    "$probText, $vRelText"
+                } else {
+                    probText
+                }
+            } else null
+            
+            InfoCard(
+                title = "左侧车辆",
+                value = leftVehicleText,
+                valueColor = leftVehicleColor,
+                subtitle = leftVehicleSubtitle
+            )
+            
+            // 右侧车辆
+            val leadRight = modelV2?.leadRight
+            val rightVehicleText = if (leadRight?.status == true) {
+                "${String.format("%.1f", leadRight.dRel)}m"
+            } else {
+                "无车"
+            }
+            val rightVehicleColor = if (leadRight?.status == true) {
+                ColorMapper.forLeadDistance(leadRight.dRel)
+            } else {
+                UIConstants.COLOR_NEUTRAL
+            }
+            val rightVehicleSubtitle = if (leadRight?.status == true) {
+                // 显示车道内概率和相对速度
+                val probText = "概率: ${String.format("%.0f", leadRight.inLaneProb * 100)}%"
+                val vRelText = if (abs(leadRight.vRel) > 0.1f) {
+                    val vRelKmh = leadRight.vRel * 3.6f
+                    "${if (vRelKmh > 0) "+" else ""}${String.format("%.1f", abs(vRelKmh))}km/h"
+                } else {
+                    null
+                }
+                if (vRelText != null) {
+                    "$probText, $vRelText"
+                } else {
+                    probText
+                }
+            } else null
+            
+            InfoCard(
+                title = "右侧车辆",
+                value = rightVehicleText,
+                valueColor = rightVehicleColor,
+                subtitle = rightVehicleSubtitle
+            )
+            
+            // 🆕 Cut-in检测信息（如果有）
+            val cutin = modelV2?.cutin
+            val cutinText = if (cutin?.status == true && cutin.inLaneProbFuture > 0.3f) {
+                "${String.format("%.1f", cutin.dRel)}m"
+            } else {
+                "无切入"
+            }
+            val cutinColor = if (cutin?.status == true && cutin.inLaneProbFuture > 0.5f) {
+                UIConstants.COLOR_DANGER  // 高概率切入：红色
+            } else if (cutin?.status == true && cutin.inLaneProbFuture > 0.3f) {
+                UIConstants.COLOR_WARNING  // 中概率切入：橙色
+            } else {
+                UIConstants.COLOR_NEUTRAL
+            }
+            val cutinSubtitle = if (cutin?.status == true && cutin.inLaneProbFuture > 0.3f) {
+                "未来: ${String.format("%.0f", cutin.inLaneProbFuture * 100)}%"
+            } else null
+            
+            InfoCard(
+                title = "切入检测",
+                value = cutinText,
+                valueColor = cutinColor,
+                subtitle = cutinSubtitle
             )
         }
         

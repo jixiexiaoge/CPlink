@@ -84,9 +84,6 @@ class MainActivityCore(
     // 存储启动Intent用于页面导航
     var pendingNavigationIntent: Intent? = null
     
-    // 下载弹窗状态
-    val showDownloadDialog = mutableStateOf(false)
-    
     // 自检查状态
     val selfCheckStatus = mutableStateOf(SelfCheckStatus())
     
@@ -123,10 +120,7 @@ class MainActivityCore(
     // 数据字段管理器
     val dataFieldManager = DataFieldManager()
     
-    // 高德地图相关管理器
-    lateinit var amapDestinationManager: AmapDestinationManager
-    lateinit var amapNavigationManager: AmapNavigationManager
-    lateinit var amapDataProcessor: AmapDataProcessor
+    // 高德地图相关管理器（已整合到AmapBroadcastHandlers中）
     // 设备管理器
     lateinit var deviceManager: DeviceManager
     
@@ -777,19 +771,20 @@ class MainActivityCore(
                 forceExitApp()
             }
             0 -> {
-                // 未知用户 - 跳转到我的界面
-                Log.i(TAG, "👤 未知用户，跳转到我的界面")
-                currentPage = 3
+                // 未知用户 - 跳转到我的界面，50秒后强制退出
+                Log.i(TAG, "👤 未知用户，跳转到我的界面，50秒后强制退出")
+                currentPage = 2
+                // 启动50秒倒计时，然后强制退出
+                startUserType0Countdown()
             }
             1 -> {
                 // 新用户 - 跳转到帮助界面
                 Log.i(TAG, "🆕 新用户，跳转到帮助界面")
-                currentPage = 1
+                currentPage = 2
             }
             2 -> {
-                // 支持者 - 显示下载弹窗
-                Log.i(TAG, "💚 支持者，显示carrotAmap下载弹窗")
-                showCarrotAmapDownloadDialog()
+                // 支持者 - 显示功能说明弹窗（由UI层控制显示）
+                Log.i(TAG, "💚 支持者，初始化完成")
             }
             3, 4 -> {
                 // 赞助者/铁粉 - 不再自动启动高德地图，改为手动启动（九宫格9号按钮）
@@ -799,8 +794,45 @@ class MainActivityCore(
             else -> {
                 // 其他情况 - 默认跳转到我的界面
                 Log.w(TAG, "⚠️ 未知用户类型: $userType，跳转到我的界面")
-                currentPage = 3
+                currentPage =2
             }
+        }
+    }
+
+    /**
+     * 启动用户类型0的倒计时（50秒后强制退出）
+     */
+    private fun startUserType0Countdown() {
+        try {
+            Log.i(TAG, "⏱️ 启动用户类型0倒计时：50秒后强制退出")
+            
+            // 在协程作用域中启动倒计时
+            coreScope.launch {
+                // 等待50秒
+                delay(50000)
+                
+                // 显示提示信息
+                Log.i(TAG, "⏰ 倒计时结束，显示提示并强制退出")
+                withContext(Dispatchers.Main) {
+                    android.widget.Toast.makeText(
+                        activity,
+                        "Apps 需要重新启动来更新用户身份",
+                        android.widget.Toast.LENGTH_LONG
+                    ).show()
+                    
+                    // 延迟2秒后强制退出，确保用户能看到提示
+                    delay(2000)
+                    
+                    Log.i(TAG, "✅ 应用即将退出（用户类型0）")
+                    activity.finishAffinity()
+                    System.exit(0)
+                }
+            }
+            
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ 启动倒计时失败: ${e.message}", e)
+            // 如果倒计时启动失败，直接强制退出
+            forceExitApp()
         }
     }
 
@@ -827,33 +859,6 @@ class MainActivityCore(
         }
     }
 
-    /**
-     * 显示carrotAmap下载弹窗
-     */
-    private fun showCarrotAmapDownloadDialog() {
-        try {
-            Log.i(TAG, "📱 显示carrotAmap下载弹窗")
-            // 设置显示下载弹窗的状态
-            showDownloadDialog.value = true
-        } catch (e: Exception) {
-            Log.e(TAG, "❌ 显示下载弹窗失败: ${e.message}", e)
-        }
-    }
-
-    /**
-     * 打开浏览器访问GitHub网站
-     */
-    fun openGitHubWebsite() {
-        try {
-            Log.i(TAG, "🌐 打开浏览器访问GitHub网站")
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/jixiexiaoge/openpilot/"))
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            activity.startActivity(intent)
-            Log.i(TAG, "✅ GitHub网站已打开")
-        } catch (e: Exception) {
-            Log.e(TAG, "❌ 打开浏览器失败: ${e.message}", e)
-        }
-    }
 
     // ===============================
     // 内存管理

@@ -476,32 +476,12 @@ class MainActivityLifecycle(
 
     /**
      * 初始化高德地图管理器
+     * 🎯 已整合：所有功能已整合到AmapBroadcastHandlers中，无需单独初始化
      */
     private fun initializeAmapManagers() {
-        Log.i(TAG, "🗺️ 初始化高德地图管理器...")
-
-        try {
-            // 初始化数据处理器
-            core.amapDataProcessor = AmapDataProcessor(activity, core.carrotManFields)
-
-            // 初始化目的地管理器
-            core.amapDestinationManager = AmapDestinationManager(
-                core.carrotManFields,
-                core.networkManager,
-                core::updateUIMessage
-            )
-
-            // 初始化导航管理器
-            core.amapNavigationManager = AmapNavigationManager(
-                core.carrotManFields,
-                core.amapDestinationManager,
-                core::updateUIMessage
-            )
-
-            Log.i(TAG, "✅ 高德地图管理器初始化成功")
-        } catch (e: Exception) {
-            Log.e(TAG, "❌ 高德地图管理器初始化失败: ${e.message}", e)
-        }
+        Log.i(TAG, "🗺️ 高德地图管理器已整合到AmapBroadcastHandlers，无需单独初始化")
+        // 所有高德地图相关功能已整合到AmapBroadcastHandlers中
+        // AmapBroadcastManager会自动创建AmapBroadcastHandlers实例
     }
 
     /**

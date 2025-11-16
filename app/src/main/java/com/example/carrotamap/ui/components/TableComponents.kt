@@ -135,7 +135,7 @@ fun DataTable(
     }
     
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxWidth(), // 改为fillMaxWidth，让高度根据内容自适应
         verticalArrangement = Arrangement.spacedBy(1.dp)
     ) {
         // SDI摄像头信息（最顶部）
