@@ -20,6 +20,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.Dispatchers
 
 /**
  * MainActivity UI组件 - 辅助组件和工具函数
@@ -157,6 +159,7 @@ object MainActivityUIComponents {
                 onSendNavConfirmation = onSendNavConfirmation,
                 isOpenpilotActive = carrotManFields.active,
                 carrotManFields = carrotManFields,
+                networkManager = core.networkManager, // 传递networkManager用于直接发送坐标
                 context = context
             )
         }
@@ -269,6 +272,7 @@ object MainActivityUIComponents {
         onSendNavConfirmation: () -> Unit,
         isOpenpilotActive: Boolean,
         carrotManFields: CarrotManFields,
+        networkManager: NetworkManager, // 添加networkManager参数用于直接发送坐标
         context: android.content.Context
     ) {
         // 🆕 通用音频播放函数 - 减少重复代码
@@ -677,29 +681,26 @@ object MainActivityUIComponents {
                                             )
                                         }
                                     }
-                                    // 9号按钮 - 启用路径
+                                    // 9号按钮 - 启用路径（直接发送目的地坐标）
                                     9 -> {
+                                        val coroutineScope = rememberCoroutineScope()
                                         Button(
                                             onClick = {
-                                                if (isOpenpilotActive) {
-                                                    playSound(R.raw.noo, "NOO")
-                                                    onSendNavConfirmation()
-                                                    onDismiss()
-                                                } else {
-                                                    android.widget.Toast.makeText(
-                                                        context,
-                                                        "⚠️ OpenpPilot未激活\n请先启动车辆系统",
-                                                        android.widget.Toast.LENGTH_SHORT
-                                                    ).show()
+                                                playSound(R.raw.noo, "NOO")
+                                                // 直接发送目的地坐标到Comma3设备
+                                                coroutineScope.launch {
+                                                    networkManager.sendNavigationConfirmationToComma3(
+                                                        carrotManFields.szGoalName.ifEmpty { "目的地" },
+                                                        carrotManFields.goalPosY,
+                                                        carrotManFields.goalPosX
+                                                    )
                                                 }
+                                                onDismiss()
                                             },
                                             modifier = Modifier.size(56.dp),
-                                            enabled = isOpenpilotActive,
                                             colors = ButtonDefaults.buttonColors(
-                                                containerColor = if (isOpenpilotActive) Color(0xFF10B981) else Color(0xFF94A3B8),
-                                                disabledContainerColor = Color(0xFF94A3B8),
-                                                contentColor = Color.White,
-                                                disabledContentColor = Color.White.copy(alpha = 0.9f)
+                                                containerColor = Color(0xFF10B981),
+                                                contentColor = Color.White
                                             ),
                                             contentPadding = PaddingValues(0.dp),
                                             shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp)

@@ -125,10 +125,9 @@ class AutoOvertakeManager(
                 else -> null
             }
             return createOvertakeStatus(data, "变道中", false, direction)
-        }
-        
-        // 🆕 如果变道完成（从非0变为0），更新成功状态
-        if (lastOvertakeResult == OvertakeResult.PENDING) {
+        } else if (lastOvertakeResult == OvertakeResult.PENDING) {
+            // ✅ 修复：如果变道完成（从非0变为0），检查超时
+            // 只有在 laneChangeState == 0 时才检查 PENDING 状态的超时
             val now = System.currentTimeMillis()
             if (now - pendingOvertakeStartTime > PENDING_TIMEOUT_MS) {
                 // 超时未完成，标记为失败
@@ -206,7 +205,8 @@ class AutoOvertakeManager(
                     if (isLeft) lastCommandTimeRight = now else lastCommandTimeLeft = now
                     lastOvertakeDirection = other
                     debounceCounter = 0
-                    val logContext = if (carStateSafe != null && lead0Safe != null) {
+                    // carStateSafe 已经通过 ?: return 检查，不可能为null，只需检查 lead0Safe
+                    val logContext = if (lead0Safe != null) {
                         ", 本车${(carStateSafe.vEgo * 3.6f).toInt()}km/h, 前车${(lead0Safe.v * 3.6f).toInt()}km/h, 距离${lead0Safe.x.toInt()}m"
                     } else {
                         ""
@@ -265,45 +265,51 @@ class AutoOvertakeManager(
     /**
      * 🆕 获取可配置参数：最小超车速度 (km/h)
      * 默认值：60 km/h，范围：40-100 km/h
+     * ✅ 优化：使用常量作为默认值，避免硬编码
      */
     private fun getMinOvertakeSpeedKph(): Float {
         return try {
             val prefs = context.getSharedPreferences("CarrotAmap", Context.MODE_PRIVATE)
-            val value = prefs.getFloat("overtake_param_min_speed_kph", 60f)
+            val defaultValue = MIN_OVERTAKE_SPEED_MS * 3.6f  // 从常量计算默认值 (60 km/h)
+            val value = prefs.getFloat("overtake_param_min_speed_kph", defaultValue)
             value.coerceIn(40f, 100f)  // 限制范围
         } catch (e: Exception) {
             Log.w(TAG, "⚠️ 获取最小超车速度失败，使用默认值60: ${e.message}")
-            60f
+            MIN_OVERTAKE_SPEED_MS * 3.6f  // 使用常量作为后备值
         }
     }
     
     /**
      * 🆕 获取可配置参数：速度差阈值 (km/h)
      * 默认值：10 km/h，范围：5-30 km/h
+     * ✅ 优化：使用常量作为默认值，避免硬编码
      */
     private fun getSpeedDiffThresholdKph(): Float {
         return try {
             val prefs = context.getSharedPreferences("CarrotAmap", Context.MODE_PRIVATE)
-            val value = prefs.getFloat("overtake_param_speed_diff_kph", 10f)
+            val defaultValue = SPEED_DIFF_THRESHOLD * 3.6f  // 从常量计算默认值 (10 km/h)
+            val value = prefs.getFloat("overtake_param_speed_diff_kph", defaultValue)
             value.coerceIn(5f, 30f)  // 限制范围
         } catch (e: Exception) {
             Log.w(TAG, "⚠️ 获取速度差阈值失败，使用默认值10: ${e.message}")
-            10f
+            SPEED_DIFF_THRESHOLD * 3.6f  // 使用常量作为后备值
         }
     }
     
     /**
      * 🆕 获取可配置参数：速度比例阈值
      * 默认值：0.8 (80%)，范围：0.5-0.95
+     * ✅ 优化：使用常量作为默认值，避免硬编码
      */
     private fun getSpeedRatioThreshold(): Float {
         return try {
             val prefs = context.getSharedPreferences("CarrotAmap", Context.MODE_PRIVATE)
-            val value = prefs.getFloat("overtake_param_speed_ratio", 0.8f)
+            val defaultValue = SPEED_RATIO_THRESHOLD  // 使用常量作为默认值 (0.8)
+            val value = prefs.getFloat("overtake_param_speed_ratio", defaultValue)
             value.coerceIn(0.5f, 0.95f)  // 限制范围
         } catch (e: Exception) {
             Log.w(TAG, "⚠️ 获取速度比例阈值失败，使用默认值0.8: ${e.message}")
-            0.8f
+            SPEED_RATIO_THRESHOLD  // 使用常量作为后备值
         }
     }
     
@@ -436,8 +442,9 @@ class AutoOvertakeManager(
         
         val vEgo = carState.vEgo
         val vLead = lead0.v
-        // 从 modelV2.lead0.vRel 获取相对速度（纯视觉方案）
-        val vRel = lead0.vRel ?: (vLead - vEgo)
+        // ✅ 已更新：从 modelV2.lead0.vRel 获取相对速度（纯视觉方案）
+        // 注意：vRel 是非可空类型，直接使用即可（Python 端已修复，使用更准确的 carState.vEgo 计算）
+        val vRel = lead0.vRel
         
         // 限速检查已移除（carrotMan.nRoadLimitSpeed 不再可用）
         
@@ -812,19 +819,21 @@ class AutoOvertakeManager(
         // 检查原车道前车是否已在后方（优化：结合横向位置判断）
         val lead0 = data.modelV2?.lead0
         if (lead0 != null && lead0.prob > 0.5f) {
-            // 🆕 使用横向位置判断前车是否在原车道
+            // ✅ 修复：使用横向位置判断前车是否在原车道
+            // 根据 Python 端定义：y > 0 表示车辆在右侧，y < 0 表示车辆在左侧
             // netLaneChanges > 0 表示在左侧，原车道在右侧（y > 0）
             // netLaneChanges < 0 表示在右侧，原车道在左侧（y < 0）
             val targetY = if (netLaneChanges > 0) {
-                // 在左侧，原车道在右侧，y 应该接近 0 或正值
-                0.5f
+                // 在左侧，原车道在右侧，y 应该 > 0
+                1.5f  // 假设车道宽度约 3.5m，车道中心偏移约 1.5m
             } else {
-                // 在右侧，原车道在左侧，y 应该接近 0 或负值
-                -0.5f
+                // 在右侧，原车道在左侧，y 应该 < 0
+                -1.5f
             }
             
-            // 如果前车距离较近（< 20m）且横向位置接近原车道（|y - targetY| < 1.5m），说明仍在原车道前方
-            if (lead0.x < 20f && kotlin.math.abs(lead0.y - targetY) < 1.5f) {
+            // 检查前车是否在原车道（横向位置接近 targetY）
+            // 如果前车距离较近（< 20m）且横向位置接近原车道（|y - targetY| < 1.0m），说明仍在原车道前方
+            if (lead0.x < 20f && kotlin.math.abs(lead0.y - targetY) < 1.0f) {
                 // 前车仍在前方20米内且在原车道，未完全超越
                 overtakeCompleteTimer = 0L
                 return false
@@ -866,8 +875,9 @@ class AutoOvertakeManager(
             // 目标车道无车，假设可以达到更高速度（当前速度 + 10 km/h）
             currentSpeed + 10f
         } else {
-            // 目标车道有车，预期速度受前车限制
-            currentSpeed + targetLead.vRel * 3.6f
+            // ✅ 修复：目标车道有车，预期速度受前车限制
+            // vRel 是相对速度 (m/s)，需要加上本车速度才是目标车道前车的绝对速度
+            (carState.vEgo + targetLead.vRel) * 3.6f
         }
         
         // 当前车道的预期速度

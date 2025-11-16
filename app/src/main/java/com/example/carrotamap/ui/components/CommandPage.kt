@@ -472,9 +472,8 @@ private fun QuickCommandDropdown(
                 )
             },
             colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
-            modifier = Modifier
-                .fillMaxWidth()
-                .menuAnchor()
+            modifier = Modifier.fillMaxWidth()
+            // 注意：menuAnchor() 在新版本的 Material3 中已弃用，ExposedDropdownMenuBox 会自动处理锚点
         )
         
         ExposedDropdownMenu(
