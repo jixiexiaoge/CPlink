@@ -62,6 +62,12 @@ class MainActivityCore(
 ) {
     companion object {
         private const val TAG = AppConstants.Logging.MAIN_ACTIVITY_TAG
+        
+        // 🆕 API基础URL配置
+        // 优先使用网站URL，失败后切换到IP方式
+        private const val API_BASE_URL_PRIMARY = "https://app.mspa.shop"  // 优先使用网站URL
+        private const val API_BASE_URL_FALLBACK = "http://31.97.51.107:8500"  // 备用IP方式
+        private const val HTTP_TIMEOUT_MS = 10000  // HTTP超时时间（10秒）
     }
 
     // ===============================
@@ -355,6 +361,148 @@ class MainActivityCore(
     // ===============================
     
     /**
+     * 🆕 通用HTTP GET请求（支持URL回退）
+     * 优先使用网站URL，如果超时或失败，自动切换到IP方式
+     * @param endpoint API端点（如 "/api/user/123"）
+     * @return HTTP响应内容，如果两次都失败则返回null
+     */
+    private suspend fun httpGetWithFallback(endpoint: String): String? = withContext(Dispatchers.IO) {
+        val urls = listOf(
+            "$API_BASE_URL_PRIMARY$endpoint",
+            "$API_BASE_URL_FALLBACK$endpoint"
+        )
+        
+        for ((index, urlString) in urls.withIndex()) {
+            try {
+                val url = URL(urlString)
+                val connection = url.openConnection() as HttpURLConnection
+                
+                connection.apply {
+                    requestMethod = "GET"
+                    connectTimeout = HTTP_TIMEOUT_MS
+                    readTimeout = HTTP_TIMEOUT_MS
+                    setRequestProperty("Content-Type", "application/json")
+                    setRequestProperty("User-Agent", "CP搭子/1.0")
+                }
+                
+                val responseCode = connection.responseCode
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    val response = connection.inputStream.bufferedReader().use { it.readText() }
+                    if (index == 0) {
+                        Log.d(TAG, "✅ 使用网站URL获取成功: $urlString")
+                    } else {
+                        Log.i(TAG, "✅ 网站URL失败，已切换到IP方式获取成功: $urlString")
+                    }
+                    return@withContext response
+                } else {
+                    // HTTP错误（非超时），如果是第一次尝试，继续尝试备用URL
+                    if (index == 0) {
+                        Log.w(TAG, "⚠️ 网站URL返回错误码 $responseCode，尝试IP方式: $urlString")
+                        continue
+                    } else {
+                        Log.w(TAG, "⚠️ IP方式也返回错误码 $responseCode: $urlString")
+                        return@withContext null
+                    }
+                }
+            } catch (e: java.net.SocketTimeoutException) {
+                // 超时异常，如果是第一次尝试，切换到备用URL
+                if (index == 0) {
+                    Log.w(TAG, "⏱️ 网站URL超时（${HTTP_TIMEOUT_MS}ms），切换到IP方式: $urlString")
+                    continue
+                } else {
+                    Log.e(TAG, "⏱️ IP方式也超时: $urlString", e)
+                    return@withContext null
+                }
+            } catch (e: Exception) {
+                // 其他异常，如果是第一次尝试，切换到备用URL
+                if (index == 0) {
+                    Log.w(TAG, "⚠️ 网站URL请求失败: ${e.message}，尝试IP方式: $urlString")
+                    continue
+                } else {
+                    Log.e(TAG, "❌ IP方式也失败: $urlString", e)
+                    return@withContext null
+                }
+            }
+        }
+        
+        null  // 所有URL都失败
+    }
+    
+    /**
+     * 🆕 通用HTTP POST请求（支持URL回退）
+     * 优先使用网站URL，如果超时或失败，自动切换到IP方式
+     * @param endpoint API端点（如 "/api/user/update"）
+     * @param requestBody POST请求体（JSON字符串）
+     * @return HTTP响应内容，如果两次都失败则返回null
+     */
+    private suspend fun httpPostWithFallback(endpoint: String, requestBody: String): String? = withContext(Dispatchers.IO) {
+        val urls = listOf(
+            "$API_BASE_URL_PRIMARY$endpoint",
+            "$API_BASE_URL_FALLBACK$endpoint"
+        )
+        
+        for ((index, urlString) in urls.withIndex()) {
+            try {
+                val url = URL(urlString)
+                val connection = url.openConnection() as HttpURLConnection
+                
+                connection.apply {
+                    requestMethod = "POST"
+                    connectTimeout = HTTP_TIMEOUT_MS
+                    readTimeout = HTTP_TIMEOUT_MS
+                    setRequestProperty("Content-Type", "application/json")
+                    setRequestProperty("User-Agent", "CP搭子/1.0")
+                    doOutput = true
+                }
+                
+                connection.outputStream.use { outputStream ->
+                    outputStream.write(requestBody.toByteArray())
+                }
+                
+                val responseCode = connection.responseCode
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    val response = connection.inputStream.bufferedReader().use { it.readText() }
+                    if (index == 0) {
+                        Log.d(TAG, "✅ 使用网站URL POST成功: $urlString")
+                    } else {
+                        Log.i(TAG, "✅ 网站URL失败，已切换到IP方式POST成功: $urlString")
+                    }
+                    return@withContext response
+                } else {
+                    // HTTP错误（非超时），如果是第一次尝试，继续尝试备用URL
+                    if (index == 0) {
+                        Log.w(TAG, "⚠️ 网站URL POST返回错误码 $responseCode，尝试IP方式: $urlString")
+                        continue
+                    } else {
+                        Log.w(TAG, "⚠️ IP方式POST也返回错误码 $responseCode: $urlString")
+                        return@withContext null
+                    }
+                }
+            } catch (e: java.net.SocketTimeoutException) {
+                // 超时异常，如果是第一次尝试，切换到备用URL
+                if (index == 0) {
+                    Log.w(TAG, "⏱️ 网站URL POST超时（${HTTP_TIMEOUT_MS}ms），切换到IP方式: $urlString")
+                    continue
+                } else {
+                    Log.e(TAG, "⏱️ IP方式POST也超时: $urlString", e)
+                    return@withContext null
+                }
+            } catch (e: Exception) {
+                // 其他异常，如果是第一次尝试，切换到备用URL
+                if (index == 0) {
+                    Log.w(TAG, "⚠️ 网站URL POST失败: ${e.message}，尝试IP方式: $urlString")
+                    continue
+                } else {
+                    Log.e(TAG, "❌ IP方式POST也失败: $urlString", e)
+                    return@withContext null
+                }
+            }
+        }
+        
+        null  // 所有URL都失败
+    }
+    
+    /**
      * 自动更新使用统计数据到API
      */
     suspend fun autoUpdateUsageStats(deviceId: String, usageStats: UsageStats) = withContext(Dispatchers.IO) {
@@ -371,10 +519,7 @@ class MainActivityCore(
             val currentUserData = fetchUserDataForUpdate(deviceId)
             Log.d(TAG, "📋 用户当前数据: 车型=${currentUserData.carModel}, 微信名=${currentUserData.wechatName}, 赞助金额=${currentUserData.sponsorAmount}, 用户类型=${currentUserData.userType}")
             
-            // 使用 HTTPS 协议访问域名
-            val url = URL("https://app.mspa.shop/api/user/update")
-            val connection = url.openConnection() as HttpURLConnection
-            
+            // 🆕 使用支持URL回退的POST请求
             val requestBody = JSONObject().apply {
                 put("device_id", deviceId)
                 put("car_model", currentUserData.carModel)
@@ -389,24 +534,8 @@ class MainActivityCore(
             
             Log.d(TAG, "📤 发送使用统计更新请求: $requestBody")
             
-            connection.apply {
-                requestMethod = "POST"
-                connectTimeout = 10000
-                readTimeout = 10000
-                setRequestProperty("Content-Type", "application/json")
-                setRequestProperty("User-Agent", "CP搭子/1.0")
-                doOutput = true
-            }
-            
-            connection.outputStream.use { outputStream ->
-                outputStream.write(requestBody.toByteArray())
-            }
-            
-            val responseCode = connection.responseCode
-            Log.d(TAG, "📥 使用统计更新响应码: $responseCode")
-            
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                val response = connection.inputStream.bufferedReader().use { it.readText() }
+            val response = httpPostWithFallback("/api/user/update", requestBody)
+            if (response != null) {
                 Log.d(TAG, "📥 使用统计更新响应: $response")
                 
                 val jsonObject = JSONObject(response)
@@ -424,8 +553,7 @@ class MainActivityCore(
                     Log.w(TAG, "⚠️ 使用统计更新API返回失败: ${jsonObject.optString("message", "未知错误")}")
                 }
             } else {
-                val errorResponse = connection.errorStream?.bufferedReader()?.use { it.readText() } ?: "无错误信息"
-                Log.w(TAG, "⚠️ 使用统计更新失败，响应码: $responseCode, 错误信息: $errorResponse")
+                Log.w(TAG, "⚠️ 使用统计更新失败：网站URL和IP方式都失败")
             }
         } catch (e: Exception) {
             Log.e(TAG, "❌ 自动更新使用统计失败", e)
@@ -435,24 +563,13 @@ class MainActivityCore(
 
     /**
      * 获取用户数据用于更新（简化版本，只获取必要字段）
+     * 🆕 优化：支持URL回退机制（优先网站URL，失败后切换IP）
      */
     private suspend fun fetchUserDataForUpdate(deviceId: String): UserDataForUpdate = withContext(Dispatchers.IO) {
         try {
-            // 使用 HTTPS 协议访问域名
-            val url = URL("https://app.mspa.shop/api/user/$deviceId")
-            val connection = url.openConnection() as HttpURLConnection
-            
-            connection.apply {
-                requestMethod = "GET"
-                connectTimeout = 10000
-                readTimeout = 10000
-                setRequestProperty("Content-Type", "application/json")
-                setRequestProperty("User-Agent", "CP搭子/1.0")
-            }
-            
-            val responseCode = connection.responseCode
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                val response = connection.inputStream.bufferedReader().use { it.readText() }
+            // 🆕 使用支持URL回退的GET请求
+            val response = httpGetWithFallback("/api/user/$deviceId")
+            if (response != null) {
                 val jsonObject = JSONObject(response)
                 
                 if (jsonObject.getBoolean("success")) {
@@ -466,16 +583,9 @@ class MainActivityCore(
                 } else {
                     throw Exception("API返回失败: ${jsonObject.optString("message", "未知错误")}")
                 }
-            } else if (responseCode == 404) {
-                // 用户不存在，返回默认值
-                UserDataForUpdate(
-                    carModel = "",
-                    wechatName = "",
-                    sponsorAmount = 0f,
-                    userType = 0
-                )
             } else {
-                throw Exception("HTTP错误: $responseCode")
+                // 所有URL都失败，返回默认值
+                throw Exception("网站URL和IP方式都失败")
             }
         } catch (e: Exception) {
             Log.e(TAG, "获取用户数据失败", e)
@@ -491,26 +601,15 @@ class MainActivityCore(
 
     /**
      * 获取用户类型 - 直接调用API，不使用缓存
+     * 🆕 优化：支持URL回退机制（优先网站URL，失败后切换IP）
      */
     suspend fun fetchUserType(deviceId: String): Int = withContext(Dispatchers.IO) {
         try {
             Log.i(TAG, "👤 直接获取用户类型: $deviceId")
             
-            // 使用 HTTPS 协议访问域名
-            val url = URL("https://app.mspa.shop/api/user/$deviceId")
-            val connection = url.openConnection() as HttpURLConnection
-            
-            connection.apply {
-                requestMethod = "GET"
-                connectTimeout = 10000
-                readTimeout = 10000
-                setRequestProperty("Content-Type", "application/json")
-                setRequestProperty("User-Agent", "CP搭子/1.0")
-            }
-            
-            val responseCode = connection.responseCode
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                val response = connection.inputStream.bufferedReader().use { it.readText() }
+            // 🆕 使用支持URL回退的GET请求
+            val response = httpGetWithFallback("/api/user/$deviceId")
+            if (response != null) {
                 val jsonObject = JSONObject(response)
                 
                 if (jsonObject.getBoolean("success")) {
@@ -523,11 +622,9 @@ class MainActivityCore(
                     Log.w(TAG, "⚠️ API返回失败，使用默认用户类型0")
                     0
                 }
-            } else if (responseCode == 404) {
-                Log.w(TAG, "⚠️ 用户不存在，使用默认用户类型0")
-                0
             } else {
-                Log.w(TAG, "⚠️ HTTP错误: $responseCode，使用默认用户类型0")
+                // 所有URL都失败，使用默认值
+                Log.w(TAG, "⚠️ 网站URL和IP方式都失败，使用默认用户类型0")
                 0
             }
         } catch (e: Exception) {

@@ -473,9 +473,7 @@ private fun QuickCommandDropdown(
                 )
             },
             colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
-            modifier = Modifier
-                .fillMaxWidth()
-                .menuAnchor()  // ✅ 关键修复：必须添加menuAnchor()修饰符，否则点击无反应（使用默认参数）
+            modifier = Modifier.fillMaxWidth()
         )
         
         ExposedDropdownMenu(

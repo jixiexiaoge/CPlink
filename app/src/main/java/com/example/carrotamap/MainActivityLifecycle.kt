@@ -558,10 +558,19 @@ class MainActivityLifecycle(
                             core.xiaogeData.value = data?.copy(overtakeStatus = overtakeStatus)
                         },
                         onDeviceIPDetected = { deviceIP ->
-                            // 🆕 自动连接设备：从UDP数据包中提取的IP地址
+                            // 🆕 TCP模式：设置服务器IP并触发连接
+                            // 注意：TCP模式下，设备IP就是TCP服务器的IP地址
                             try {
-                                Log.i(TAG, "🔗 从XiaogeDataReceiver检测到设备IP: $deviceIP，自动连接...")
-                                // 通过NetworkManager自动连接设备（在IO线程中执行）
+                                Log.i(TAG, "🔗 检测到设备IP: $deviceIP，设置TCP服务器地址...")
+                                // 设置TCP服务器IP（如果接收器正在运行，会自动重连）
+                                core.xiaogeDataReceiver.setServerIP(deviceIP)
+                                
+                                // 如果接收器未运行，启动它（传入服务器IP）
+                                if (!core.xiaogeDataReceiver.isRunning) {
+                                    core.xiaogeDataReceiver.start(deviceIP)
+                                }
+                                
+                                // 同时通过NetworkManager自动连接设备（用于其他服务）
                                 CoroutineScope(Dispatchers.IO).launch {
                                     try {
                                         val networkManager = core.networkManager
@@ -585,11 +594,15 @@ class MainActivityLifecycle(
                                     }
                                 }
                             } catch (e: Exception) {
-                                Log.e(TAG, "❌ 自动连接设备异常: ${e.message}", e)
+                                Log.e(TAG, "❌ 设置TCP服务器IP异常: ${e.message}", e)
                             }
                         }
                     )
-                    core.xiaogeDataReceiver.start()
+                    // 🆕 设置NetworkManager引用，用于自动获取设备IP
+                    core.xiaogeDataReceiver.setNetworkManager(core.networkManager)
+                    // 🆕 尝试从NetworkManager获取初始IP（如果已连接）
+                    val initialIP = core.networkManager.getCurrentDeviceIP()
+                    core.xiaogeDataReceiver.start(initialIP)
                     updateSelfCheckStatusAsync("小鸽数据接收器", "初始化完成", true)
                 } catch (e: Exception) {
                     Log.e(TAG, "❌ 小鸽数据接收器初始化失败: ${e.message}", e)
