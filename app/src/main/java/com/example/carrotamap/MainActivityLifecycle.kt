@@ -760,7 +760,8 @@ class MainActivityLifecycle(
             core.xiaogeDataReceiver = XiaogeDataReceiver(
                 context = activity,
                 onDataReceived = { data ->
-                    // 🆕 确保数据立即更新，保证实时性
+                    // 🆕 确保数据立即更新到主线程，保证UI实时刷新
+                    CoroutineScope(Dispatchers.Main).launch {
                     // 检查autoOvertakeManager是否已初始化
                     val overtakeStatus = try {
                         // 尝试访问autoOvertakeManager，如果未初始化会抛出UninitializedPropertyAccessException
@@ -773,8 +774,9 @@ class MainActivityLifecycle(
                         Log.w(TAG, "⚠️ AutoOvertakeManager.update()异常: ${e.message}")
                         null
                     }
-                    // 🆕 立即更新数据，包含超车状态（可能为null），确保UI和运算使用最新数据
+                        // 🆕 立即更新数据到UI，包含超车状态（可能为null），确保UI实时显示最新数据
                     core.xiaogeData.value = data?.copy(overtakeStatus = overtakeStatus)
+                    }
                 },
                 onConnectionStatusChanged = { connected ->
                     // 更新TCP连接状态
@@ -792,6 +794,11 @@ class MainActivityLifecycle(
                             android.widget.Toast.LENGTH_LONG
                         ).show()
                     }
+                },
+                onDataTimeoutChanged = { isTimeout ->
+                    // 🆕 数据超时状态回调：更新数据超时状态
+                    core.xiaogeDataTimeout.value = isTimeout
+                    Log.d(TAG, "⏱️ 数据超时状态变化: $isTimeout")
                 }
             )
             
@@ -800,7 +807,7 @@ class MainActivityLifecycle(
             
             // 🆕 设置NetworkManager的IP更新回调，当获取到设备IP时立即通知XiaogeDataReceiver连接
             core.networkManager.setOnDeviceIPUpdated { deviceIP ->
-                Log.i(TAG, "📡 从NetworkManager收到设备IP: $deviceIP，立即通知XiaogeDataReceiver连接")
+                //Log.i(TAG, "📡 从NetworkManager收到设备IP: $deviceIP，立即通知XiaogeDataReceiver连接")
                 // 立即设置IP并触发连接
                 core.xiaogeDataReceiver.setServerIP(deviceIP)
             }

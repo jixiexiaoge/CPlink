@@ -304,8 +304,9 @@ object MainActivityUIComponents {
         var isOvertakeModeLoading by remember { mutableStateOf(false) }
         
         val coroutineScope = rememberCoroutineScope()
-        // 计算弹窗宽度：九宫格宽度（56dp * 3 + 6dp * 2 + 8dp * 2 = 196dp）+ 额外宽度
-        val dialogWidth = 56.dp * 3 + 6.dp * 2 + 8.dp * 2 + 20.dp  // 196dp + 20dp = 216dp（比九宫格宽20dp）
+        // 计算弹窗宽度：九宫格宽度（56dp * 3 + 6dp * 2 = 180dp）+ 左右padding（8dp * 2 = 16dp）= 196dp
+        // 确保左右padding对称，都是8dp
+        val dialogWidth = 56.dp * 3 + 6.dp * 2 + 8.dp * 2  // 180dp + 16dp = 196dp（左右各8dp padding）
         
         androidx.compose.ui.window.Dialog(
             onDismissRequest = onDismiss
@@ -804,16 +805,15 @@ object MainActivityUIComponents {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 2.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // 参数名称（左侧）
+            // 参数名称（左侧，不占用多余空间）
             Text(
                 text = label,
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Medium,
-                color = Color(0xFF1F2937),
-                modifier = Modifier.weight(1f)
+                color = Color(0xFF1F2937)
             )
             
             // 减号按钮、数值、加号按钮（右侧，更紧凑排列）

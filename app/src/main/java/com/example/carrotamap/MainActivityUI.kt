@@ -73,6 +73,8 @@ class MainActivityUI(
                                 userType = core.userType.value,
                                 carrotManFields = core.carrotManFields.value,
                                 dataFieldManager = core.dataFieldManager,
+                                xiaogeTcpConnected = core.xiaogeTcpConnected.value,
+                                xiaogeDataTimeout = core.xiaogeDataTimeout.value,
                                 onSendCommand = { command, arg -> core.sendCarrotCommand(command, arg) },
                                 onSendRoadLimitSpeed = { core.sendCurrentRoadLimitSpeed() },
                                 onLaunchAmap = { core.launchAmapAuto() },
@@ -204,6 +206,8 @@ class MainActivityUI(
         userType: Int,
         carrotManFields: CarrotManFields,
         dataFieldManager: DataFieldManager,
+        xiaogeTcpConnected: Boolean,
+        xiaogeDataTimeout: Boolean,
         onSendCommand: (String, String) -> Unit,
         onSendRoadLimitSpeed: () -> Unit,
         onLaunchAmap: () -> Unit,
@@ -232,10 +236,14 @@ class MainActivityUI(
             ) {
                 // 🔄 调整布局：实时数据组件移到顶部
                 // Comma3数据表格（可折叠）
+                val data by core.xiaogeData  // 🆕 获取实时数据，用于显示序号和时间
                 Comma3DataTable(
                     carrotManFields = carrotManFields,
                     dataFieldManager = dataFieldManager,
-                    userType = userType
+                    userType = userType,
+                    xiaogeTcpConnected = xiaogeTcpConnected,
+                    xiaogeDataTimeout = xiaogeDataTimeout,
+                    xiaogeData = data  // 🆕 传递数据，用于显示序号和时间
                 )
                 
                 // 🆕 详细信息显示区域（只有用户类型3或4才显示）
@@ -425,10 +433,29 @@ class MainActivityUI(
      */
     private fun getUserTypeText(userType: Int): String {
         return when (userType) {
+            0 -> "未知用户"
+            1 -> "新用户"
             2 -> "支持者"
             3 -> "赞助者"
             4 -> "铁粉"
-            else -> "普通用户"
+            else -> "未知类型($userType)"
+        }
+    }
+
+    /**
+     * 根据TCP连接状态返回颜色
+     * @param isConnected TCP是否已连接
+     * @param isDataTimeout 数据是否超时（连接但无数据）
+     * @return 颜色：灰色=无连接，绿色=正常，黄色=异常
+     */
+    private fun getTcpConnectionStatusColor(
+        isConnected: Boolean,
+        isDataTimeout: Boolean
+    ): Color {
+        return when {
+            !isConnected -> Color(0xFF9CA3AF) // 灰色：无连接
+            isDataTimeout -> Color(0xFFF59E0B) // 黄色：异常（连接但数据超时）
+            else -> Color(0xFF10B981) // 绿色：正常（连接且有数据）
         }
     }
 
@@ -439,10 +466,14 @@ class MainActivityUI(
     private fun Comma3DataTable(
         carrotManFields: CarrotManFields,
         dataFieldManager: DataFieldManager,
-        userType: Int
+        userType: Int,
+        xiaogeTcpConnected: Boolean,
+        xiaogeDataTimeout: Boolean,
+        xiaogeData: XiaogeVehicleData? = null  // 🆕 添加数据参数，用于显示序号和时间
     ) {
         var isExpanded by remember { mutableStateOf(false) }
         val userTypeText = getUserTypeText(userType)
+        val connectionStatusColor = getTcpConnectionStatusColor(xiaogeTcpConnected, xiaogeDataTimeout)
         
         Card(
             colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -468,7 +499,7 @@ class MainActivityUI(
                             text = userTypeText,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF1D4ED8)
+                            color = connectionStatusColor
                         )
                         // 红绿灯状态指示器
                         TrafficLightIndicator(
@@ -557,6 +588,83 @@ class MainActivityUI(
                                 color = Color(0xFF059669),
                                 fontWeight = FontWeight.Medium,
                                 modifier = Modifier.weight(1f)
+                            )
+                        }
+                    }
+                    
+                    // 🆕 在表格底部显示数据包序号和时间信息（用于调试和判断断联时间）
+                    Spacer(modifier = Modifier.height(4.dp))
+                        Divider(
+                        modifier = Modifier.fillMaxWidth(),
+                        color = Color(0xFFE5E7EB),
+                        thickness = 1.dp
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 3.dp, horizontal = 12.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        if (xiaogeData != null) {
+                            // 数据序号
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "序号:",
+                                    fontSize = 10.sp,
+                                    color = Color(0xFF64748B),
+                                    fontWeight = FontWeight.Medium
+                                )
+                                Text(
+                                    text = "${xiaogeData.sequence}",
+                                    fontSize = 10.sp,
+                                    color = Color(0xFF059669),
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                            
+                            // 接收时间
+                            val receiveTimeText = if (xiaogeData.receiveTime > 0) {
+                                val now = System.currentTimeMillis()
+                                val age = now - xiaogeData.receiveTime
+                                "${age}ms前"
+                            } else {
+                                "未知"
+                            }
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "接收:",
+                                    fontSize = 10.sp,
+                                    color = Color(0xFF64748B),
+                                    fontWeight = FontWeight.Medium
+                                )
+                                Text(
+                                    text = receiveTimeText,
+                                    fontSize = 10.sp,
+                                    color = if (xiaogeData.receiveTime > 0) {
+                                        Color(0xFF059669)
+                                    } else {
+                                        Color(0xFF9CA3AF)
+                                    },
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        } else {
+                            // 无数据时显示提示
+                            Text(
+                                text = "等待数据...",
+                                fontSize = 10.sp,
+                                color = Color(0xFF9CA3AF),
+                                fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
+                                modifier = Modifier.fillMaxWidth(),
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
                             )
                         }
                     }
@@ -743,92 +851,6 @@ private fun VehicleLaneDetailsSection(
             .padding(horizontal = 8.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        // 超车提示信息卡片
-        val prefsForHint = context.getSharedPreferences("CarrotAmap", android.content.Context.MODE_PRIVATE)
-        val overtakeModeForHint = prefsForHint.getInt("overtake_mode", 0)
-        val hintInfo = getOvertakeHintInfo(
-            overtakeMode = overtakeModeForHint,
-            overtakeStatus = currentData?.overtakeStatus,
-            laneChangeState = currentData?.modelV2?.meta?.laneChangeState ?: 0,
-            laneChangeDirection = currentData?.modelV2?.meta?.laneChangeDirection ?: 0
-        )
-        
-        // 获取额外的信息行（冷却时间、阻止原因）
-        val cooldownText = currentData?.overtakeStatus?.cooldownRemaining?.let { cooldown ->
-            if (cooldown > 0) "冷却: ${String.format("%.1f", cooldown / 1000.0)}s" else null
-        }
-        val blockingReason = currentData?.overtakeStatus?.blockingReason
-        val shouldShowBlockingReason = blockingReason != null && 
-            hintInfo.detail != blockingReason && 
-            !hintInfo.detail.contains(blockingReason)
-        
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(
-                containerColor = hintInfo.cardColor
-            ),
-            shape = androidx.compose.foundation.shape.RoundedCornerShape(6.dp)
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 5.dp),
-                horizontalArrangement = Arrangement.spacedBy(5.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = hintInfo.icon,
-                    fontSize = 14.sp
-                )
-                Column(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(1.dp)
-                ) {
-                    // 第一行：标题（状态文本）
-                    Text(
-                        text = hintInfo.title,
-                        fontSize = 11.sp,
-                        color = hintInfo.titleColor,
-                        fontWeight = FontWeight.Bold,
-                        maxLines = 1,
-                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
-                    )
-                    // 第二行：详情描述
-                    Text(
-                        text = hintInfo.detail,
-                        fontSize = 9.sp,
-                        color = Color(0xFF94A3B8),
-                        fontWeight = FontWeight.Medium,
-                        maxLines = 1,
-                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
-                    )
-                    // 第三行：冷却时间或阻止原因（优先显示阻止原因）
-                    when {
-                        shouldShowBlockingReason -> {
-                            Text(
-                                text = blockingReason!!,
-                                fontSize = 8.sp,
-                                color = Color(0xFFEF4444),
-                                fontWeight = FontWeight.Light,
-                                maxLines = 1,
-                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
-                            )
-                        }
-                        cooldownText != null -> {
-                            Text(
-                                text = cooldownText,
-                                fontSize = 8.sp,
-                                color = Color(0xFF94A3B8),
-                                fontWeight = FontWeight.Light,
-                                maxLines = 1,
-                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
-                            )
-                        }
-                    }
-                }
-            }
-        }
-        
         // 数据信息面板（13个检查条件的表格）
         VehicleLaneDataInfoPanel(
             data = currentData,
@@ -1281,39 +1303,6 @@ private fun VehicleLaneDataInfoPanel(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        // 变道中时显示进度条
-        if (laneChangeState == 1) {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFF3B82F6).copy(alpha = 0.2f)
-                ),
-                shape = androidx.compose.foundation.shape.RoundedCornerShape(6.dp)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 8.dp, vertical = 5.dp),
-                    verticalArrangement = Arrangement.spacedBy(2.dp)
-                ) {
-                    Text(
-                        text = "变道中...",
-                        fontSize = 10.sp,
-                        color = Color(0xFF3B82F6),
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    LinearProgressIndicator(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(2.dp),
-                        color = Color(0xFF3B82F6),
-                        trackColor = Color(0xFF1E293B)
-                    )
-                }
-            }
-        }
-        
         // 检查条件表格
         Card(
             modifier = Modifier.fillMaxWidth(),
@@ -1424,6 +1413,91 @@ private fun VehicleLaneDataInfoPanel(
                                 },
                                 fontWeight = FontWeight.Bold,
                                 textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                            )
+                        }
+                    }
+                }
+            }
+        }
+        
+        // 超车提示信息卡片（移动到数据面板下方）
+        val overtakeModeForHint = prefs.getInt("overtake_mode", 0)
+        val hintInfo = getOvertakeHintInfo(
+            overtakeMode = overtakeModeForHint,
+            overtakeStatus = data?.overtakeStatus,
+            laneChangeState = data?.modelV2?.meta?.laneChangeState ?: 0,
+            laneChangeDirection = data?.modelV2?.meta?.laneChangeDirection ?: 0
+        )
+        
+        // 获取额外的信息行（冷却时间、阻止原因）
+        val cooldownText = data?.overtakeStatus?.cooldownRemaining?.let { cooldown ->
+            if (cooldown > 0) "冷却: ${String.format("%.1f", cooldown / 1000.0)}s" else null
+        }
+        val blockingReason = data?.overtakeStatus?.blockingReason
+        val shouldShowBlockingReason = blockingReason != null && 
+            hintInfo.detail != blockingReason && 
+            !hintInfo.detail.contains(blockingReason)
+        
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = hintInfo.cardColor
+            ),
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(6.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 5.dp),
+                horizontalArrangement = Arrangement.spacedBy(5.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = hintInfo.icon,
+                    fontSize = 14.sp
+                )
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(1.dp)
+                ) {
+                    // 第一行：标题（状态文本）
+                    Text(
+                        text = hintInfo.title,
+                        fontSize = 11.sp,
+                        color = hintInfo.titleColor,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                    )
+                    // 第二行：详情描述
+                    Text(
+                        text = hintInfo.detail,
+                        fontSize = 9.sp,
+                        color = Color(0xFF94A3B8),
+                        fontWeight = FontWeight.Medium,
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                    )
+                    // 第三行：冷却时间或阻止原因（优先显示阻止原因）
+                    when {
+                        shouldShowBlockingReason -> {
+                            Text(
+                                text = blockingReason!!,
+                                fontSize = 8.sp,
+                                color = Color(0xFFEF4444),
+                                fontWeight = FontWeight.Light,
+                                maxLines = 1,
+                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                            )
+                        }
+                        cooldownText != null -> {
+                            Text(
+                                text = cooldownText,
+                                fontSize = 8.sp,
+                                color = Color(0xFF94A3B8),
+                                fontWeight = FontWeight.Light,
+                                maxLines = 1,
+                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                             )
                         }
                     }

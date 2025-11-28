@@ -102,7 +102,7 @@ class NetworkManager(
                     // 🆕 设备发现时，立即通知XiaogeDataReceiver连接
                     val deviceIP = device.ip
                     if (deviceIP.isNotEmpty()) {
-                        Log.i(TAG, "📡 设备发现，通知XiaogeDataReceiver连接: $deviceIP")
+                        //Log.i(TAG, "📡 设备发现，通知XiaogeDataReceiver连接: $deviceIP")
                         onDeviceIPUpdated?.invoke(deviceIP)
                     }
                 }
@@ -229,7 +229,7 @@ class NetworkManager(
             // 🆕 如果JSON中包含设备IP，直接通知XiaogeDataReceiver连接
             if (deviceIP.isNotEmpty() && devicePort > 0) {
                 onDeviceIPUpdated?.invoke(deviceIP)
-                Log.d(TAG, "📡 从JSON解析到设备IP: $deviceIP:$devicePort，已通知XiaogeDataReceiver")
+                //Log.d(TAG, "📡 从JSON解析到设备IP: $deviceIP:$devicePort，已通知XiaogeDataReceiver")
             }
 
             val oldData = openpilotStatusData.value

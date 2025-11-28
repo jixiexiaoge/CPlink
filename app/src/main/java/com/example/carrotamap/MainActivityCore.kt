@@ -134,6 +134,7 @@ class MainActivityCore(
     lateinit var xiaogeDataReceiver: XiaogeDataReceiver
     val xiaogeData = mutableStateOf<XiaogeVehicleData?>(null)
     val xiaogeTcpConnected = mutableStateOf(false)  // 🆕 TCP连接状态
+    val xiaogeDataTimeout = mutableStateOf(false)  // 🆕 数据超时状态（连接但数据超时）
     
     // 自动超车管理器
     lateinit var autoOvertakeManager: AutoOvertakeManager

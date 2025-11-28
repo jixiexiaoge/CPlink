@@ -416,6 +416,27 @@ class Comma3Simulator:
         # Network threads
         self.threads = []
         
+        # Xiaoge TCP server configuration
+        self.xiaoge_tcp_port = 7711
+        self.xiaoge_sequence = 0
+        self.xiaoge_clients = {}  # {addr: conn}
+        self.xiaoge_clients_lock = threading.Lock()
+        self.xiaoge_server_socket = None
+        self.xiaoge_server_running = False
+        
+        # 动态模拟数据状态（用于实时变化）
+        self.xiaoge_dynamic_data = {
+            'lead_left_dRel': 0.0,      # 左侧车辆距离
+            'lead_left_vRel': 0.0,       # 左侧车辆相对速度
+            'lead_left_status': False,   # 左侧车辆状态
+            'lead_right_dRel': 0.0,      # 右侧车辆距离
+            'lead_right_vRel': 0.0,      # 右侧车辆相对速度
+            'lead_right_status': False,  # 右侧车辆状态
+            'lane_line_prob_left': 0.9,  # 左车道线置信度
+            'lane_line_prob_right': 0.9, # 右车道线置信度
+            'last_update_time': time.time(),  # 上次更新时间
+        }
+        
     def get_local_ip(self) -> str:
         """Get local IP address"""
         try:
@@ -429,7 +450,7 @@ class Comma3Simulator:
         """Initialize vehicle simulation data - 基于CarrotMan逆向分析优化"""
         return {
             # 基础车辆状态 - 从carState获取
-            "v_ego_kph": 0,                    # 当前速度 (km/h)
+            "v_ego_kph": 77,                   # 当前速度 (km/h) - 至少77
             "v_cruise_kph": 0,                 # 巡航速度 (km/h)
             "speed_limit": 60,                 # 道路限速 (km/h)
             "speed_limit_distance": 0,         # 限速距离 (m)
@@ -439,6 +460,7 @@ class Comma3Simulator:
             "gas_pressed": False,              # 油门踏板状态
             "brake_pressed": False,            # 刹车踏板状态
             "left_blinker": False,             # 左转向灯状态
+            "left_lat_dist": 0.0,              # 左车道距离（用于返回原车道判断）
             "soft_hold_active": False,         # 软保持激活状态
             "log_carrot": "",                  # 调试日志
             
@@ -2147,6 +2169,27 @@ class Comma3Simulator:
 
         self.threads.clear()
         self.connected_clients.clear()
+        
+        # 关闭 Xiaoge TCP 服务器
+        self.xiaoge_server_running = False
+        
+        # 关闭所有客户端连接（线程安全）
+        with self.xiaoge_clients_lock:
+            for addr, conn in self.xiaoge_clients.items():
+                try:
+                    conn.close()
+                    self.log_message(f"Closed xiaoge connection to {addr}")
+                except:
+                    pass
+            self.xiaoge_clients.clear()
+        
+        # 关闭服务器 socket
+        if self.xiaoge_server_socket:
+            try:
+                self.xiaoge_server_socket.close()
+            except:
+                pass
+        
         self.status_label.config(text="Status: Stopped")
         self.log_message("Comma3 Simulator stopped")
 
@@ -2158,6 +2201,8 @@ class Comma3Simulator:
             ("Route Data Server", self.route_data_service),
             ("ZMQ Command Server", self.zmq_command_service),
             ("KISA Data Server", self.kisa_data_service),
+            ("Xiaoge TCP Server", self.xiaoge_tcp_server),
+            ("Xiaoge Data Broadcast", self.xiaoge_data_broadcast_loop),
             ("Data Update Loop", self.data_update_loop)
         ]
 
@@ -3172,10 +3217,391 @@ class Comma3Simulator:
         except Exception as e:
             self.log_message(f"KISA processing error: {e}", "ERROR")
 
+    def recv_all_xiaoge(self, sock: socket.socket, length: int) -> bytes:
+        """接收指定字节数的数据（TCP 需要确保接收完整数据）"""
+        data = bytearray()
+        while len(data) < length:
+            packet = sock.recv(length - len(data))
+            if not packet:  # 连接已关闭
+                return None
+            data.extend(packet)
+        return bytes(data)
+
+    def send_xiaoge_packet_to_client(self, conn: socket.socket, packet: bytes) -> bool:
+        """向单个客户端发送数据包（TCP 需要确保数据完整发送）"""
+        try:
+            # TCP 发送数据包格式: [数据长度(4字节)][数据]
+            # 先发送数据长度（网络字节序，big-endian）
+            size = len(packet)
+            conn.sendall(struct.pack('!I', size))
+            # 再发送实际数据
+            conn.sendall(packet)
+            return True
+        except (socket.error, OSError):
+            # 连接已断开或发送失败
+            return False
+
+    def handle_xiaoge_client(self, conn: socket.socket, addr: Tuple[str, int]):
+        """处理单个客户端连接"""
+        print(f"Xiaoge client connected from {addr}")
+        
+        # 将客户端添加到连接列表（线程安全）
+        with self.xiaoge_clients_lock:
+            self.xiaoge_clients[addr] = conn
+        
+        try:
+            while self.xiaoge_server_running:
+                # 接收客户端请求(4字节命令)
+                # 如果客户端只是接收数据不发送命令，这里会阻塞，这是正常的
+                # 只要不抛出异常，连接就保持着，主线程可以继续通过 broadcast_xiaoge_to_clients 发送数据
+                cmd_data = self.recv_all_xiaoge(conn, 4)
+                
+                if not cmd_data:
+                    break
+                    
+                cmd = struct.unpack('!I', cmd_data)[0]
+                
+                if cmd == 2:  # 心跳请求
+                    # 响应心跳：发送大小为0的数据包
+                    try:
+                        conn.sendall(struct.pack('!I', 0))
+                    except (socket.error, OSError):
+                        break
+                # 可以扩展其他命令，例如请求特定数据
+                
+        except Exception as e:
+            print(f"Error handling xiaoge client {addr}: {e}")
+        finally:
+            # 清理客户端连接
+            with self.xiaoge_clients_lock:
+                self.xiaoge_clients.pop(addr, None)
+            try:
+                conn.close()
+            except:
+                pass
+            print(f"Xiaoge client {addr} disconnected")
+
+    def broadcast_xiaoge_to_clients(self, packet: bytes):
+        """向所有连接的客户端广播数据包"""
+        if not packet:
+            return
+        
+        # 线程安全地获取客户端列表副本
+        with self.xiaoge_clients_lock:
+            clients_copy = dict(self.xiaoge_clients)  # 创建副本，避免在迭代时修改原字典
+        
+        # 记录需要清理的断开连接
+        dead_clients = []
+        
+        # 向所有客户端发送数据
+        for addr, conn in clients_copy.items():
+            if not self.send_xiaoge_packet_to_client(conn, packet):
+                # 发送失败，标记为断开连接
+                dead_clients.append(addr)
+        
+        # 清理断开的连接
+        if dead_clients:
+            with self.xiaoge_clients_lock:
+                for addr in dead_clients:
+                    self.xiaoge_clients.pop(addr, None)
+                    try:
+                        # 尝试关闭连接（如果还未关闭）
+                        if addr in clients_copy:
+                            clients_copy[addr].close()
+                    except:
+                        pass
+
+    def xiaoge_tcp_server(self):
+        """启动 TCP 服务器（在独立线程中运行）"""
+        try:
+            # 创建 TCP socket
+            self.xiaoge_server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            # 设置 SO_REUSEADDR 选项，允许端口重用
+            self.xiaoge_server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            # 绑定到所有网络接口的指定端口
+            self.xiaoge_server_socket.bind(('0.0.0.0', self.xiaoge_tcp_port))
+            # 开始监听连接（最多 5 个待处理连接）
+            self.xiaoge_server_socket.listen(5)
+            
+            self.xiaoge_server_running = True
+            self.log_connection(f"📡 Xiaoge TCP server listening on port {self.xiaoge_tcp_port}")
+            
+            while self.xiaoge_server_running:
+                try:
+                    # 等待客户端连接（阻塞调用）
+                    conn, addr = self.xiaoge_server_socket.accept()
+                    # 为每个客户端创建独立线程处理连接
+                    client_thread = threading.Thread(
+                        target=self.handle_xiaoge_client,
+                        args=(conn, addr),
+                        daemon=True  # 设置为守护线程，主程序退出时自动结束
+                    )
+                    client_thread.start()
+                except socket.error as e:
+                    if self.xiaoge_server_running:
+                        self.log_message(f"Xiaoge TCP server error accepting connection: {e}", "ERROR")
+                    break
+        except Exception as e:
+            self.log_message(f"Xiaoge TCP server failed: {e}", "ERROR")
+            traceback.print_exc()
+        finally:
+            self.xiaoge_server_running = False
+            if self.xiaoge_server_socket:
+                try:
+                    self.xiaoge_server_socket.close()
+                except:
+                    pass
+            self.log_connection("Xiaoge TCP server stopped")
+
+    def collect_car_state_simulated(self) -> Dict[str, Any]:
+        """收集模拟的车辆状态数据"""
+        return {
+            'vEgo': self.vehicle_data["v_ego_kph"] / 3.6,  # km/h 转 m/s
+            'steeringAngleDeg': float(self.vehicle_data["steering_angle_deg"]),
+            'leftLatDist': float(self.vehicle_data.get("left_lat_dist", 0.0)),  # 模拟值，用于返回原车道判断
+            'leftBlindspot': bool(self.vehicle_data.get("blind_spot_left", False)),
+            'rightBlindspot': bool(self.vehicle_data.get("blind_spot_right", False)),
+        }
+
+    def update_xiaoge_dynamic_data(self):
+        """更新动态模拟数据，使数据实时变化"""
+        current_time = time.time()
+        dt = current_time - self.xiaoge_dynamic_data['last_update_time']
+        # 限制时间间隔，避免第一次调用时 dt 过大
+        dt = min(dt, 0.1)  # 最大 0.1 秒
+        self.xiaoge_dynamic_data['last_update_time'] = current_time
+        
+        # 确保车速至少 77 km/h
+        if self.vehicle_data["v_ego_kph"] < 77:
+            self.vehicle_data["v_ego_kph"] = 77
+        
+        v_ego = self.vehicle_data["v_ego_kph"] / 3.6  # km/h 转 m/s
+        
+        # 动态更新左侧车辆数据
+        if self.xiaoge_dynamic_data['lead_left_status']:
+            # 如果左侧车辆存在，更新其位置和速度
+            # 距离会随着时间变化（考虑相对速度）
+            self.xiaoge_dynamic_data['lead_left_dRel'] += self.xiaoge_dynamic_data['lead_left_vRel'] * dt
+            # 如果距离太远或太近，改变状态
+            if self.xiaoge_dynamic_data['lead_left_dRel'] < 5.0 or self.xiaoge_dynamic_data['lead_left_dRel'] > 100.0:
+                self.xiaoge_dynamic_data['lead_left_status'] = False
+                self.xiaoge_dynamic_data['lead_left_dRel'] = 0.0
+                self.xiaoge_dynamic_data['lead_left_vRel'] = 0.0
+            else:
+                # 轻微调整相对速度，模拟真实场景
+                self.xiaoge_dynamic_data['lead_left_vRel'] += random.uniform(-0.5, 0.5) * dt
+                self.xiaoge_dynamic_data['lead_left_vRel'] = max(-10.0, min(10.0, self.xiaoge_dynamic_data['lead_left_vRel']))
+        else:
+            # 随机生成新的左侧车辆（5% 概率每秒，即每次调用约 0.25% 概率）
+            if random.random() < 0.05 * max(dt, 0.05):
+                self.xiaoge_dynamic_data['lead_left_status'] = True
+                self.xiaoge_dynamic_data['lead_left_dRel'] = random.uniform(15.0, 50.0)
+                self.xiaoge_dynamic_data['lead_left_vRel'] = random.uniform(-3.0, 3.0)
+        
+        # 动态更新右侧车辆数据
+        if self.xiaoge_dynamic_data['lead_right_status']:
+            # 如果右侧车辆存在，更新其位置和速度
+            self.xiaoge_dynamic_data['lead_right_dRel'] += self.xiaoge_dynamic_data['lead_right_vRel'] * dt
+            # 如果距离太远或太近，改变状态
+            if self.xiaoge_dynamic_data['lead_right_dRel'] < 5.0 or self.xiaoge_dynamic_data['lead_right_dRel'] > 100.0:
+                self.xiaoge_dynamic_data['lead_right_status'] = False
+                self.xiaoge_dynamic_data['lead_right_dRel'] = 0.0
+                self.xiaoge_dynamic_data['lead_right_vRel'] = 0.0
+            else:
+                # 轻微调整相对速度
+                self.xiaoge_dynamic_data['lead_right_vRel'] += random.uniform(-0.5, 0.5) * dt
+                self.xiaoge_dynamic_data['lead_right_vRel'] = max(-10.0, min(10.0, self.xiaoge_dynamic_data['lead_right_vRel']))
+        else:
+            # 随机生成新的右侧车辆（5% 概率每秒，即每次调用约 0.25% 概率）
+            if random.random() < 0.05 * max(dt, 0.05):
+                self.xiaoge_dynamic_data['lead_right_status'] = True
+                self.xiaoge_dynamic_data['lead_right_dRel'] = random.uniform(15.0, 50.0)
+                self.xiaoge_dynamic_data['lead_right_vRel'] = random.uniform(-3.0, 3.0)
+        
+        # 动态更新车道线置信度（轻微波动，模拟真实场景）
+        self.xiaoge_dynamic_data['lane_line_prob_left'] += random.uniform(-0.02, 0.02)
+        self.xiaoge_dynamic_data['lane_line_prob_left'] = max(0.7, min(0.99, self.xiaoge_dynamic_data['lane_line_prob_left']))
+        
+        self.xiaoge_dynamic_data['lane_line_prob_right'] += random.uniform(-0.02, 0.02)
+        self.xiaoge_dynamic_data['lane_line_prob_right'] = max(0.7, min(0.99, self.xiaoge_dynamic_data['lane_line_prob_right']))
+        
+        # 动态更新前车数据（如果存在）
+        if self.vehicle_data.get("lead_one_d_rel", 0.0) > 0:
+            # 根据相对速度更新距离
+            v_lead = self.vehicle_data.get("lead_one_v_lead", 0.0)
+            v_rel = v_lead - v_ego
+            self.vehicle_data["lead_one_d_rel"] += v_rel * dt
+            # 如果距离太远，清除前车
+            if self.vehicle_data["lead_one_d_rel"] > 200.0:
+                self.vehicle_data["lead_one_d_rel"] = 0.0
+                self.vehicle_data["lead_one_v_lead"] = 0.0
+        else:
+            # 随机生成前车（3% 概率每秒，即每次调用约 0.15% 概率）
+            if random.random() < 0.03 * max(dt, 0.05):
+                self.vehicle_data["lead_one_d_rel"] = random.uniform(30.0, 80.0)
+                self.vehicle_data["lead_one_v_lead"] = v_ego + random.uniform(-5.0, 2.0)  # 前车可能稍慢
+        
+        # 动态更新转向角度（模拟轻微转向）
+        self.vehicle_data["steering_angle_deg"] += random.uniform(-0.5, 0.5)
+        self.vehicle_data["steering_angle_deg"] = max(-30.0, min(30.0, self.vehicle_data["steering_angle_deg"]))
+        
+        # 动态更新方向变化率（曲率）
+        self.vehicle_data["orientation_rate_z"] += random.uniform(-0.01, 0.01)
+        self.vehicle_data["orientation_rate_z"] = max(-0.1, min(0.1, self.vehicle_data["orientation_rate_z"]))
+
+    def collect_model_data_simulated(self) -> Dict[str, Any]:
+        """收集模拟的模型数据"""
+        data = {}
+        
+        # 前车检测 - lead0
+        if self.vehicle_data.get("lead_one_d_rel", 0.0) > 0:
+            # 计算前车数据
+            d_rel = self.vehicle_data["lead_one_d_rel"]
+            v_lead = self.vehicle_data.get("lead_one_v_lead", 0.0)
+            v_ego = self.vehicle_data["v_ego_kph"] / 3.6  # km/h 转 m/s
+            v_rel = v_lead - v_ego
+            
+            data['lead0'] = {
+                'x': d_rel + 1.52,  # 加上 RADAR_TO_CAMERA 偏移
+                'y': 0.0,  # 假设前车在车道中心
+                'v': v_lead,
+                'prob': 0.9,  # 模拟置信度
+            }
+        else:
+            data['lead0'] = {
+                'x': 0.0, 'y': 0.0, 'v': 0.0, 'prob': 0.0
+            }
+        
+        # 左侧车辆 - leadLeft（使用动态数据）
+        if self.xiaoge_dynamic_data['lead_left_status']:
+            data['leadLeft'] = {
+                'dRel': self.xiaoge_dynamic_data['lead_left_dRel'],
+                'vRel': self.xiaoge_dynamic_data['lead_left_vRel'],
+                'status': True,
+            }
+        else:
+            data['leadLeft'] = {
+                'dRel': 0.0,
+                'vRel': 0.0,
+                'status': False
+            }
+        
+        # 右侧车辆 - leadRight（使用动态数据）
+        if self.xiaoge_dynamic_data['lead_right_status']:
+            data['leadRight'] = {
+                'dRel': self.xiaoge_dynamic_data['lead_right_dRel'],
+                'vRel': self.xiaoge_dynamic_data['lead_right_vRel'],
+                'status': True,
+            }
+        else:
+            data['leadRight'] = {
+                'dRel': 0.0,
+                'vRel': 0.0,
+                'status': False
+            }
+        
+        # 车道线置信度 - 使用动态数据
+        data['laneLineProbs'] = [
+            self.xiaoge_dynamic_data['lane_line_prob_left'],
+            self.xiaoge_dynamic_data['lane_line_prob_right'],
+        ]
+        
+        # 车道宽度和变道状态
+        data['meta'] = {
+            'laneWidthLeft': 3.5,  # 默认车道宽度
+            'laneWidthRight': 3.5,
+            'laneChangeState': self.vehicle_data.get("lane_change_state", 0),
+            'laneChangeDirection': 0,  # 模拟值
+        }
+        
+        # 曲率信息
+        orientation_rate_z = self.vehicle_data.get("orientation_rate_z", 0.0)
+        data['curvature'] = {
+            'maxOrientationRate': float(orientation_rate_z),
+        }
+        
+        return data
+
+    def collect_system_state_simulated(self) -> Dict[str, Any]:
+        """收集模拟的系统状态"""
+        return {
+            'enabled': bool(self.vehicle_data.get("controls_active", False)),
+            'active': bool(self.vehicle_data.get("active", False)),
+        }
+
+    def create_xiaoge_packet(self, data: Dict[str, Any]) -> bytes:
+        """创建数据包"""
+        packet_data = {
+            'version': 1,
+            'sequence': self.xiaoge_sequence,
+            'timestamp': time.time(),
+            'ip': self.local_ip,
+            'data': data
+        }
+        
+        # 转换为JSON
+        json_str = json.dumps(packet_data)
+        packet_bytes = json_str.encode('utf-8')
+        
+        # 检查数据包大小
+        if len(packet_bytes) > 1024 * 1024:  # 1MB 警告
+            print(f"Warning: Large xiaoge packet size {len(packet_bytes)} bytes")
+        
+        return packet_bytes
+
+    def xiaoge_data_broadcast_loop(self):
+        """数据广播主循环：收集数据并通过 TCP 推送给所有连接的客户端"""
+        # 等待服务器启动
+        time.sleep(0.5)
+        
+        while self.is_running and self.xiaoge_server_running:
+            try:
+                # 更新动态数据（实时变化）
+                self.update_xiaoge_dynamic_data()
+                
+                # 确保车速至少 77 km/h
+                if self.vehicle_data["v_ego_kph"] < 77:
+                    self.vehicle_data["v_ego_kph"] = 77
+                
+                # 收集数据
+                data = {}
+                
+                # 本车状态
+                data['carState'] = self.collect_car_state_simulated()
+                
+                # 模型数据
+                data['modelV2'] = self.collect_model_data_simulated()
+                
+                # 系统状态
+                data['systemState'] = self.collect_system_state_simulated()
+                
+                # 创建数据包
+                packet = self.create_xiaoge_packet(data)
+                
+                # 向所有连接的客户端广播数据包
+                self.broadcast_xiaoge_to_clients(packet)
+                self.xiaoge_sequence += 1
+                
+                # 每100帧打印一次日志
+                if self.xiaoge_sequence % 100 == 0:
+                    with self.xiaoge_clients_lock:
+                        client_count = len(self.xiaoge_clients)
+                    self.log_message(f"Sent {self.xiaoge_sequence} xiaoge packets to {client_count} client(s), last size: {len(packet)} bytes")
+                
+                time.sleep(0.05)  # 20Hz 频率
+                
+            except Exception as e:
+                self.log_message(f"Xiaoge data broadcast error: {e}", "ERROR")
+                time.sleep(1)
+
     def data_update_loop(self):
         """Continuous data update loop with CarrotMan state machine updates"""
         while self.is_running:
             try:
+                # 确保车速至少 77 km/h
+                if self.vehicle_data["v_ego_kph"] < 77:
+                    self.vehicle_data["v_ego_kph"] = 77
+                
                 # 更新CarrotMan状态机
                 self.update_carrot_state()
 
