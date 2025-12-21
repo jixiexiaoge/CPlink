@@ -2,6 +2,13 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.detekt)
+}
+
+detekt {
+    buildUponDefaultConfig = true
+    allRules = false
+    config.setFrom(files("$rootDir/config/detekt/detekt-config.yml"))
 }
 
 android {
@@ -12,8 +19,8 @@ android {
         applicationId = "com.example.cplink"
         minSdk = 26
         targetSdk = 35
-        versionCode = 260101
-        versionName = "v260101"
+        versionCode = 260102
+        versionName = "v260102"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -134,12 +141,30 @@ dependencies {
     
     // ZMQ客户端 - 用于与Comma3设备通信
     implementation("org.zeromq:jeromq:0.5.4")
+    
+    // Koin依赖注入 - P1 架构优化
+    implementation("io.insert-koin:koin-android:3.5.3")  // Koin核心
+    implementation("io.insert-koin:koin-androidx-compose:3.5.3")  // Compose集成
+    implementation("io.insert-koin:koin-androidx-navigation:3.5.3")  // Navigation集成
+    
+    // Timber日志库 - P2 代码质量优化
+    implementation("com.jakewharton.timber:timber:5.0.1")
+    
+    // DataStore - P3 功能增强（示例）
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
 
+    // 测试框架 - P0 优先级优化
     testImplementation(libs.junit)
+    testImplementation("com.google.truth:truth:1.1.5")  // Google Truth 断言库
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")  // 协程测试
+    testImplementation("io.mockk:mockk:1.13.8")  // Kotlin Mock 框架
+    
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
+    androidTestImplementation("io.mockk:mockk-android:1.13.8")  // Android Mock 支持
+    
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 }

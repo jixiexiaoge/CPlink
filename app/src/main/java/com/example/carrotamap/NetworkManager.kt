@@ -15,6 +15,8 @@ import org.json.JSONException
 import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.*
+import com.example.carrotamap.utils.NetworkPerformanceUtils
+import com.example.carrotamap.utils.NetworkStats
 
 /**
  * 网络管理器
@@ -59,7 +61,10 @@ class NetworkManager(
     
     // 🆕 XiaogeDataReceiver IP更新回调 - 当从JSON解析到设备IP时通知
     private var onDeviceIPUpdated: ((String) -> Unit)? = null
-
+    
+    // 🆕 性能优化 - 网络数据差分发送
+    private var lastSentFields: CarrotManFields? = null
+    private val networkStats = NetworkStats()
 
     // 导航确认服务已移除
 
@@ -436,8 +441,8 @@ class NetworkManager(
     }
 
     /**
-     * 发送CarrotMan数据到Comma3设备（实时发送）
-     * 当接收到高德地图广播时立即发送数据
+     * 发送CarrotMan数据到Comma3设备（智能发送）
+     * 集成差分优化：只在数据有显著变化时发送，减少网络流量
      */
     fun sendCarrotManDataToComma3() {
         if (::carrotNetworkClient.isInitialized) {
@@ -445,58 +450,52 @@ class NetworkManager(
                 try {
                     val fields = carrotManFields.value
                     
-                    // 构建CarrotMan数据包
-                    val carrotData = CarrotManData(
-                        // 导航信息
-                        nTBTTurnType = fields.nTBTTurnType,
-                        nTBTDist = fields.nTBTDist,
-                        szTBTMainText = fields.szTBTMainText,
-                        szNearDirName = fields.szNearDirName,
-                        szFarDirName = fields.szFarDirName,
-                        
-                        // 位置信息
-                        vpPosPointLat = fields.vpPosPointLat,
-                        vpPosPointLon = fields.vpPosPointLon,
-                        vpPosPointLatNavi = fields.vpPosPointLatNavi,
-                        vpPosPointLonNavi = fields.vpPosPointLonNavi,
-                        
-                        // 目的地信息
-                        goalPosX = fields.goalPosX,
-                        goalPosY = fields.goalPosY,
-                        szGoalName = fields.szGoalName,
-                        
-                        // 道路信息
-                        roadcate = fields.roadcate,
-                        nRoadLimitSpeed = fields.nRoadLimitSpeed,
-                        
-                        // SDI信息
-                        nSdiType = fields.nSdiType,
-                        nSdiSpeedLimit = fields.nSdiSpeedLimit,
-                        nSdiDist = fields.nSdiDist,
-                        
-                        // 系统状态
-                        active_carrot = fields.active_carrot,
-                        isNavigating = fields.isNavigating,
-                        carrotIndex = fields.carrotIndex,
-                        carcruiseSpeed = fields.carcruiseSpeed,
-                        
-                        // 时间戳
-                        lastUpdateTime = fields.lastUpdateTime
+                    // 🚀 性能优化：差分发送检测
+                    val hasChange = NetworkPerformanceUtils.hasSignificantChange(
+                        old = lastSentFields,
+                        new = fields
                     )
                     
-                    // 发送数据到Comma3设备
+                    // 估算数据包大小
+                    val packetSize = NetworkPerformanceUtils.estimateDataSize(fields)
+                    
+                    if (!hasChange) {
+                        // 无显著变化，跳过发送
+                        networkStats.updateStats(packetSize, wasSkipped = true)
+                        // 每 20 次跳过记录一次日志，避免刷屏
+                        if (networkStats.packetsSkipped % 20 == 0) {
+                            timber.log.Timber.d("⏭️ 数据无变化，已跳过 ${networkStats.packetsSkipped} 次发送 (优化率 ${"%.1f".format(networkStats.getOptimizationRate())}%)")
+                        }
+                        return@launch
+                    }
+                    
+                    // 有显著变化，发送数据
                     carrotNetworkClient.sendCarrotManData(fields)
                     
-                    Log.d(TAG, "📤 CarrotMan数据已发送: 转弯类型=${fields.nTBTTurnType}, 距离=${fields.nTBTDist}m")
+                    // 更新统计和缓存
+                    networkStats.updateStats(packetSize, wasSkipped = false)
+                    lastSentFields = fields.copy()
+                    
+                    // 每 50 次发送记录一次统计
+                    if (networkStats.totalPacketsSent % 50 == 0) {
+                        timber.log.Timber.i("📊 网络统计: ${networkStats.formatStats()}")
+                    }
+                    
+                    timber.log.Timber.v("📤 数据已发送: 转弯=${fields.nTBTTurnType}, 距离=${fields.nTBTDist}m")
                     
                 } catch (e: Exception) {
-                    Log.e(TAG, "❌ 发送CarrotMan数据失败: ${e.message}", e)
+                    timber.log.Timber.e(e, "❌ 发送CarrotMan数据失败")
                 }
             }
         } else {
-            Log.w(TAG, "⚠️ 网络客户端未初始化，无法发送CarrotMan数据")
+            timber.log.Timber.w("⚠️ 网络客户端未初始化，无法发送数据")
         }
     }
+    
+    /**
+     * 获取网络性能统计信息
+     */
+    fun getNetworkPerformanceStats(): NetworkStats = networkStats
 
     /**
      * 发送目的地信息到comma3设备
