@@ -139,6 +139,7 @@ data class CarrotManFields(
     var nSdiBlockType: Int = -1,                // 区间状态 (1=开始,2=中,3=结束)
     var nSdiBlockSpeed: Int = 0,                // 区间限速
     var nSdiBlockDist: Int = 0,                 // 区间距离
+    var nSdiAverageSpeed: Int = -1,             // 区间平均速度 (新增)
 
     // SDI Plus扩展速度信息
     var nSdiPlusType: Int = -1,                 // Plus类型 (22=减速带)
@@ -248,6 +249,15 @@ data class CarrotManFields(
     var sapaType: Int = -1,                     // 设施类型
     var sapaNum: Int = -1,                      // 设施总数
     var nextNextAddIcon: String = "",           // 下下个动作图标
+    var routeRemainDisAuto: String = "",        // 路线剩余距离文本
+    var routeRemainTimeAuto: String = "",       // 路线剩余时间文本
+    var nextSegRemainDisAuto: String = "",      // 下一段路剩余距离文本
+    var nextSapaDistAuto: String = "",          // 下一服务区距离文本
+    var sapaDistAuto: String = "",              // 当前服务区距离文本
+    var nextRoadProgressPercent: Int = -1,      // 下一道路进度百分比
+    var cameraID: Long = -1L,                   // 电子眼ID
+    var cameraPenalty: Boolean = false,         // 是否抓拍违章
+    var newCamera: Boolean = false,             // 是否为新电子眼
     var viaPOIdistance: Int = -1,               // 途径点距离
     var viaPOItime: Int = -1,                   // 途径点时间
 

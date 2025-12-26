@@ -248,7 +248,8 @@ class AmapBroadcastManager(
         } else {
             // 其他KEY_TYPE - 输出详细广播数据
             // 对于频繁的广播类型，抑制详细日志输出
-            val shouldSuppressLogs = keyType != 10001
+            // 🚀 临时修改：抑制 KEY_TYPE: 10001 (GUIDE_INFO)，显示其他所有类型的原始数据
+            val shouldSuppressLogs = keyType == 10001
             
             if (!shouldSuppressLogs) {
                 Log.d(TAG, "🔍 开始处理高德地图广播数据 (KEY_TYPE: $keyType):")
@@ -341,8 +342,8 @@ class AmapBroadcastManager(
      */
     private fun logAllExtras(intent: Intent, keyType: Int = -1) {
         // 对于频繁的广播类型，抑制详细日志输出
-        // 🚀 按照要求：仅保留 KEY_TYPE: 10001 (GUIDE_INFO) 的详细原始数据日志
-        val shouldSuppressLogs = keyType != 10001 && keyType != -1
+        // 🚀 临时修改：抑制 KEY_TYPE: 10001 (GUIDE_INFO)，显示其他所有类型的原始数据
+        val shouldSuppressLogs = keyType == 10001
         
         if (shouldSuppressLogs) {
             return  // 不输出详细日志

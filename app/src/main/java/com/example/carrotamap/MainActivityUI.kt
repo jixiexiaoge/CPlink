@@ -29,9 +29,11 @@ import kotlinx.coroutines.launch
 import com.example.carrotamap.ui.components.*
 import com.example.carrotamap.ui.components.CompactStatusCard
 import com.example.carrotamap.ui.components.DataTable
+import com.example.carrotamap.ui.components.LaneInfoDisplay
+import com.example.carrotamap.ui.components.LaneIconHelper
 import kotlinx.coroutines.delay
 import kotlin.math.abs
-import androidx.compose.ui.draw.alpha // 🆕 导入 alpha
+import androidx.compose.ui.draw.alpha
 
 /**
  * MainActivity UI组件管理类
@@ -256,6 +258,7 @@ class MainActivityUI(
                     nextRoadNOAOrNot = carrotManFields.nextRoadNOAOrNot,
                     trafficLightCount = carrotManFields.traffic_light_count,
                     routeRemainTrafficLightNum = carrotManFields.routeRemainTrafficLightNum,
+                    roadcate = carrotManFields.roadcate,
                     xiaogeData = data
                 )
 
@@ -1536,7 +1539,8 @@ private fun VehicleLaneDataInfoPanel(
             carrotManFields.sapaName.isNotEmpty() || 
             carrotManFields.roundAboutNum > 0 ||
             carrotManFields.viaPOIdistance > 0 ||
-            carrotManFields.segAssistantAction > 0
+            carrotManFields.segAssistantAction > 0 ||
+            carrotManFields.nSdiBlockType == 2 // 🆕 区间测速进行中
         )) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -1584,6 +1588,115 @@ private fun VehicleLaneDataInfoPanel(
                                         .background(Color(0xFF64748B).copy(alpha = 0.1f), RoundedCornerShape(2.dp))
                                         .padding(horizontal = 3.dp, vertical = 1.dp)
                                 )
+                            }
+                            
+                            // 🆕 路线总剩余时间 (格式化字符串)
+                            if (carrotManFields.routeRemainTimeAuto.isNotEmpty()) {
+                                Text(
+                                    text = "🕒 ${carrotManFields.routeRemainTimeAuto}",
+                                    fontSize = 8.sp,
+                                    color = Color(0xFF3B82F6),
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier
+                                        .background(Color(0xFF3B82F6).copy(alpha = 0.1f), RoundedCornerShape(2.dp))
+                                        .padding(horizontal = 4.dp, vertical = 1.dp)
+                                )
+                            }
+                        }
+                    }
+
+                    // 🆕 路线进度与距离 (第二优先级)
+                    if (carrotManFields.routeRemainDisAuto.isNotEmpty() || carrotManFields.nextRoadProgressPercent >= 0) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            if (carrotManFields.routeRemainDisAuto.isNotEmpty()) {
+                                Text(
+                                    text = "🏁 剩余: ${carrotManFields.routeRemainDisAuto}",
+                                    fontSize = 8.sp,
+                                    color = Color(0xFF94A3B8)
+                                )
+                            }
+                            if (carrotManFields.nextRoadProgressPercent >= 0) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        text = "路段进度: ",
+                                        fontSize = 7.sp,
+                                        color = Color(0xFF64748B)
+                                    )
+                                    Box(
+                                        modifier = Modifier
+                                            .width(40.dp)
+                                            .height(3.dp)
+                                            .background(Color(0xFF334155), RoundedCornerShape(1.dp))
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxWidth(carrotManFields.nextRoadProgressPercent / 100f)
+                                                .fillMaxHeight()
+                                                .background(Color(0xFF3B82F6), RoundedCornerShape(1.dp))
+                                        )
+                                    }
+                                    Text(
+                                        text = " ${carrotManFields.nextRoadProgressPercent}%",
+                                        fontSize = 7.sp,
+                                        color = Color(0xFF3B82F6)
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    // 🆕 区间测速信息
+                    if (carrotManFields.nSdiBlockType == 2) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(Color(0xFFEF4444).copy(alpha = 0.15f), RoundedCornerShape(4.dp))
+                                .padding(horizontal = 6.dp, vertical = 4.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column {
+                                Text("📏 区间测速", fontSize = 8.sp, color = Color(0xFFF87171))
+                                Row(verticalAlignment = Alignment.Bottom) {
+                                    Text(
+                                        text = "${carrotManFields.nSdiDist}m",
+                                        fontSize = 12.sp,
+                                        color = Color.White,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    androidx.compose.foundation.layout.Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        text = "/ ${carrotManFields.nSdiBlockDist}m",
+                                        fontSize = 8.sp,
+                                        color = Color(0xFF94A3B8)
+                                    )
+                                }
+                            }
+                            Column(horizontalAlignment = Alignment.End) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text("限速 ", fontSize = 7.sp, color = Color(0xFF94A3B8))
+                                    Text(
+                                        text = "${carrotManFields.nSdiBlockSpeed}",
+                                        fontSize = 10.sp,
+                                        color = Color.White,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                                if (carrotManFields.nSdiAverageSpeed > 0) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Text("平均 ", fontSize = 7.sp, color = Color(0xFF94A3B8))
+                                        Text(
+                                            text = "${carrotManFields.nSdiAverageSpeed}",
+                                            fontSize = 10.sp,
+                                            color = if (carrotManFields.nSdiAverageSpeed > carrotManFields.nSdiBlockSpeed) Color(0xFFEF4444) else Color(0xFF10B981),
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
@@ -1679,11 +1792,56 @@ private fun VehicleLaneDataInfoPanel(
                                 )
                                 if (carrotManFields.sapaDist > 0) {
                                     Text(
-                                        text = "${carrotManFields.sapaDist}m",
+                                        text = if (carrotManFields.sapaDistAuto.isNotEmpty()) carrotManFields.sapaDistAuto else "${carrotManFields.sapaDist}m",
                                         fontSize = 7.sp,
                                         color = Color(0xFF10B981)
                                     )
                                 }
+                                if (carrotManFields.nextSapaDistAuto.isNotEmpty()) {
+                                    Text(
+                                        text = "下个:${carrotManFields.nextSapaDistAuto}",
+                                        fontSize = 6.sp,
+                                        color = Color(0xFF64748B)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    
+                    // 🆕 电子眼增强信息
+                    if (carrotManFields.nSdiType != -1 && (carrotManFields.cameraPenalty || carrotManFields.newCamera)) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(Color(0xFFEF4444).copy(alpha = 0.1f), RoundedCornerShape(4.dp))
+                                .padding(horizontal = 6.dp, vertical = 2.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("📸 电子眼", fontSize = 8.sp, color = Color(0xFFF87171))
+                            if (carrotManFields.cameraPenalty) {
+                                Text(
+                                    text = "⚠️ 抓拍违章",
+                                    fontSize = 8.sp,
+                                    color = Color(0xFFFBBF24),
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                            if (carrotManFields.newCamera) {
+                                Text(
+                                    text = "🆕 新增",
+                                    fontSize = 8.sp,
+                                    color = Color(0xFF34D399),
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                            if (carrotManFields.cameraID != -1L) {
+                                Spacer(modifier = Modifier.weight(1f))
+                                Text(
+                                    text = "ID: ${carrotManFields.cameraID}",
+                                    fontSize = 6.sp,
+                                    color = Color(0xFF64748B)
+                                )
                             }
                         }
                     }
@@ -1700,6 +1858,10 @@ private fun VehicleLaneDataInfoPanel(
                                 1 -> "⚠️ 注意分流"
                                 2 -> "⚠️ 注意岔路"
                                 3 -> "⚠️ 保持车道"
+                                5 -> "🛣️ 沿主路行驶"
+                                25 -> "📸 压线拍照"
+                                34 -> "🛣️ 汇入主路"
+                                117 -> "🎯 到达目的地"
                                 else -> "辅助动作:${carrotManFields.segAssistantAction}"
                             }
                             Text(
@@ -1730,458 +1892,4 @@ private fun VehicleLaneDataInfoPanel(
     }
 }
 
-/**
- * 🆕 车道图标映射工具
- */
-object LaneIconHelper {
-    // Lane Actions (aligned with Amap LaneAction)
-    private const val ACTION_AHEAD = 0
-    private const val ACTION_LEFT = 1
-    private const val ACTION_RIGHT = 3
-    private const val ACTION_LU_TURN = 5
-    private const val ACTION_RU_TURN = 8
 
-    // Lane Types (IDs)
-    private const val LANE_TYPE_AHEAD_LEFT = 2
-    private const val LANE_TYPE_AHEAD_RIGHT = 4
-    private const val LANE_TYPE_LEFT_RIGHT = 6
-    private const val LANE_TYPE_AHEAD_LEFT_RIGHT = 7
-    private const val LANE_TYPE_AHEAD_LU_TURN = 9
-    private const val LANE_TYPE_AHEAD_RU_TURN = 10
-    private const val LANE_TYPE_LEFT_LU_TURN = 11
-    private const val LANE_TYPE_RIGHT_RU_TURN = 12
-    private const val LANE_TYPE_AHEAD_RIGHT_RU_TURN = 13
-    private const val LANE_TYPE_LEFT_IN_LEFT_LU_TURN = 14
-    private const val LANE_TYPE_AHEAD_LEFT_LU_TURN = 15
-    private const val LANE_TYPE_LEFT_RU_TURN = 19
-    private const val LANE_TYPE_BUS = 20
-    private const val LANE_TYPE_VARIABLE = 21
-    private const val LANE_TYPE_RIGHT_ONLY = 18
-    private const val LANE_TYPE_AHEAD_ONLY_SPECIAL = 15 // User correction
-    private const val LANE_TYPE_AHEAD_RIGHT_SPECIAL = 32 // User correction
-
-    /**
-     * Map Amap Navigation Icon (TBT) to Lane Action
-     */
-    private fun mapNaviIconToAction(naviIcon: Int): Int {
-        return when (naviIcon) {
-            2, 4 -> ACTION_LEFT
-            3, 5 -> ACTION_RIGHT
-            9 -> ACTION_AHEAD
-            6 -> ACTION_LU_TURN
-            7 -> ACTION_RU_TURN
-            else -> ACTION_AHEAD
-        }
-    }
-
-    /**
-     * 根据高德图标 ID 和推荐状态获取资源 ID
-     */
-    fun getLaneIconResId(context: android.content.Context, iconId: String, isRecommended: Boolean, naviIcon: Int = -1): Int? {
-        val res = context.resources
-        val packageName = context.packageName
-        
-        fun isValidResId(id: Int): Boolean {
-            return id != 0 && (id ushr 24) != 0
-        }
-
-        fun getValidIdentifier(name: String): Int {
-            // 1. Try with global_image_ prefix (standard for this project)
-            var id = res.getIdentifier("global_image_$name", "drawable", packageName)
-            if (isValidResId(id)) return id
-            
-            // 2. Try raw name
-            id = res.getIdentifier(name, "drawable", packageName)
-            if (isValidResId(id)) return id
-            
-            return 0
-        }
-
-        // Convert iconId to Int for logic
-        val laneType = iconId.toIntOrNull() ?: 0
-        // Hex string for fallback (e.g. 15 -> "f")
-        val hexId = Integer.toHexString(laneType)
-
-        // 0. Special Case: User corrections for specific IDs
-        when (laneType) {
-            LANE_TYPE_RIGHT_ONLY -> { // ID 18
-                val resId = getValidIdentifier("auto_landback_3")
-                if (resId != 0) return resId
-            }
-            LANE_TYPE_AHEAD_ONLY_SPECIAL -> { // ID 15 is Ahead
-                val resId = getValidIdentifier("auto_landback_0")
-                if (resId != 0) return resId
-            }
-            LANE_TYPE_AHEAD_RIGHT_SPECIAL -> { // ID 32
-                val resId = getValidIdentifier("landfront_40")
-                if (resId != 0) return resId
-            }
-            30 -> { // ID 30
-                val resId = getValidIdentifier("landfront_20")
-                if (resId != 0) return resId
-            }
-            3 -> { // ID 3
-                val resId = getValidIdentifier("landback_3")
-                if (resId != 0) return resId
-            }
-            16 -> { // ID 16
-                val resId = getValidIdentifier("auto_landback_1")
-                if (resId != 0) return resId
-            }
-            1 -> { // ID 1
-                val resId = getValidIdentifier("landback_1")
-                if (resId != 0) return resId
-            }
-            0 -> { // ID 0
-                val resId = getValidIdentifier("landback_0")
-                if (resId != 0) return resId
-            }
-            4 -> { // ID 4
-                val resId = getValidIdentifier("landback_4")
-                if (resId != 0) return resId
-            }
-            54 -> { // ID 54
-                val resId = getValidIdentifier("landfront_15")
-                if (resId != 0) return resId
-            }
-            5 -> { // ID 5
-                val resId = getValidIdentifier("landback_5")
-                if (resId != 0) return resId
-            }
-            else -> {
-                if (iconId == "3") { // Special check for raw string "3"
-                    val resId = getValidIdentifier("landback_3") // Updated to match ID 3 correction
-                    if (resId != 0) return resId
-                }
-            }
-        }
-
-        // 1. Try Complex Lane Logic (DriveWayLinear logic)
-        if (isRecommended) {
-            val action = if (naviIcon != -1) mapNaviIconToAction(naviIcon) else ACTION_AHEAD
-            val complexResName = getComplexLaneIcon(laneType, action)
-            if (complexResName != null) {
-                // Try auto_landfront first if it exists (none found yet, but for future-proofing)
-                var resId = getValidIdentifier("auto_${complexResName.replace("landfront", "landback")}")
-                if (resId != 0) return resId
-
-                resId = getValidIdentifier(complexResName)
-                if (resId != 0) return resId
-            }
-        }
-
-        // 2. Try Auto Series (Highly recommended by user)
-        // Try offset mapping for IDs >= 15 (e.g. 15 -> auto_landback_0)
-        if (laneType >= 15) {
-            val offsetId = laneType - 15
-            val offsetHex = Integer.toHexString(offsetId)
-            
-            var resIdOffset = getValidIdentifier("auto_landback_$offsetId")
-            if (resIdOffset != 0) return resIdOffset
-            
-            if (offsetHex != offsetId.toString()) {
-                resIdOffset = getValidIdentifier("auto_landback_$offsetHex")
-                if (resIdOffset != 0) return resIdOffset
-            }
-        }
-
-        // Try auto_landback_{id}
-        var resId = getValidIdentifier("auto_landback_$iconId")
-        if (resId != 0) return resId
-
-        // Try auto_landback_{hex}
-        if (hexId != iconId) {
-            resId = getValidIdentifier("auto_landback_$hexId")
-            if (resId != 0) return resId
-        }
-
-        // 3. Fallback: Dynamic Lookup (landfront for recommended)
-        if (isRecommended) {
-            // Try standard landfront_{id}
-            resId = getValidIdentifier("landfront_$iconId")
-            if (resId != 0) return resId
-            
-            // Try hex version
-            if (hexId != iconId) {
-                resId = getValidIdentifier("landfront_$hexId")
-                if (resId != 0) return resId
-            }
-        }
-
-        // 4. Background (Not recommended or fallback)
-        // Try landback_{id}
-        resId = getValidIdentifier("landback_$iconId")
-        if (resId != 0) return resId
-
-        // Try landback_{hex}
-        if (hexId != iconId) {
-            resId = getValidIdentifier("landback_$hexId")
-            if (resId != 0) return resId
-        }
-
-        // 4. Last resort: Try getting identifier directly
-        resId = getValidIdentifier(iconId)
-        if (resId != 0) return resId
-
-        return null
-    }
-
-    /**
-     * Logic from DriveWayLinear.java complexGuide
-     */
-    private fun getComplexLaneIcon(laneType: Int, action: Int): String? {
-        return when (laneType) {
-            LANE_TYPE_AHEAD_RU_TURN -> when (action) { // 10 (a)
-                ACTION_AHEAD -> "landfront_a0"
-                ACTION_RU_TURN -> "landfront_a8"
-                else -> null
-            }
-            LANE_TYPE_AHEAD_LU_TURN -> when (action) { // 9
-                ACTION_AHEAD -> "landfront_90"
-                ACTION_LU_TURN -> "landfront_95"
-                else -> null
-            }
-            LANE_TYPE_AHEAD_LEFT -> when (action) { // 2
-                ACTION_AHEAD -> "landfront_20"
-                ACTION_LEFT -> "landfront_21"
-                else -> null
-            }
-            LANE_TYPE_AHEAD_RIGHT -> when (action) { // 4
-                ACTION_AHEAD -> "landfront_40"
-                ACTION_RIGHT -> "landfront_43"
-                else -> null
-            }
-            LANE_TYPE_LEFT_RIGHT -> when (action) { // 6
-                ACTION_LEFT -> "landfront_61"
-                ACTION_RIGHT -> "landfront_63"
-                else -> null
-            }
-            LANE_TYPE_AHEAD_LEFT_RIGHT -> when (action) { // 7
-                ACTION_AHEAD -> "landfront_70"
-                ACTION_LEFT -> "landfront_71"
-                ACTION_RIGHT -> "landfront_73"
-                else -> null
-            }
-            LANE_TYPE_LEFT_LU_TURN -> when (action) { // 11 (b)
-                ACTION_LU_TURN -> "landfront_b5"
-                ACTION_LEFT -> "landfront_b1"
-                else -> null
-            }
-            LANE_TYPE_RIGHT_RU_TURN -> when (action) { // 12 (c)
-                ACTION_RU_TURN -> "landfront_c8"
-                ACTION_RIGHT -> "landfront_c3"
-                else -> null
-            }
-            LANE_TYPE_LEFT_IN_LEFT_LU_TURN -> when (action) { // 14 (e)
-                ACTION_LEFT -> "landfront_e1"
-                ACTION_LU_TURN -> "landfront_e5"
-                else -> null
-            }
-            LANE_TYPE_AHEAD_LEFT_LU_TURN -> when (action) { // 15 (f)
-                ACTION_AHEAD -> "landfront_f0"
-                ACTION_LEFT -> "landfront_f1"
-                ACTION_LU_TURN -> "landfront_f5"
-                else -> null
-            }
-            LANE_TYPE_LEFT_RU_TURN -> when (action) { // 19 (j)
-                ACTION_LEFT -> "landfront_j1"
-                ACTION_LU_TURN, ACTION_RU_TURN -> "landfront_j8"
-                else -> null
-            }
-            LANE_TYPE_AHEAD_RIGHT_RU_TURN -> when (action) { // 13 (d)
-                ACTION_AHEAD -> "landfront_70"
-                ACTION_RIGHT -> "landfront_73"
-                ACTION_RU_TURN -> "landfront_c8" // Corrected: Use RU_Turn icon from ID 12
-                else -> null
-            }
-            LANE_TYPE_BUS -> "landfront_kk" // 20
-            LANE_TYPE_VARIABLE -> "landback_l" // 21
-            else -> null
-        }
-    }
-}
-
-/**
- * 🆕 车道信息显示组件
- */
-@Composable
-fun LaneInfoDisplay(
-    laneInfoList: List<LaneInfo>,
-    naviIcon: Int = -1,
-    nextRoadNOAOrNot: Boolean = false,
-    trafficLightCount: Int = 0,
-    routeRemainTrafficLightNum: Int = 0,
-    xiaogeData: XiaogeVehicleData? = null,
-    modifier: Modifier = Modifier
-) {
-    // 即使没有车道信息，也显示顶部栏（高德风格）
-    val context = LocalContext.current
-
-    // 动态计算宽度：如果车道很多，缩小单个车道宽度
-    val itemWidth = if (laneInfoList.size > 6) 32.dp else 40.dp
-    val itemHeight = 40.dp
-
-    // 使用 Surface 作为底层容器，确保背景色在最底层，且可以设置阴影/提升感
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        color = Color(0xFF0091FF), // 高德地图蓝色背景
-        tonalElevation = 1.dp      // 增加微小提升感，确保层级正确
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 4.dp, horizontal = 8.dp)
-                .heightIn(min = 52.dp), // 略微增加最小高度，确保图标不被压缩
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // 左侧：NOA状态
-            Box(
-                modifier = Modifier.weight(1f),
-                contentAlignment = Alignment.CenterStart
-            ) {
-                Surface(
-                    color = Color.White.copy(alpha = 0.2f),
-                    shape = androidx.compose.foundation.shape.RoundedCornerShape(4.dp)
-                ) {
-                    Text(
-                        text = "NOA",
-                        color = if (nextRoadNOAOrNot) Color.Green else Color.LightGray,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
-                    )
-                }
-            }
-
-            // 中间：车道信息
-            Row(
-                modifier = Modifier.weight(3f),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                if (laneInfoList.isEmpty()) {
-                    // 无车道信息时，显示视觉车道位置信息
-                    val meta = xiaogeData?.modelV2?.meta
-                    val displayText = if (meta != null) {
-                        val leftWidth = meta.laneWidthLeft
-                        val rightWidth = meta.laneWidthRight
-                        val threshold = 3.2f
-                        
-                        when {
-                            leftWidth > threshold && rightWidth > threshold -> "在中间车道行驶"
-                            leftWidth <= threshold && rightWidth > threshold -> "在最左侧车道行驶"
-                            leftWidth > threshold && rightWidth <= threshold -> "在最右侧车道行驶"
-                            else -> "车道行驶中"
-                        }
-                    } else {
-                        "无视觉车道信息数据"
-                    }
-                    
-                    Text(
-                        text = displayText,
-                        color = Color.White.copy(alpha = 0.8f),
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                } else {
-                    laneInfoList.forEach { lane ->
-                        val resId = remember(lane.id, lane.isRecommended, naviIcon) {
-                            LaneIconHelper.getLaneIconResId(context, lane.id, lane.isRecommended, naviIcon)
-                        }
-                        
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier.padding(horizontal = 2.dp)
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(width = itemWidth, height = itemHeight)
-                                    .then(
-                                        if (lane.isRecommended) {
-                                            Modifier
-                                                .background(
-                                                    color = Color(0xFF10B981).copy(alpha = 0.15f),
-                                                    shape = RoundedCornerShape(4.dp)
-                                                )
-                                                .border(
-                                                    width = 2.5.dp,
-                                                    color = Color(0xFF10B981),
-                                                    shape = RoundedCornerShape(4.dp)
-                                                )
-                                                .padding(2.dp)
-                                        } else {
-                                            Modifier
-                                        }
-                                    ),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                if (resId != null && resId != 0) {
-                                    // 显示图标
-                                    androidx.compose.foundation.Image(
-                                        painter = androidx.compose.ui.res.painterResource(id = resId),
-                                        contentDescription = "Lane ${lane.id}",
-                                        modifier = Modifier
-                                            .fillMaxSize()
-                                            .alpha(if (lane.isRecommended) 1.0f else 0.6f), // 推荐车道不透明，其他稍淡
-                                         contentScale = androidx.compose.ui.layout.ContentScale.Fit
-                                    )
-                                } else {
-                                    // 找不到图片，显示ID作为占位符
-                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                        Text(
-                                            text = lane.id,
-                                            color = if (lane.isRecommended) Color(0xFF10B981) else Color.White,
-                                            fontSize = 10.sp,
-                                            fontWeight = FontWeight.Bold
-                                        )
-                                        // 调试信息：显示 hex
-                                        val hex = lane.id.toIntOrNull()?.let { Integer.toHexString(it) } ?: ""
-                                        if (hex.isNotEmpty() && hex != lane.id) {
-                                            Text(
-                                                text = "($hex)",
-                                                color = Color.Gray,
-                                                fontSize = 8.sp
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                            
-                            /*
-                            // Debug Info (Simplified to one line)
-                            Text(
-                                text = "${lane.driveWayNumber}|${lane.driveWayLaneExtended}|${lane.trafficLaneExtendedNew}|${lane.trafficLaneType}",
-                                color = Color.White.copy(alpha = 0.7f),
-                                fontSize = 7.sp,
-                                fontWeight = FontWeight.Normal
-                            )
-                            */
-                        }
-                    }
-                }
-            }
-
-            // 右侧：红绿灯信息
-            Box(
-                modifier = Modifier.weight(1f),
-                contentAlignment = Alignment.CenterEnd
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    // 使用红绿灯文字或图标
-                    Text(
-                        text = "🚦",
-                        fontSize = 12.sp
-                    )
-                    Spacer(modifier = Modifier.width(2.dp))
-                    Text(
-                        text = "${if (trafficLightCount >= 0) trafficLightCount else 0} / $routeRemainTrafficLightNum",
-                        color = Color.White,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-        }
-    }
-}

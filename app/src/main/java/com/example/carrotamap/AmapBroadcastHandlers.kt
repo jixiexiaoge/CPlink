@@ -260,7 +260,7 @@ class AmapBroadcastHandlers(
     fun handleMapState(intent: Intent) {
         //Log.d(TAG, "🗺️ 处理地图状态广播")
         
-        val extraState = intent.getIntExtra("EXTRA_STATE", -1)
+        val extraState = intent.getSafeIntExtra("EXTRA_STATE", -1)
         //Log.i(TAG, "地图状态: EXTRA_STATE=$extraState")
         
         // 检查是否为到达目的地状态
@@ -313,9 +313,9 @@ class AmapBroadcastHandlers(
             val currentRoad = intent.getStringExtra("CUR_ROAD_NAME") ?: ""
             val nextRoad = intent.getStringExtra("NEXT_ROAD_NAME") ?: ""
             val nextNextRoad = intent.getStringExtra("NEXT_NEXT_ROAD_NAME") ?: ""
-            val speedLimit = intent.getIntExtra("LIMITED_SPEED", 0)
-            val currentSpeed = intent.getIntExtra("CUR_SPEED", 0)
-            val carDirection = intent.getIntExtra("CAR_DIRECTION", 0)
+            val speedLimit = intent.getSafeIntExtra("LIMITED_SPEED", 0)
+            val currentSpeed = intent.getSafeIntExtra("CUR_SPEED", 0)
+            val carDirection = intent.getSafeIntExtra("CAR_DIRECTION", 0)
             
             // 🆕 添加道路限速调试日志（注意：在修正逻辑之前，这里显示原始值）
             // 修正后的值会在下面获取 roadType 后显示
@@ -326,35 +326,41 @@ class AmapBroadcastHandlers(
             }
 
             // 距离和时间信息
-            val remainDistance = intent.getIntExtra("ROUTE_REMAIN_DIS", 0)
-            val remainTime = intent.getIntExtra("ROUTE_REMAIN_TIME", 0)
+            val remainDistance = intent.getSafeIntExtra("ROUTE_REMAIN_DIS", 0)
+            val remainTime = intent.getSafeIntExtra("ROUTE_REMAIN_TIME", 0)
             val remainTimeString = intent.getStringExtra("ROUTE_REMAIN_TIME_STRING") ?: ""
-            val routeAllDis = intent.getIntExtra("ROUTE_ALL_DIS", 0)
-            val routeAllTime = intent.getIntExtra("ROUTE_ALL_TIME", 0)
-            val etaText = intent.getStringExtra("ROUTE_REMAIN_TIME_AUTO") ?: ""
-            val segRemainDis = intent.getIntExtra("SEG_REMAIN_DIS", 0)
-            val segRemainTime = intent.getIntExtra("SEG_REMAIN_TIME", 0)
-            val nextSegRemainDis = intent.getIntExtra("NEXT_SEG_REMAIN_DIS", 0)
-            val nextSegRemainTime = intent.getIntExtra("NEXT_SEG_REMAIN_TIME", 0)
-            val curSegNum = intent.getIntExtra("CUR_SEG_NUM", 0)
-            val curPointNum = intent.getIntExtra("CUR_POINT_NUM", 0)
+            val routeAllDis = intent.getSafeIntExtra("ROUTE_ALL_DIS", 0)
+            val routeAllTime = intent.getSafeIntExtra("ROUTE_ALL_TIME", 0)
+            val routeRemainDisAuto = intent.getStringExtra("ROUTE_REMAIN_DIS_AUTO") ?: ""
+            val routeRemainTimeAuto = intent.getStringExtra("ROUTE_REMAIN_TIME_AUTO") ?: ""
+            val nextSegRemainDisAuto = intent.getStringExtra("NEXT_SEG_REMAIN_DIS_AUTO") ?: ""
+            val nextSapaDistAuto = intent.getStringExtra("NEXT_SAPA_DIST_AUTO") ?: ""
+            val sapaDistAuto = intent.getStringExtra("SAPA_DIST_AUTO") ?: ""
+            val nextRoadProgressPercent = intent.getSafeIntExtra("NEXT_ROAD_PROGRESS_PERCENT", -1)
+            
+            val segRemainDis = intent.getSafeIntExtra("SEG_REMAIN_DIS", 0)
+            val segRemainTime = intent.getSafeIntExtra("SEG_REMAIN_TIME", 0)
+            val nextSegRemainDis = intent.getSafeIntExtra("NEXT_SEG_REMAIN_DIS", 0)
+            val nextSegRemainTime = intent.getSafeIntExtra("NEXT_SEG_REMAIN_TIME", 0)
+            val curSegNum = intent.getSafeIntExtra("CUR_SEG_NUM", 0)
+            val curPointNum = intent.getSafeIntExtra("CUR_POINT_NUM", 0)
 
             // 转向图标和环岛信息
-            val icon = intent.getIntExtra("ICON", -1)
-            val newIcon = intent.getIntExtra("NEW_ICON", -1)
-            val nextNextTurnIcon = intent.getIntExtra("NEXT_NEXT_TURN_ICON", -1)
+            val icon = intent.getSafeIntExtra("ICON", -1)
+            val newIcon = intent.getSafeIntExtra("NEW_ICON", -1)
+            val nextNextTurnIcon = intent.getSafeIntExtra("NEXT_NEXT_TURN_ICON", -1)
             
             // ⚠️ 处理高德可能的拼写错误 ROUNG_ABOUT_NUM (G) 或 ROUND_ABOUT_NUM
             val roundAboutNum = if (intent.hasExtra("ROUND_ABOUT_NUM")) {
-                intent.getIntExtra("ROUND_ABOUT_NUM", -1)
+                intent.getSafeIntExtra("ROUND_ABOUT_NUM", -1)
             } else {
-                intent.getIntExtra("ROUNG_ABOUT_NUM", -1)
+                intent.getSafeIntExtra("ROUNG_ABOUT_NUM", -1)
             }
-            val roundAllNum = intent.getIntExtra("ROUND_ALL_NUM", -1)
+            val roundAllNum = intent.getSafeIntExtra("ROUND_ALL_NUM", -1)
 
             // 位置信息
-            val carLatitude = intent.getDoubleExtra("CAR_LATITUDE", 0.0)
-            val carLongitude = intent.getDoubleExtra("CAR_LONGITUDE", 0.0)
+            val carLatitude = intent.getSafeDoubleExtra("CAR_LATITUDE", 0.0)
+            val carLongitude = intent.getSafeDoubleExtra("CAR_LONGITUDE", 0.0)
 
             // 🚀 关键修复：使用effectiveLatitude策略，确保始终有有效的GPS数据
             // 当高德GPS为0时，使用手机GPS作为后备方案
@@ -369,9 +375,9 @@ class AmapBroadcastHandlers(
             }
 
             // 服务区和电子眼信息
-            val sapaDist = intent.getIntExtra("SAPA_DIST", 0)
-            val sapaType = intent.getIntExtra("SAPA_TYPE", -1)
-            val sapaNum = intent.getIntExtra("SAPA_NUM", 0)
+            val sapaDist = intent.getSafeIntExtra("SAPA_DIST", 0)
+            val sapaType = intent.getSafeIntExtra("SAPA_TYPE", -1)
+            val sapaNum = intent.getSafeIntExtra("SAPA_NUM", 0)
             val sapaName = intent.getStringExtra("SAPA_NAME") ?: ""
             
             // 🚀 关键修复：KEY_TYPE: 10001 中的摄像头字段可能是可选的，需要检查字段是否存在
@@ -381,12 +387,18 @@ class AmapBroadcastHandlers(
             val hasCameraIndex = intent.hasExtra("CAMERA_INDEX")
             
             // 只有当字段存在时才获取值，否则使用默认值（-1表示字段不存在）
-            val cameraDist = if (hasCameraDist) intent.getIntExtra("CAMERA_DIST", -1) else -1
-            val cameraType = if (hasCameraType) intent.getIntExtra("CAMERA_TYPE", -1) else -1
-            val cameraSpeed = if (hasCameraSpeed) intent.getIntExtra("CAMERA_SPEED", 0) else 0
-            val cameraIndex = if (hasCameraIndex) intent.getIntExtra("CAMERA_INDEX", -1) else -1
+            val cameraDist = if (hasCameraDist) intent.getSafeIntExtra("CAMERA_DIST", -1) else -1
+            val cameraType = if (hasCameraType) intent.getSafeIntExtra("CAMERA_TYPE", -1) else -1
+            val cameraSpeed = if (hasCameraSpeed) intent.getSafeIntExtra("CAMERA_SPEED", 0) else 0
+            val cameraIndex = if (hasCameraIndex) intent.getSafeIntExtra("CAMERA_INDEX", -1) else -1
             
-            // 🚀 新增：KEY_TYPE: 10001 中也包含区间测速信息（可选字段）
+            // 🐛 修复：使用更安全的方式获取 cameraID，直接从 Bundle 获取并检查类型，避免系统 getLongExtra 内部抛出 ClassCastException 并在日志中打印警告
+            val cameraID = intent.getSafeLongExtra("cameraID", -1L)
+            
+            val cameraPenalty = intent.getBooleanExtra("cameraPenalty", false)
+            val newCamera = intent.getBooleanExtra("newCamera", false)
+            
+            // 🚀 关键修复：KEY_TYPE: 10001 中也包含区间测速信息（可选字段）
             // 🔑 关键发现：这些字段只在有区间测速时才存在，需要检查字段是否存在
             val hasStartDistance = intent.hasExtra("START_DISTANCE")
             val hasEndDistance = intent.hasExtra("END_DISTANCE")
@@ -394,10 +406,10 @@ class AmapBroadcastHandlers(
             val hasAverageSpeed = intent.hasExtra("AVERAGE_SPEED")
             
             // 只有当字段存在时才获取值，否则使用默认值0（表示字段不存在）
-            val startDistance = if (hasStartDistance) intent.getFloatExtra("START_DISTANCE", 0.0f).toDouble() else 0.0
-            val endDistance = if (hasEndDistance) intent.getFloatExtra("END_DISTANCE", 0.0f).toDouble() else 0.0
-            val intervalDistance = if (hasIntervalDistance) intent.getFloatExtra("INTERVAL_DISTANCE", 0.0f).toDouble() else 0.0
-            val averageSpeed = if (hasAverageSpeed) intent.getIntExtra("AVERAGE_SPEED", 0) else 0
+            val startDistance = if (hasStartDistance) intent.getSafeDoubleExtra("START_DISTANCE", 0.0) else 0.0
+            val endDistance = if (hasEndDistance) intent.getSafeDoubleExtra("END_DISTANCE", 0.0) else 0.0
+            val intervalDistance = if (hasIntervalDistance) intent.getSafeDoubleExtra("INTERVAL_DISTANCE", 0.0) else 0.0
+            val averageSpeed = if (hasAverageSpeed) intent.getSafeIntExtra("AVERAGE_SPEED", 0) else 0
             
             // 🚀 关键修复：KEY_TYPE: 10001 中的区间测速处理
             // CAMERA_TYPE=8 在开始和区间中都是 8，只有结束时才是 9
@@ -416,13 +428,13 @@ class AmapBroadcastHandlers(
             }
 
             // 导航类型和其他信息
-            val naviType = intent.getIntExtra("TYPE", 0)
-            val trafficLightNum = intent.getIntExtra("TRAFFIC_LIGHT_NUM", 0)
-            val routeRemainTrafficLightNum = intent.getIntExtra("routeRemainTrafficLightNum", 0)
+            val naviType = intent.getSafeIntExtra("TYPE", 0)
+            val trafficLightNum = intent.getSafeIntExtra("TRAFFIC_LIGHT_NUM", 0)
+            val routeRemainTrafficLightNum = intent.getSafeIntExtra("routeRemainTrafficLightNum", 0)
             val nextRoadNOAOrNot = intent.getBooleanExtra("nextRoadNOAOrNot", false)
 
             // 获取道路类型
-            val roadType = intent.getIntExtra("ROAD_TYPE", 8) // 默认为8（未知）
+            val roadType = intent.getSafeIntExtra("ROAD_TYPE", 8) // 默认为8（未知）
             
             // 🚀 关键修复：高速公路/快速道路限速修正
             // 🔑 当 ROAD_TYPE 是 0（高速公路）或 6（快速道），且 LIMITED_SPEED 为 40 时，强制修正为 55
@@ -445,8 +457,8 @@ class AmapBroadcastHandlers(
             // 目的地信息
             val endPOIName = intent.getStringExtra("endPOIName") ?: ""
             val endPOIAddr = intent.getStringExtra("endPOIAddr") ?: ""
-            val endPOILatitude = intent.getDoubleExtra("endPOILatitude", 0.0)
-            val endPOILongitude = intent.getDoubleExtra("endPOILongitude", 0.0)
+            val endPOILatitude = intent.getSafeDoubleExtra("endPOILatitude", 0.0)
+            val endPOILongitude = intent.getSafeDoubleExtra("endPOILongitude", 0.0)
 
             // 🎯 转弯类型映射和导航类型计算
             val primaryIcon = if (newIcon != -1) newIcon else icon
@@ -518,10 +530,10 @@ class AmapBroadcastHandlers(
             val exitDirectionInfo = intent.getStringExtra("EXIT_DIRECTION_INFO") ?: ""
             val exitNameInfo = intent.getStringExtra("EXIT_NAME_INFO") ?: ""
             
-            val segAssistantAction = intent.getIntExtra("SEG_ASSISTANT_ACTION", -1)
+            val segAssistantAction = intent.getSafeIntExtra("SEG_ASSISTANT_ACTION", -1)
             
             // 下下个动作图标（如果有）
-            val nextNextAddIcon = intent.getIntExtra("NEXT_NEXT_ADD_ICON", -1)
+            val nextNextAddIcon = intent.getSafeIntExtra("NEXT_NEXT_ADD_ICON", -1)
             val mappedNextNextAddIcon = if (nextNextAddIcon != -1) {
                 mapAmapIconToCarrotTurn(nextNextAddIcon).toString()
             } else {
@@ -529,8 +541,8 @@ class AmapBroadcastHandlers(
             }
 
             // 途径点信息
-            val viaPOIdistance = intent.getIntExtra("viaPOIdistance", -1)
-            val viaPOItime = intent.getIntExtra("viaPOItime", -1)
+            val viaPOIdistance = intent.getSafeIntExtra("viaPOIdistance", -1)
+            val viaPOItime = intent.getSafeIntExtra("viaPOItime", -1)
 
             // 更新CarrotMan字段
             carrotManFields.value = carrotManFields.value.copy(
@@ -716,6 +728,15 @@ class AmapBroadcastHandlers(
                 sapaType = sapaType,
                 sapaNum = sapaNum,
                 nextNextAddIcon = mappedNextNextAddIcon,
+                routeRemainDisAuto = routeRemainDisAuto,
+                routeRemainTimeAuto = routeRemainTimeAuto,
+                nextSegRemainDisAuto = nextSegRemainDisAuto,
+                nextSapaDistAuto = nextSapaDistAuto,
+                sapaDistAuto = sapaDistAuto,
+                nextRoadProgressPercent = nextRoadProgressPercent,
+                cameraID = cameraID,
+                cameraPenalty = cameraPenalty,
+                newCamera = newCamera,
                 viaPOIdistance = viaPOIdistance,
                 viaPOItime = viaPOItime,
 
@@ -988,9 +1009,9 @@ class AmapBroadcastHandlers(
             val startDistanceInt = if (hasStartDistance) readNumberAsInt("START_DISTANCE") else 0
             val endDistanceInt = if (hasEndDistance) readNumberAsInt("END_DISTANCE") else 0
             val intervalDistanceInt = if (hasIntervalDistance) readNumberAsInt("INTERVAL_DISTANCE") else 0
-            val cameraType = intent.getIntExtra("CAMERA_TYPE", -1)
-            val cameraIndex = intent.getIntExtra("CAMERA_INDEX", -1)  // 🚀 新增：摄像头索引
-            val averageSpeed = if (hasAverageSpeed) intent.getIntExtra("AVERAGE_SPEED", 0) else 0
+            val cameraType = intent.getSafeIntExtra("CAMERA_TYPE", -1)
+            val cameraIndex = intent.getSafeIntExtra("CAMERA_INDEX", -1)  // 🚀 新增：摄像头索引
+            val averageSpeed = if (hasAverageSpeed) intent.getSafeIntExtra("AVERAGE_SPEED", 0) else 0
             
             Log.i(TAG, "🚦 限速信息: 限速=${speedLimit}km/h, 道路='$roadName', 类型=$speedLimitType")
             
@@ -1097,11 +1118,13 @@ class AmapBroadcastHandlers(
                 nSdiBlockType = if (isInSectionSpeedControl) nSdiBlockType else carrotManFields.value.nSdiBlockType,  // 区间进行中时 nSdiBlockType=2
                 nSdiBlockSpeed = if (isInSectionSpeedControl) nSdiBlockSpeed else carrotManFields.value.nSdiBlockSpeed,  // Python使用此值作为xSpdLimit
                 nSdiBlockDist = if (isInSectionSpeedControl) nSdiBlockDist else carrotManFields.value.nSdiBlockDist,  // Python使用此值作为xSpdDist
+                nSdiAverageSpeed = if (hasAverageSpeed) averageSpeed else carrotManFields.value.nSdiAverageSpeed, // 🆕 新增：区间平均速度
+                extraState = intent.getSafeIntExtra("EXTRA_STATE", -1).takeIf { it >= 0 } ?: carrotManFields.value.extraState, // 🆕 新增：额外状态
                 lastUpdateTime = System.currentTimeMillis()
             )
             
             Log.i(TAG, "🚦 ====== [KEY_TYPE:12110] 区间中进行中数据映射完成 ======")
-            Log.i(TAG, "🚦 输入数据: CAMERA_TYPE=$cameraType, EXTRA_STATE=${intent.getIntExtra("EXTRA_STATE", -1)}, LIMITED_SPEED=$speedLimit")
+            Log.i(TAG, "🚦 输入数据: CAMERA_TYPE=$cameraType, EXTRA_STATE=${intent.getSafeIntExtra("EXTRA_STATE", -1)}, LIMITED_SPEED=$speedLimit")
             Log.i(TAG, "🚦   字段存在性: START_DISTANCE=$hasStartDistance, END_DISTANCE=$hasEndDistance, INTERVAL_DISTANCE=$hasIntervalDistance, AVERAGE_SPEED=$hasAverageSpeed")
             Log.i(TAG, "🚦   区间测速检测: isInSectionSpeedControl=$isInSectionSpeedControl (只要有任一区间字段存在即为true)")
             if (isInSectionSpeedControl) {
@@ -1134,9 +1157,9 @@ class AmapBroadcastHandlers(
         //Log.d(TAG, "📷 处理电子眼信息广播")
         
         try {
-            val cameraType = intent.getIntExtra("CAMERA_TYPE", -1)
-            val cameraDistance = intent.getIntExtra("CAMERA_DISTANCE", 0)
-            val cameraSpeedLimit = intent.getIntExtra("CAMERA_SPEED_LIMIT", 0)
+            val cameraType = intent.getSafeIntExtra("CAMERA_TYPE", -1)
+            val cameraDistance = intent.getSafeIntExtra("CAMERA_DISTANCE", 0)
+            val cameraSpeedLimit = intent.getSafeIntExtra("CAMERA_SPEED_LIMIT", 0)
             
             Log.d(TAG, "📷 电子眼信息: 类型=$cameraType, 距离=${cameraDistance}m, 限速=${cameraSpeedLimit}km/h")
             
@@ -1172,9 +1195,9 @@ class AmapBroadcastHandlers(
        // Log.d(TAG, "📊 处理SDI Plus信息广播")
         
         try {
-            val sdiPlusType = intent.getIntExtra("SDI_PLUS_TYPE", -1)
-            val sdiPlusDistance = intent.getIntExtra("SDI_PLUS_DISTANCE", 0)
-            val sdiPlusSpeedLimit = intent.getIntExtra("SDI_PLUS_SPEED_LIMIT", 0)
+            val sdiPlusType = intent.getSafeIntExtra("SDI_PLUS_TYPE", -1)
+            val sdiPlusDistance = intent.getSafeIntExtra("SDI_PLUS_DISTANCE", 0)
+            val sdiPlusSpeedLimit = intent.getSafeIntExtra("SDI_PLUS_SPEED_LIMIT", 0)
             
           //  Log.d(TAG, "📊 SDI Plus信息: 类型=$sdiPlusType, 距离=${sdiPlusDistance}m, 限速=${sdiPlusSpeedLimit}km/h")
 
@@ -1201,7 +1224,7 @@ class AmapBroadcastHandlers(
      */
     fun handleTrafficInfo(intent: Intent) {
         try {
-            val trafficLevel = intent.getIntExtra("TRAFFIC_LEVEL", -1)
+            val trafficLevel = intent.getSafeIntExtra("TRAFFIC_LEVEL", -1)
             val trafficDescription = intent.getStringExtra("TRAFFIC_DESCRIPTION") ?: ""
 
             carrotManFields.value = carrotManFields.value.copy(
@@ -1219,8 +1242,8 @@ class AmapBroadcastHandlers(
      */
     fun handleNaviSituation(intent: Intent) {
         try {
-            val situationType = intent.getIntExtra("SITUATION_TYPE", -1)
-            val situationDistance = intent.getIntExtra("SITUATION_DISTANCE", 0)
+            val situationType = intent.getSafeIntExtra("SITUATION_TYPE", -1)
+            val situationDistance = intent.getSafeIntExtra("SITUATION_DISTANCE", 0)
             val situationDescription = intent.getStringExtra("SITUATION_DESCRIPTION") ?: ""
 
             carrotManFields.value = carrotManFields.value.copy(
@@ -1240,21 +1263,21 @@ class AmapBroadcastHandlers(
     fun handleTrafficLightInfo(intent: Intent) {
         try {
             val trafficLightStatus = when {
-                intent.hasExtra("trafficLightStatus") -> intent.getIntExtra("trafficLightStatus", 0)
-                intent.hasExtra("TRAFFIC_LIGHT_STATUS") -> intent.getIntExtra("TRAFFIC_LIGHT_STATUS", 0)
-                intent.hasExtra("LIGHT_STATUS") -> intent.getIntExtra("LIGHT_STATUS", 0)
+                intent.hasExtra("trafficLightStatus") -> intent.getSafeIntExtra("trafficLightStatus", 0)
+                intent.hasExtra("TRAFFIC_LIGHT_STATUS") -> intent.getSafeIntExtra("TRAFFIC_LIGHT_STATUS", 0)
+                intent.hasExtra("LIGHT_STATUS") -> intent.getSafeIntExtra("LIGHT_STATUS", 0)
                 else -> 0
             }
 
-            val redLightCountDown = intent.getIntExtra("redLightCountDownSeconds", 0)
-            val greenLightCountDown = intent.getIntExtra("greenLightLastSecond", 0)
+            val redLightCountDown = intent.getSafeIntExtra("redLightCountDownSeconds", 0)
+            val greenLightCountDown = intent.getSafeIntExtra("greenLightLastSecond", 0)
             val direction = when {
-                intent.hasExtra("dir") -> intent.getIntExtra("dir", 0)
-                intent.hasExtra("TRAFFIC_LIGHT_DIRECTION") -> intent.getIntExtra("TRAFFIC_LIGHT_DIRECTION", 0)
-                intent.hasExtra("LIGHT_DIRECTION") -> intent.getIntExtra("LIGHT_DIRECTION", 0)
+                intent.hasExtra("dir") -> intent.getSafeIntExtra("dir", 0)
+                intent.hasExtra("TRAFFIC_LIGHT_DIRECTION") -> intent.getSafeIntExtra("TRAFFIC_LIGHT_DIRECTION", 0)
+                intent.hasExtra("LIGHT_DIRECTION") -> intent.getSafeIntExtra("LIGHT_DIRECTION", 0)
                 else -> 0
             }
-            val waitRound = intent.getIntExtra("waitRound", 0)
+            val waitRound = intent.getSafeIntExtra("waitRound", 0)
 
             var carrotTrafficState = Companion.mapTrafficLightStatus(trafficLightStatus, direction)
             var leftSec = if (trafficLightStatus == 1 || trafficLightStatus == 3 || trafficLightStatus == 2 || trafficLightStatus == 4) redLightCountDown else redLightCountDown
@@ -1272,7 +1295,7 @@ class AmapBroadcastHandlers(
             val stateChanged = (carrotTrafficState != previousTrafficState) || (leftSec != previousLeftSec)
 
             carrotManFields.value = carrotManFields.value.copy(
-                traffic_light_count = intent.getIntExtra("TRAFFIC_LIGHT_COUNT", -1).takeIf { it >= 0 }
+                traffic_light_count = intent.getSafeIntExtra("TRAFFIC_LIGHT_COUNT", -1).takeIf { it >= 0 }
                     ?: carrotManFields.value.traffic_light_count,
                 traffic_state = carrotTrafficState,
                 traffic_light_direction = direction,
@@ -1310,8 +1333,8 @@ class AmapBroadcastHandlers(
         // 从高德地图获取目的地信息
         val endPOIName = intent.getStringExtra("endPOIName") ?: ""
         val endPOIAddr = intent.getStringExtra("endPOIAddr") ?: ""
-        val endPOILatitude = intent.getDoubleExtra("endPOILatitude", 0.0)
-        val endPOILongitude = intent.getDoubleExtra("endPOILongitude", 0.0)
+        val endPOILatitude = intent.getSafeDoubleExtra("endPOILatitude", 0.0)
+        val endPOILongitude = intent.getSafeDoubleExtra("endPOILongitude", 0.0)
 
         // 获取导航路线信息
         val destinationName = intent.getStringExtra("DESTINATION_NAME") ?: endPOIName
@@ -1854,3 +1877,40 @@ class AmapBroadcastHandlers(
         }
     }
 }
+
+/**
+ * 🛠️ Intent 扩展方法：安全地获取各种数值类型的 Extra 数据，避免 ClassCastException 和系统日志警告
+ */
+private fun Intent.getSafeLongExtra(name: String, defaultValue: Long): Long {
+    val value = this.extras?.get(name)
+    return when (value) {
+        is Long -> value
+        is Int -> value.toLong()
+        is Number -> value.toLong()
+        is String -> value.toLongOrNull() ?: defaultValue
+        else -> defaultValue
+    }
+}
+
+private fun Intent.getSafeIntExtra(name: String, defaultValue: Int): Int {
+    val value = this.extras?.get(name)
+    return when (value) {
+        is Int -> value
+        is Long -> value.toInt()
+        is Number -> value.toInt()
+        is String -> value.toIntOrNull() ?: defaultValue
+        else -> defaultValue
+    }
+}
+
+private fun Intent.getSafeDoubleExtra(name: String, defaultValue: Double): Double {
+    val value = this.extras?.get(name)
+    return when (value) {
+        is Double -> value
+        is Float -> value.toDouble()
+        is Number -> value.toDouble()
+        is String -> value.toDoubleOrNull() ?: defaultValue
+        else -> defaultValue
+    }
+}
+
