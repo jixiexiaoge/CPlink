@@ -14,6 +14,17 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
+import androidx.compose.foundation.Canvas
+import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.graphics.drawscope.withTransform
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import com.example.carrotamap.R
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.material.icons.Icons
@@ -42,6 +53,61 @@ data class CheckCondition(
 )
 
 /**
+ * 车道位置推断结果 (仅用于视觉模拟)
+ */
+data class VisualLanePositionResult(
+    val currentLaneIndex: Int, // 当前车道索引 (1-based, 从左往右)
+    val totalLanes: Int,       // 推断出的总车道数
+    val laneDescription: String // 车道描述（如 "左起第 2 车道 / 共 3 车道"）
+)
+
+/**
+ * 🆕 根据路缘和车道宽度推断当前车道位置
+ */
+private fun inferLanePosition(
+    laneWidthLeft: Float,
+    laneWidthRight: Float,
+    roadEdgeLeft: Float,
+    roadEdgeRight: Float
+): VisualLanePositionResult {
+    val defaultLaneWidth = 3.6f
+    
+    // 1. 推断左侧还有几条车道
+    // 如果 laneWidthLeft > 0，说明左侧至少有一条完整车道
+    // 如果 roadEdgeLeft 很大，可能包含多条车道
+    val leftLanes = when {
+        roadEdgeLeft > 0.5f -> {
+            // 路缘距离包含左侧车道宽度
+            val lanes = Math.round((roadEdgeLeft + (if (laneWidthLeft > 0.5f) defaultLaneWidth else 0f)) / defaultLaneWidth).toInt()
+            Math.max(if (laneWidthLeft > 0.5f) 1 else 0, lanes)
+        }
+        laneWidthLeft > 0.5f -> 1
+        else -> 0
+    }
+    
+    // 2. 推断右侧还有几条车道
+    val rightLanes = when {
+        roadEdgeRight > 0.5f -> {
+            val lanes = Math.round((roadEdgeRight + (if (laneWidthRight > 0.5f) defaultLaneWidth else 0f)) / defaultLaneWidth).toInt()
+            Math.max(if (laneWidthRight > 0.5f) 1 else 0, lanes)
+        }
+        laneWidthRight > 0.5f -> 1
+        else -> 0
+    }
+    
+    val totalLanes = leftLanes + 1 + rightLanes
+    val currentLaneIndex = leftLanes + 1
+    
+    val description = when {
+        totalLanes == 1 -> "单车道"
+        totalLanes > 1 -> "第 $currentLaneIndex / $totalLanes 车道"
+        else -> "车道识别中"
+    }
+    
+    return VisualLanePositionResult(currentLaneIndex, totalLanes, description)
+}
+
+/**
  * UI 常量配置
  */
 private object UIConstants {
@@ -53,17 +119,6 @@ private object UIConstants {
     val CARD_BACKGROUND = Color(0xFF1E293B).copy(alpha = 0.8f)
     val CARD_SHAPE = androidx.compose.foundation.shape.RoundedCornerShape(12.dp)
 }
-
-/**
- * 超车提示信息数据类
- */
-private data class OvertakeHintInfo(
-    val cardColor: Color,
-    val icon: String,
-    val title: String,
-    val detail: String,
-    val titleColor: Color
-)
 
 @Composable
 fun VehicleLaneVisualization(
@@ -139,11 +194,6 @@ fun VehicleLaneVisualization(
                         deviceIP = deviceIP,
                         isTcpConnected = isTcpConnected,
                         onClose = onDismiss
-                    )
-                    
-                    OvertakeHintCard(
-                        overtakeMode = overtakeMode,
-                        currentData = currentData
                     )
                     
                     DataInfoPanel(
@@ -235,47 +285,6 @@ private fun StatusBadge(text: String, color: Color, icon: String? = null) {
 }
 
 @Composable
-private fun OvertakeHintCard(overtakeMode: Int, currentData: XiaogeVehicleData?) {
-    val hintInfo = getOvertakeHintInfo(
-        overtakeMode,
-        currentData?.overtakeStatus,
-        currentData?.modelV2?.meta?.laneChangeState ?: 0,
-        currentData?.modelV2?.meta?.laneChangeDirection ?: 0
-    )
-    
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = hintInfo.cardColor),
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(text = hintInfo.icon, fontSize = 16.sp)
-            Column(modifier = Modifier.weight(1f)) {
-                Text(text = hintInfo.title, fontSize = 12.sp, color = hintInfo.titleColor, fontWeight = FontWeight.Bold)
-                Text(text = hintInfo.detail, fontSize = 10.sp, color = UIConstants.COLOR_NEUTRAL)
-            }
-        }
-    }
-}
-
-private fun getOvertakeHintInfo(mode: Int, status: com.example.carrotamap.OvertakeStatusData?, lcState: Int, lcDir: Int): OvertakeHintInfo {
-    return when {
-        mode == 0 -> OvertakeHintInfo(UIConstants.COLOR_NEUTRAL.copy(0.2f), "🚫", "超车关闭", "请在设置中开启超车功能", UIConstants.COLOR_NEUTRAL)
-        lcState != 0 -> OvertakeHintInfo(UIConstants.COLOR_INFO.copy(0.2f), "🔄", "变道中", "方向: ${if (lcDir == 1) "左" else "右"}", UIConstants.COLOR_INFO)
-        status?.canOvertake == true -> {
-            if (mode == 2) OvertakeHintInfo(UIConstants.COLOR_SUCCESS.copy(0.2f), "🚀", "自动超车中", "系统正尝试寻找变道时机", UIConstants.COLOR_SUCCESS)
-            else OvertakeHintInfo(UIConstants.COLOR_INFO.copy(0.2f), "🔔", "满足条件", "请拨杆确认执行超车变道", UIConstants.COLOR_INFO)
-        }
-        status?.blockingReason != null -> OvertakeHintInfo(UIConstants.COLOR_WARNING.copy(0.2f), "ℹ️", "条件不满足", status.blockingReason!!, UIConstants.COLOR_WARNING)
-        else -> OvertakeHintInfo(UIConstants.COLOR_NEUTRAL.copy(0.2f), "👁️", "监控中", "正在分析环境数据...", UIConstants.COLOR_NEUTRAL)
-    }
-}
-
-@Composable
 private fun DataInfoPanel(data: XiaogeVehicleData?, modifier: Modifier = Modifier) {
     val minSpeed by rememberFloatPreference("overtake_param_min_speed_kph", 60f)
     val speedDiff by rememberFloatPreference("overtake_param_speed_diff_kph", 10f)
@@ -289,7 +298,259 @@ private fun DataInfoPanel(data: XiaogeVehicleData?, modifier: Modifier = Modifie
         if (data?.modelV2?.meta?.laneChangeState == 1) {
             LinearProgressIndicator(modifier = Modifier.fillMaxWidth().height(3.dp), color = Color(0xFF3B82F6))
         }
+        
+        // 上帝视角模拟图
+        TopDownVisualization(data = data, modifier = Modifier.fillMaxWidth())
+        
         CheckConditionTable(conditions)
+    }
+}
+
+/**
+ * 🆕 上帝视角模拟图组件
+ */
+@Composable
+fun TopDownVisualization(data: XiaogeVehicleData?, modifier: Modifier = Modifier) {
+    val meta = data?.modelV2?.meta
+    val drivingIntent = data?.modelV2?.drivingIntent
+    val carState = data?.carState
+    val curvature = data?.modelV2?.curvature
+    
+    val laneWidthLeft = meta?.laneWidthLeft ?: 0f
+    val laneWidthRight = meta?.laneWidthRight ?: 0f
+    val roadEdgeLeft = meta?.distanceToRoadEdgeLeft ?: 0f
+    val roadEdgeRight = meta?.distanceToRoadEdgeRight ?: 0f
+    
+    val desireText = drivingIntent?.getDesireText() ?: "无"
+    val lcProb = drivingIntent?.laneChangeProb ?: 0f
+    
+    // 🆕 推断车道位置
+    val lanePos = inferLanePosition(laneWidthLeft, laneWidthRight, roadEdgeLeft, roadEdgeRight)
+
+    val brakeProb = drivingIntent?.disengagePredictions?.brakeDisengageProbs?.maxOrNull() ?: 0f
+    val gasProb = drivingIntent?.disengagePredictions?.gasDisengageProbs?.maxOrNull() ?: 0f
+    val curRate = curvature?.maxOrientationRate ?: 0f
+    val leftBlind = carState?.leftBlindspot ?: false
+    val rightBlind = carState?.rightBlindspot ?: false
+
+    val currentLaneWidth = 3.6f
+    val carPainter = painterResource(id = R.drawable.car)
+    
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(140.dp),
+        colors = CardDefaults.cardColors(containerColor = UIConstants.CARD_BACKGROUND),
+        shape = UIConstants.CARD_SHAPE
+    ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            // 左侧数据面板
+            Column(
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(8.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
+                DataLabel("意图", desireText, color = if (desireText != "无") Color(0xFF3B82F6) else Color.Gray)
+                DataLabel("变道率", String.format("%.1f%%", lcProb * 100))
+                DataLabel("当前车道", lanePos.laneDescription, color = UIConstants.COLOR_SUCCESS)
+                DataLabel("曲率", String.format("%.3f", curRate))
+            }
+            
+            // 右侧数据面板
+            Column(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(8.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+                horizontalAlignment = Alignment.End
+            ) {
+                DataLabel("刹车脱管", String.format("%.1f%%", brakeProb * 100), color = if (brakeProb > 0.5f) Color.Red else Color.Gray)
+                DataLabel("油门脱管", String.format("%.1f%%", gasProb * 100), color = if (gasProb > 0.5f) Color.Red else Color.Gray)
+                if (leftBlind) Text("左盲区!", fontSize = 9.sp, color = Color.Red, fontWeight = FontWeight.Bold)
+                if (rightBlind) Text("右盲区!", fontSize = 9.sp, color = Color.Red, fontWeight = FontWeight.Bold)
+            }
+            
+            Canvas(modifier = Modifier.fillMaxSize().padding(top = 20.dp, bottom = 20.dp, start = 60.dp, end = 60.dp)) {
+                val width = size.width
+                val height = size.height
+                val centerX = width / 2
+                
+                val defaultLaneWidth = 3.6f
+                
+                // 1. 获取汽车原始比例并计算视觉缩放
+                val intrinsicSize = carPainter.intrinsicSize
+                val carRatio = if (intrinsicSize.height > 0) intrinsicSize.width / intrinsicSize.height else 0.5f
+                
+                // 设定汽车在画布中的高度比例 (40% 画布高度，放大2倍)
+                 val carHeightPx = height * 0.4f 
+                 val carWidthPx = carHeightPx * carRatio
+                 
+                 // 设定车道宽度为汽车宽度的 1.2 倍
+                 val visualLaneWidthPx = carWidthPx * 1.2f
+                
+                // 计算物理米到像素的转换比例 (以标准车道宽 3.6m 为基准)
+                val meterToPx = visualLaneWidthPx / defaultLaneWidth
+                
+                // 2. 计算当前车道边界 (基于视觉车道宽度)
+                // 如果实时数据有效，则按比例缩放，否则使用视觉基准宽度
+                val realLaneWidthLeft = if (laneWidthLeft > 0.5f) laneWidthLeft else (defaultLaneWidth / 2)
+                val realLaneWidthRight = if (laneWidthRight > 0.5f) laneWidthRight else (defaultLaneWidth / 2)
+                
+                val curLaneLeftX = centerX - realLaneWidthLeft * meterToPx
+                val curLaneRightX = centerX + realLaneWidthRight * meterToPx
+                
+                // 3. 绘制左侧其他车道
+                val leftLanesCount = lanePos.currentLaneIndex - 1
+                for (i in 1..leftLanesCount) {
+                    val laneLeftX = curLaneLeftX - i * visualLaneWidthPx
+                    val laneRightX = curLaneLeftX - (i - 1) * visualLaneWidthPx
+                    
+                    // 填充背景
+                    drawRect(
+                        color = Color.White.copy(alpha = 0.03f),
+                        topLeft = Offset(laneLeftX, 0f),
+                        size = Size(laneRightX - laneLeftX, height)
+                    )
+                    
+                    // 绘制左侧车道线（虚线）
+                    drawPath(
+                        path = Path().apply {
+                            moveTo(laneLeftX, 0f)
+                            lineTo(laneLeftX, height)
+                        },
+                        color = Color.White.copy(alpha = 0.3f),
+                        style = Stroke(
+                            width = 1.dp.toPx(),
+                            pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
+                        )
+                    )
+                }
+                
+                // 4. 绘制右侧其他车道
+                val rightLanesCount = lanePos.totalLanes - lanePos.currentLaneIndex
+                for (i in 1..rightLanesCount) {
+                    val laneLeftX = curLaneRightX + (i - 1) * visualLaneWidthPx
+                    val laneRightX = curLaneRightX + i * visualLaneWidthPx
+                    
+                    // 填充背景
+                    drawRect(
+                        color = Color.White.copy(alpha = 0.03f),
+                        topLeft = Offset(laneLeftX, 0f),
+                        size = Size(laneRightX - laneLeftX, height)
+                    )
+                    
+                    // 绘制右侧车道线（虚线）
+                    drawPath(
+                        path = Path().apply {
+                            moveTo(laneRightX, 0f)
+                            lineTo(laneRightX, height)
+                        },
+                        color = Color.White.copy(alpha = 0.3f),
+                        style = Stroke(
+                            width = 1.dp.toPx(),
+                            pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
+                        )
+                    )
+                }
+                
+                // 5. 绘制左路缘 (相对于汽车中心偏移)
+                if (roadEdgeLeft > 0.1f) {
+                    val edgeX = centerX - roadEdgeLeft * meterToPx
+                    val edgeWidth = 2.0f * meterToPx // 显示一段路缘宽度
+                    
+                    drawRect(
+                        color = Color(0xFF475569).copy(alpha = 0.2f),
+                        topLeft = Offset(edgeX - edgeWidth, 0f),
+                        size = Size(edgeWidth, height)
+                    )
+                    drawLine(
+                        color = Color.Gray.copy(alpha = 0.5f),
+                        start = Offset(edgeX, 0f),
+                        end = Offset(edgeX, height),
+                        strokeWidth = 1.5.dp.toPx()
+                    )
+                }
+                
+                // 6. 绘制右路缘 (相对于汽车中心偏移)
+                if (roadEdgeRight > 0.1f) {
+                    val edgeX = centerX + roadEdgeRight * meterToPx
+                    val edgeWidth = 2.0f * meterToPx
+                    
+                    drawRect(
+                        color = Color(0xFF475569).copy(alpha = 0.2f),
+                        topLeft = Offset(edgeX, 0f),
+                        size = Size(edgeWidth, height)
+                    )
+                    drawLine(
+                        color = Color.Gray.copy(alpha = 0.5f),
+                        start = Offset(edgeX, 0f),
+                        end = Offset(edgeX, height),
+                        strokeWidth = 1.5.dp.toPx()
+                    )
+                }
+                
+                // 7. 绘制当前车道边界（加粗虚线）
+                drawPath(
+                    path = Path().apply {
+                        moveTo(curLaneLeftX, 0f)
+                        lineTo(curLaneLeftX, height)
+                    },
+                    color = Color.White.copy(alpha = 0.6f),
+                    style = Stroke(
+                        width = 1.5.dp.toPx(),
+                        pathEffect = PathEffect.dashPathEffect(floatArrayOf(20f, 10f), 0f)
+                    )
+                )
+                drawPath(
+                    path = Path().apply {
+                        moveTo(curLaneRightX, 0f)
+                        lineTo(curLaneRightX, height)
+                    },
+                    color = Color.White.copy(alpha = 0.6f),
+                    style = Stroke(
+                        width = 1.5.dp.toPx(),
+                        pathEffect = PathEffect.dashPathEffect(floatArrayOf(20f, 10f), 0f)
+                    )
+                )
+                
+                // 8. 绘制本车 (位置进一步下移)
+                 val carX = centerX - carWidthPx / 2
+                 // 将汽车位置设定在画布高度的 85% 处（继续向下移动）
+                 val carY = height * 0.85f - carHeightPx / 2
+                
+                withTransform({
+                    translate(carX, carY)
+                }) {
+                    with(carPainter) {
+                        draw(size = Size(carWidthPx, carHeightPx))
+                    }
+                }
+            }
+            
+            // 底部距离信息
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
+                    .align(Alignment.BottomCenter),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                if (roadEdgeLeft > 0) Text("L路缘: ${String.format("%.1f", roadEdgeLeft)}m", fontSize = 9.sp, color = UIConstants.COLOR_NEUTRAL)
+                if (laneWidthLeft > 0) Text("L宽: ${String.format("%.1f", laneWidthLeft)}m", fontSize = 9.sp, color = UIConstants.COLOR_NEUTRAL)
+                Spacer(modifier = Modifier.weight(1f))
+                if (laneWidthRight > 0) Text("R宽: ${String.format("%.1f", laneWidthRight)}m", fontSize = 9.sp, color = UIConstants.COLOR_NEUTRAL)
+                if (roadEdgeRight > 0) Text("R路缘: ${String.format("%.1f", roadEdgeRight)}m", fontSize = 9.sp, color = UIConstants.COLOR_NEUTRAL)
+            }
+        }
+    }
+}
+
+@Composable
+private fun DataLabel(label: String, value: String, color: Color = Color.Gray) {
+    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(text = label, fontSize = 9.sp, color = Color.Gray.copy(alpha = 0.6f))
+        Text(text = value, fontSize = 9.sp, color = color, fontWeight = FontWeight.Medium)
     }
 }
 

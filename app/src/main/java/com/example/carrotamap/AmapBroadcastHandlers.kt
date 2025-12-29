@@ -1882,6 +1882,7 @@ class AmapBroadcastHandlers(
  * 🛠️ Intent 扩展方法：安全地获取各种数值类型的 Extra 数据，避免 ClassCastException 和系统日志警告
  */
 private fun Intent.getSafeLongExtra(name: String, defaultValue: Long): Long {
+    @Suppress("DEPRECATION")
     val value = this.extras?.get(name)
     return when (value) {
         is Long -> value
@@ -1893,6 +1894,7 @@ private fun Intent.getSafeLongExtra(name: String, defaultValue: Long): Long {
 }
 
 private fun Intent.getSafeIntExtra(name: String, defaultValue: Int): Int {
+    @Suppress("DEPRECATION")
     val value = this.extras?.get(name)
     return when (value) {
         is Int -> value
@@ -1904,6 +1906,7 @@ private fun Intent.getSafeIntExtra(name: String, defaultValue: Int): Int {
 }
 
 private fun Intent.getSafeDoubleExtra(name: String, defaultValue: Double): Double {
+    @Suppress("DEPRECATION")
     val value = this.extras?.get(name)
     return when (value) {
         is Double -> value

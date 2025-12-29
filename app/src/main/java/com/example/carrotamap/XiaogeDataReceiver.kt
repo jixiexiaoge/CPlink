@@ -753,6 +753,7 @@ class XiaogeDataReceiver(
         val metaObj = json.optJSONObject("meta")
         val curvatureObj = json.optJSONObject("curvature")
         val laneLineProbsArray = json.optJSONArray("laneLineProbs")
+        val drivingIntentObj = json.optJSONObject("drivingIntent")
         
         // 解析车道线置信度数组 [左车道线置信度, 右车道线置信度]
         val laneLineProbs = mutableListOf<Float>()
@@ -768,7 +769,8 @@ class XiaogeDataReceiver(
             leadRight = parseSideLeadDataExtended(leadRightObj), // 右侧车辆（纯视觉方案）
             laneLineProbs = laneLineProbs,  // [左车道线置信度, 右车道线置信度]
             meta = parseMetaData(metaObj),  // 车道宽度和变道状态
-            curvature = parseCurvatureData(curvatureObj)  // 曲率信息（用于判断弯道）
+            curvature = parseCurvatureData(curvatureObj),  // 曲率信息（用于判断弯道）
+            drivingIntent = parseDrivingIntent(drivingIntentObj) // 驾驶意图
         )
     }
 
@@ -789,7 +791,59 @@ class XiaogeDataReceiver(
             laneWidthLeft = json.optDouble("laneWidthLeft", 0.0).toFloat(),
             laneWidthRight = json.optDouble("laneWidthRight", 0.0).toFloat(),
             laneChangeState = json.optInt("laneChangeState", 0),
-            laneChangeDirection = json.optInt("laneChangeDirection", 0)
+            laneChangeDirection = json.optInt("laneChangeDirection", 0),
+            distanceToRoadEdgeLeft = json.optDouble("distanceToRoadEdgeLeft", 0.0).toFloat(),
+            distanceToRoadEdgeRight = json.optDouble("distanceToRoadEdgeRight", 0.0).toFloat()
+        )
+    }
+
+    /**
+     * 解析驾驶意图数据
+     */
+    private fun parseDrivingIntent(json: JSONObject?): DrivingIntentData? {
+        if (json == null) return null
+        
+        val desireStateArray = json.optJSONArray("desireState")
+        val desireState = mutableListOf<Float>()
+        if (desireStateArray != null) {
+            for (i in 0 until desireStateArray.length()) {
+                desireState.add(desireStateArray.optDouble(i, 0.0).toFloat())
+            }
+        }
+        
+        return DrivingIntentData(
+            desire = json.optInt("desire", 0),
+            desireState = desireState,
+            laneChangeProb = json.optDouble("laneChangeProb", 0.0).toFloat(),
+            disengagePredictions = parseDisengagePredictions(json.optJSONObject("disengagePredictions"))
+        )
+    }
+
+    /**
+     * 解析脱管预测数据
+     */
+    private fun parseDisengagePredictions(json: JSONObject?): DisengagePredictionsData? {
+        if (json == null) return null
+        
+        val brakeProbsArray = json.optJSONArray("brakeDisengageProbs")
+        val brakeProbs = mutableListOf<Float>()
+        if (brakeProbsArray != null) {
+            for (i in 0 until brakeProbsArray.length()) {
+                brakeProbs.add(brakeProbsArray.optDouble(i, 0.0).toFloat())
+            }
+        }
+        
+        val gasProbsArray = json.optJSONArray("gasDisengageProbs")
+        val gasProbs = mutableListOf<Float>()
+        if (gasProbsArray != null) {
+            for (i in 0 until gasProbsArray.length()) {
+                gasProbs.add(gasProbsArray.optDouble(i, 0.0).toFloat())
+            }
+        }
+        
+        return DisengagePredictionsData(
+            brakeDisengageProbs = brakeProbs,
+            gasDisengageProbs = gasProbs
         )
     }
 
@@ -849,7 +903,10 @@ class XiaogeDataReceiver(
                 null
             },
             lastDirection = lastDirectionStr.takeIf { it.isNotEmpty() },
-            blockingReason = blockingReasonStr.takeIf { it.isNotEmpty() }
+            blockingReason = blockingReasonStr.takeIf { it.isNotEmpty() },
+            currentLane = json.optInt("currentLane", 0),
+            totalLanes = json.optInt("totalLanes", 0),
+            laneReminder = json.optString("laneReminder", "").takeIf { it.isNotEmpty() }
         )
     }
 }
@@ -879,7 +936,10 @@ data class OvertakeStatusData(
     val canOvertake: Boolean,         // 是否可以超车
     val cooldownRemaining: Long?,     // 剩余冷却时间（毫秒），可选
     val lastDirection: String?,       // 上次超车方向（LEFT/RIGHT），可选
-    val blockingReason: String? = null // 🆕 阻止超车的原因（可选）
+    val blockingReason: String? = null, // 🆕 阻止超车的原因（可选）
+    val currentLane: Int = 0,         // 🆕 当前车道 (1-based, 从左往右)
+    val totalLanes: Int = 0,          // 🆕 总车道数
+    val laneReminder: String? = null  // 🆕 车道提醒文本
 )
 
 data class CarStateData(
@@ -900,7 +960,40 @@ data class ModelV2Data(
     val leadRight: SideLeadDataExtended?, // 右侧车辆（纯视觉方案）
     val laneLineProbs: List<Float>, // [左车道线置信度, 右车道线置信度]
     val meta: MetaData?,          // 车道宽度和变道状态
-    val curvature: CurvatureData? // 曲率信息（用于判断弯道）
+    val curvature: CurvatureData?, // 曲率信息（用于判断弯道）
+    val drivingIntent: DrivingIntentData? = null // 驾驶意图
+)
+
+/**
+ * 驾驶意图数据
+ */
+data class DrivingIntentData(
+    val desire: Int,
+    val desireState: List<Float>,
+    val laneChangeProb: Float,
+    val disengagePredictions: DisengagePredictionsData?
+) {
+    /**
+     * 获取驾驶意图的中文描述
+     */
+    fun getDesireText(): String = when (desire) {
+        0 -> "无意图"
+        1 -> "左转"
+        2 -> "右转"
+        3 -> "左变道"
+        4 -> "右变道"
+        5 -> "靠左行驶"
+        6 -> "靠右行驶"
+        else -> "未知($desire)"
+    }
+}
+
+/**
+ * 脱管预测数据
+ */
+data class DisengagePredictionsData(
+    val brakeDisengageProbs: List<Float>,
+    val gasDisengageProbs: List<Float>
 )
 
 /**
@@ -918,7 +1011,9 @@ data class MetaData(
     val laneWidthLeft: Float,
     val laneWidthRight: Float,
     val laneChangeState: Int,
-    val laneChangeDirection: Int
+    val laneChangeDirection: Int,
+    val distanceToRoadEdgeLeft: Float = 0.0f,
+    val distanceToRoadEdgeRight: Float = 0.0f
 )
 
 data class CurvatureData(

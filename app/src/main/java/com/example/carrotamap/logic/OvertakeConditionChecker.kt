@@ -148,6 +148,39 @@ class OvertakeConditionChecker {
                 actual = if (rightBlindspot) "有车" else "无车",
                 isMet = !rightBlindspot
             ))
+
+            // -- 预测数据 (新增) --
+            val lcProb = (modelV2?.drivingIntent?.laneChangeProb ?: 0f) * 100
+            add(CheckCondition(
+                name = "⑭ 变道概率",
+                threshold = "预测值",
+                actual = "${String.format("%.1f", lcProb)}%",
+                isMet = true
+            ))
+
+            val desireText = modelV2?.drivingIntent?.getDesireText() ?: "N/A"
+            add(CheckCondition(
+                name = "⑮ 驾驶意图",
+                threshold = "Desire",
+                actual = desireText,
+                isMet = true
+            ))
+
+            val roadEdgeLeft = modelV2?.meta?.distanceToRoadEdgeLeft ?: 0f
+            add(CheckCondition(
+                name = "⑯ 左路边缘",
+                threshold = "> 0.5m",
+                actual = "${String.format("%.2f", roadEdgeLeft)}m",
+                isMet = roadEdgeLeft > 0.5f
+            ))
+
+            val roadEdgeRight = modelV2?.meta?.distanceToRoadEdgeRight ?: 0f
+            add(CheckCondition(
+                name = "⑰ 右路边缘",
+                threshold = "> 0.5m",
+                actual = "${String.format("%.2f", roadEdgeRight)}m",
+                isMet = roadEdgeRight > 0.5f
+            ))
         }
     }
 

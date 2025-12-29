@@ -31,6 +31,7 @@ import com.example.carrotamap.ui.components.CompactStatusCard
 import com.example.carrotamap.ui.components.DataTable
 import com.example.carrotamap.ui.components.LaneInfoDisplay
 import com.example.carrotamap.ui.components.LaneIconHelper
+import com.example.carrotamap.ui.components.TopDownVisualization
 import kotlinx.coroutines.delay
 import kotlin.math.abs
 import androidx.compose.ui.draw.alpha
@@ -270,6 +271,15 @@ class MainActivityUI(
                         .verticalScroll(scrollState)
                         .padding(bottom = 80.dp) // 为底部固定按钮留出空间
                 ) {
+                    // 🆕 详细信息显示区域（用户类型 3, 4 或 0先锋用户 显示）
+                    if (userType == 3 || userType == 4 || userType == 0) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        VehicleLaneDetailsSection(
+                            core = core,
+                            carrotManFields = carrotManFields
+                        )
+                    }
+
                     // 🔄 调整布局：实时数据组件移到顶部
                     // Comma3数据表格（可折叠）
                     Comma3DataTable(
@@ -280,15 +290,6 @@ class MainActivityUI(
                         xiaogeDataTimeout = xiaogeDataTimeout,
                         xiaogeData = data  // 🆕 传递数据，用于显示序号和时间
                     )
-                    
-                    // 🆕 详细信息显示区域（用户类型 3, 4 或 0先锋用户 显示）
-                    if (userType == 3 || userType == 4 || userType == 0) {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        VehicleLaneDetailsSection(
-                            core = core,
-                            carrotManFields = carrotManFields
-                        )
-                    }
                     
                     // 添加底部安全间距
                     Spacer(modifier = Modifier.height(6.dp))
@@ -819,8 +820,12 @@ private object VehicleLaneUIConstants {
     val COLOR_DANGER = Color(0xFFEF4444)
     val COLOR_INFO = Color(0xFF3B82F6)
     val COLOR_NEUTRAL = Color(0xFF94A3B8)
-    val CARD_BACKGROUND = Color(0xFF1E293B).copy(alpha = 0.8f)
-    val CARD_SHAPE = androidx.compose.foundation.shape.RoundedCornerShape(12.dp)
+    val CARD_BACKGROUND = Color(0xFF1E293B).copy(alpha = 0.85f)
+    val CARD_SHAPE = androidx.compose.foundation.shape.RoundedCornerShape(8.dp)
+    val PANEL_SPACING = 4.dp
+    val TEXT_SIZE_TITLE = 11.sp
+    val TEXT_SIZE_BODY = 9.sp
+    val TEXT_SIZE_SMALL = 7.5.sp
 }
 
 /**
@@ -887,6 +892,12 @@ private fun VehicleLaneDetailsSection(
             .padding(horizontal = 8.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
+        // 🆕 上帝视角模拟图 (移到顶部)
+        TopDownVisualization(
+            data = currentData,
+            modifier = Modifier.fillMaxWidth()
+        )
+
         // 数据信息面板（13个检查条件的表格）
         VehicleLaneDataInfoPanel(
             data = currentData,
@@ -1448,7 +1459,7 @@ private fun VehicleLaneDataInfoPanel(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        // 超车提示信息卡片（移动到数据面板下方）
+        // 超车提示信息计算
         val overtakeModeForHint = prefs.getInt("overtake_mode", 0)
         val hintInfo = getOvertakeHintInfo(
             overtakeMode = overtakeModeForHint,
@@ -1466,90 +1477,25 @@ private fun VehicleLaneDataInfoPanel(
             hintInfo.detail != blockingReason && 
             !hintInfo.detail.contains(blockingReason)
         
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(
-                containerColor = hintInfo.cardColor
-            ),
-            shape = androidx.compose.foundation.shape.RoundedCornerShape(6.dp)
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 5.dp),
-                horizontalArrangement = Arrangement.spacedBy(5.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = hintInfo.icon,
-                    fontSize = 14.sp
-                )
-                Column(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(1.dp)
-                ) {
-                    // 第一行：标题（状态文本）
-                    Text(
-                        text = hintInfo.title,
-                        fontSize = 11.sp,
-                        color = hintInfo.titleColor,
-                        fontWeight = FontWeight.Bold,
-                        maxLines = 1,
-                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
-                    )
-                    // 第二行：详情描述
-                    Text(
-                        text = hintInfo.detail,
-                        fontSize = 9.sp,
-                        color = Color(0xFF94A3B8),
-                        fontWeight = FontWeight.Medium,
-                        maxLines = 1,
-                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
-                    )
-                    // 第三行：冷却时间或阻止原因（优先显示阻止原因）
-                    when {
-                        shouldShowBlockingReason -> {
-                            Text(
-                                text = blockingReason!!,
-                                fontSize = 8.sp,
-                                color = Color(0xFFEF4444),
-                                fontWeight = FontWeight.Light,
-                                maxLines = 1,
-                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
-                            )
-                        }
-                        cooldownText != null -> {
-                            Text(
-                                text = cooldownText,
-                                fontSize = 8.sp,
-                                color = Color(0xFF94A3B8),
-                                fontWeight = FontWeight.Light,
-                                maxLines = 1,
-                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
-                            )
-                        }
-                    }
-                }
-            }
-        }
-
-        // 🆕 NOA 战术引导卡片 - 增强版
+        // 🆕 NOA 战术引导卡片 - 增强版 (集成超车提示)
         if (carrotManFields != null && (
             carrotManFields.exitNameInfo.isNotEmpty() || 
             carrotManFields.sapaName.isNotEmpty() || 
             carrotManFields.roundAboutNum > 0 ||
             carrotManFields.viaPOIdistance > 0 ||
             carrotManFields.segAssistantAction > 0 ||
-            carrotManFields.nSdiBlockType == 2 // 🆕 区间测速进行中
+            carrotManFields.nSdiBlockType == 2 ||
+            hintInfo.title != "监控中" || 
+            blockingReason != null
         )) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF1E293B).copy(alpha = 0.8f)),
-                shape = androidx.compose.foundation.shape.RoundedCornerShape(6.dp)
+                colors = CardDefaults.cardColors(containerColor = VehicleLaneUIConstants.CARD_BACKGROUND),
+                shape = VehicleLaneUIConstants.CARD_SHAPE
             ) {
                 Column(
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     // 标题栏
                     Row(
@@ -1559,93 +1505,150 @@ private fun VehicleLaneDataInfoPanel(
                     ) {
                         Text(
                             text = "🎯 NOA 战术引导",
-                            fontSize = 10.sp,
-                            color = Color(0xFF3B82F6),
-                            fontWeight = FontWeight.Bold
+                            fontSize = VehicleLaneUIConstants.TEXT_SIZE_TITLE,
+                            color = VehicleLaneUIConstants.COLOR_INFO,
+                            fontWeight = FontWeight.ExtraBold
                         )
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(4.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
+                            // 🆕 实时车道显示
+                            if (data?.overtakeStatus != null && data.overtakeStatus.totalLanes > 0) {
+                                val laneStatus = data.overtakeStatus
+                                Text(
+                                    text = "🛣️ 第 ${laneStatus.currentLane} / ${laneStatus.totalLanes} 车道",
+                                    fontSize = 8.sp,
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier
+                                        .background(Color.White.copy(alpha = 0.1f), RoundedCornerShape(4.dp))
+                                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                                )
+                            }
+
+                            // 🆕 超车状态提示 (集成到标题栏)
+                            if (hintInfo.title != "监控中" || blockingReason != null) {
+                                Text(
+                                    text = "${hintInfo.icon} ${hintInfo.title}",
+                                    fontSize = 8.sp,
+                                    color = hintInfo.titleColor,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier
+                                        .background(hintInfo.cardColor.copy(alpha = 0.2f), RoundedCornerShape(4.dp))
+                                        .border(0.5.dp, hintInfo.cardColor.copy(alpha = 0.5f), RoundedCornerShape(4.dp))
+                                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                                )
+                            } else {
+                                Text(
+                                    text = "👁️ 监控中",
+                                    fontSize = 8.sp,
+                                    color = Color(0xFF94A3B8),
+                                    modifier = Modifier
+                                        .background(Color(0xFF94A3B8).copy(alpha = 0.1f), RoundedCornerShape(4.dp))
+                                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                                )
+                            }
+
                             // NOA 状态
                             if (carrotManFields.nextRoadNOAOrNot) {
                                 Text(
-                                    text = "NOA可用",
+                                    text = "NOA",
                                     fontSize = 8.sp,
-                                    color = Color(0xFF10B981),
-                                    modifier = Modifier
-                                        .background(Color(0xFF10B981).copy(alpha = 0.1f), RoundedCornerShape(2.dp))
-                                        .padding(horizontal = 4.dp, vertical = 1.dp)
-                                )
-                            }
-                            // 定位信息（调试用）
-                            if (carrotManFields.curSegNum > 0 || carrotManFields.curPointNum > 0) {
-                                Text(
-                                    text = "段${carrotManFields.curSegNum}·点${carrotManFields.curPointNum}",
-                                    fontSize = 7.sp,
-                                    color = Color(0xFF64748B),
-                                    modifier = Modifier
-                                        .background(Color(0xFF64748B).copy(alpha = 0.1f), RoundedCornerShape(2.dp))
-                                        .padding(horizontal = 3.dp, vertical = 1.dp)
-                                )
-                            }
-                            
-                            // 🆕 路线总剩余时间 (格式化字符串)
-                            if (carrotManFields.routeRemainTimeAuto.isNotEmpty()) {
-                                Text(
-                                    text = "🕒 ${carrotManFields.routeRemainTimeAuto}",
-                                    fontSize = 8.sp,
-                                    color = Color(0xFF3B82F6),
+                                    color = Color.White,
                                     fontWeight = FontWeight.Bold,
                                     modifier = Modifier
-                                        .background(Color(0xFF3B82F6).copy(alpha = 0.1f), RoundedCornerShape(2.dp))
-                                        .padding(horizontal = 4.dp, vertical = 1.dp)
+                                        .background(VehicleLaneUIConstants.COLOR_SUCCESS, RoundedCornerShape(4.dp))
+                                        .padding(horizontal = 6.dp, vertical = 2.dp)
                                 )
                             }
                         }
                     }
 
-                    // 🆕 路线进度与距离 (第二优先级)
-                    if (carrotManFields.routeRemainDisAuto.isNotEmpty() || carrotManFields.nextRoadProgressPercent >= 0) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
+                    // 🆕 路线总剩余时间与进度 (合并到一行)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            if (carrotManFields.routeRemainTimeAuto.isNotEmpty()) {
+                                Text(
+                                    text = "🕒 ${carrotManFields.routeRemainTimeAuto}",
+                                    fontSize = 9.sp,
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                androidx.compose.foundation.layout.Spacer(modifier = Modifier.width(8.dp))
+                            }
                             if (carrotManFields.routeRemainDisAuto.isNotEmpty()) {
                                 Text(
-                                    text = "🏁 剩余: ${carrotManFields.routeRemainDisAuto}",
-                                    fontSize = 8.sp,
+                                    text = "🏁 ${carrotManFields.routeRemainDisAuto}",
+                                    fontSize = 9.sp,
                                     color = Color(0xFF94A3B8)
                                 )
                             }
-                            if (carrotManFields.nextRoadProgressPercent >= 0) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text(
-                                        text = "路段进度: ",
-                                        fontSize = 7.sp,
-                                        color = Color(0xFF64748B)
-                                    )
+                        }
+
+                        if (carrotManFields.nextRoadProgressPercent >= 0) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    modifier = Modifier
+                                        .width(40.dp)
+                                        .height(4.dp)
+                                        .background(Color(0xFF334155), RoundedCornerShape(2.dp))
+                                ) {
                                     Box(
                                         modifier = Modifier
-                                            .width(40.dp)
-                                            .height(3.dp)
-                                            .background(Color(0xFF334155), RoundedCornerShape(1.dp))
-                                    ) {
-                                        Box(
-                                            modifier = Modifier
-                                                .fillMaxWidth(carrotManFields.nextRoadProgressPercent / 100f)
-                                                .fillMaxHeight()
-                                                .background(Color(0xFF3B82F6), RoundedCornerShape(1.dp))
-                                        )
-                                    }
-                                    Text(
-                                        text = " ${carrotManFields.nextRoadProgressPercent}%",
-                                        fontSize = 7.sp,
-                                        color = Color(0xFF3B82F6)
+                                            .fillMaxWidth(carrotManFields.nextRoadProgressPercent / 100f)
+                                            .fillMaxHeight()
+                                            .background(VehicleLaneUIConstants.COLOR_INFO, RoundedCornerShape(2.dp))
                                     )
                                 }
+                                Text(
+                                    text = " ${carrotManFields.nextRoadProgressPercent}%",
+                                    fontSize = 8.sp,
+                                    color = VehicleLaneUIConstants.COLOR_INFO,
+                                    fontWeight = FontWeight.Bold
+                                )
                             }
+                        }
+                    }
+
+                    // 🆕 超车详情、阻止原因与车道提醒 (更明显的提示)
+                    val laneReminder = data?.overtakeStatus?.laneReminder
+                    if (hintInfo.title != "监控中" || blockingReason != null || cooldownText != null || laneReminder != null) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(
+                                    if (laneReminder != null) VehicleLaneUIConstants.COLOR_WARNING.copy(alpha = 0.15f)
+                                    else hintInfo.cardColor.copy(alpha = 0.15f), 
+                                    RoundedCornerShape(6.dp)
+                                )
+                                .border(
+                                    0.5.dp, 
+                                    if (laneReminder != null) VehicleLaneUIConstants.COLOR_WARNING.copy(alpha = 0.3f)
+                                    else hintInfo.cardColor.copy(alpha = 0.3f), 
+                                    RoundedCornerShape(6.dp)
+                                )
+                                .padding(horizontal = 8.dp, vertical = 6.dp),
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = when {
+                                    laneReminder != null -> "📢 $laneReminder"
+                                    blockingReason != null -> "🚫 $blockingReason"
+                                    cooldownText != null -> "⏱️ $cooldownText"
+                                    else -> "ℹ️ ${hintInfo.detail}"
+                                },
+                                fontSize = 9.sp,
+                                color = if (laneReminder != null) Color(0xFFFBBF24) else if (blockingReason != null) Color(0xFFFCA5A5) else Color.White,
+                                fontWeight = if (laneReminder != null || blockingReason != null) FontWeight.Bold else FontWeight.Medium,
+                                maxLines = 2,
+                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                            )
                         }
                     }
 
@@ -1654,19 +1657,20 @@ private fun VehicleLaneDataInfoPanel(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .background(Color(0xFFEF4444).copy(alpha = 0.15f), RoundedCornerShape(4.dp))
-                                .padding(horizontal = 6.dp, vertical = 4.dp),
+                                .background(VehicleLaneUIConstants.COLOR_DANGER.copy(alpha = 0.1f), RoundedCornerShape(6.dp))
+                                .border(0.5.dp, VehicleLaneUIConstants.COLOR_DANGER.copy(alpha = 0.3f), RoundedCornerShape(6.dp))
+                                .padding(horizontal = 8.dp, vertical = 6.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column {
-                                Text("📏 区间测速", fontSize = 8.sp, color = Color(0xFFF87171))
+                                Text("📏 区间测速", fontSize = 8.sp, color = VehicleLaneUIConstants.COLOR_DANGER)
                                 Row(verticalAlignment = Alignment.Bottom) {
                                     Text(
                                         text = "${carrotManFields.nSdiDist}m",
-                                        fontSize = 12.sp,
+                                        fontSize = 11.sp,
                                         color = Color.White,
-                                        fontWeight = FontWeight.Bold
+                                        fontWeight = FontWeight.ExtraBold
                                     )
                                     androidx.compose.foundation.layout.Spacer(modifier = Modifier.width(4.dp))
                                     Text(
@@ -1681,7 +1685,7 @@ private fun VehicleLaneDataInfoPanel(
                                     Text("限速 ", fontSize = 7.sp, color = Color(0xFF94A3B8))
                                     Text(
                                         text = "${carrotManFields.nSdiBlockSpeed}",
-                                        fontSize = 10.sp,
+                                        fontSize = 9.sp,
                                         color = Color.White,
                                         fontWeight = FontWeight.Bold
                                     )
@@ -1691,8 +1695,8 @@ private fun VehicleLaneDataInfoPanel(
                                         Text("平均 ", fontSize = 7.sp, color = Color(0xFF94A3B8))
                                         Text(
                                             text = "${carrotManFields.nSdiAverageSpeed}",
-                                            fontSize = 10.sp,
-                                            color = if (carrotManFields.nSdiAverageSpeed > carrotManFields.nSdiBlockSpeed) Color(0xFFEF4444) else Color(0xFF10B981),
+                                            fontSize = 9.sp,
+                                            color = if (carrotManFields.nSdiAverageSpeed > carrotManFields.nSdiBlockSpeed) VehicleLaneUIConstants.COLOR_DANGER else VehicleLaneUIConstants.COLOR_SUCCESS,
                                             fontWeight = FontWeight.Bold
                                         )
                                     }
@@ -1701,13 +1705,14 @@ private fun VehicleLaneDataInfoPanel(
                         }
                     }
 
-                    // 途径点信息（第一优先级）
+                    // 途径点信息
                     if (carrotManFields.viaPOIdistance > 0) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .background(Color(0xFF6366F1).copy(alpha = 0.15f), RoundedCornerShape(4.dp))
-                                .padding(horizontal = 6.dp, vertical = 4.dp),
+                                .background(Color(0xFF6366F1).copy(alpha = 0.1f), RoundedCornerShape(6.dp))
+                                .border(0.5.dp, Color(0xFF6366F1).copy(alpha = 0.3f), RoundedCornerShape(6.dp))
+                                .padding(horizontal = 8.dp, vertical = 6.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -1715,7 +1720,7 @@ private fun VehicleLaneDataInfoPanel(
                                 Text("📍 途径点", fontSize = 8.sp, color = Color(0xFF818CF8))
                                 Text(
                                     text = "${carrotManFields.viaPOIdistance}m",
-                                    fontSize = 12.sp,
+                                    fontSize = 11.sp,
                                     color = Color.White,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -1730,79 +1735,89 @@ private fun VehicleLaneDataInfoPanel(
                         }
                     }
 
-                    // 主要战术信息行
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        // 出口信息
-                        if (carrotManFields.exitNameInfo.isNotEmpty()) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text("🚏 出口", fontSize = 8.sp, color = Color(0xFF94A3B8))
-                                Text(
-                                    text = carrotManFields.exitNameInfo,
-                                    fontSize = 10.sp,
-                                    color = Color.White,
-                                    fontWeight = FontWeight.Medium,
-                                    maxLines = 1,
-                                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
-                                )
-                                if (carrotManFields.exitDirectionInfo.isNotEmpty()) {
+                    // 主要战术信息行 (出口、环岛、服务区)
+                    if (carrotManFields.exitNameInfo.isNotEmpty() || carrotManFields.roundAboutNum > 0 || carrotManFields.sapaName.isNotEmpty()) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            // 出口信息
+                            if (carrotManFields.exitNameInfo.isNotEmpty()) {
+                                Column(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .background(Color.White.copy(alpha = 0.05f), RoundedCornerShape(6.dp))
+                                        .padding(8.dp)
+                                ) {
+                                    Text("🚏 出口", fontSize = 8.sp, color = Color(0xFF94A3B8))
                                     Text(
-                                        text = carrotManFields.exitDirectionInfo,
-                                        fontSize = 7.sp,
-                                        color = Color(0xFFFBBF24),
-                                        fontWeight = FontWeight.Medium
+                                        text = carrotManFields.exitNameInfo,
+                                        fontSize = 10.sp,
+                                        color = Color.White,
+                                        fontWeight = FontWeight.Bold,
+                                        maxLines = 1,
+                                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                                     )
+                                    if (carrotManFields.exitDirectionInfo.isNotEmpty()) {
+                                        Text(
+                                            text = carrotManFields.exitDirectionInfo,
+                                            fontSize = 7.sp,
+                                            color = Color(0xFFFBBF24),
+                                            fontWeight = FontWeight.Medium
+                                        )
+                                    }
                                 }
                             }
-                        }
 
-                        // 环岛信息
-                        if (carrotManFields.roundAboutNum > 0) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text("🔄 环岛", fontSize = 8.sp, color = Color(0xFF94A3B8))
-                                Text(
-                                    text = "第 ${carrotManFields.roundAboutNum} 出口",
-                                    fontSize = 10.sp,
-                                    color = Color.White,
-                                    fontWeight = FontWeight.Medium
-                                )
-                                if (carrotManFields.roundAllNum > 0) {
+                            // 环岛信息
+                            if (carrotManFields.roundAboutNum > 0) {
+                                Column(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .background(Color.White.copy(alpha = 0.05f), RoundedCornerShape(6.dp))
+                                        .padding(8.dp)
+                                ) {
+                                    Text("🔄 环岛", fontSize = 8.sp, color = Color(0xFF94A3B8))
                                     Text(
-                                        text = "共 ${carrotManFields.roundAllNum} 个",
-                                        fontSize = 7.sp,
-                                        color = Color(0xFF94A3B8)
+                                        text = "第 ${carrotManFields.roundAboutNum} 出口",
+                                        fontSize = 10.sp,
+                                        color = Color.White,
+                                        fontWeight = FontWeight.Bold
                                     )
+                                    if (carrotManFields.roundAllNum > 0) {
+                                        Text(
+                                            text = "共 ${carrotManFields.roundAllNum} 个",
+                                            fontSize = 7.sp,
+                                            color = Color(0xFF94A3B8)
+                                        )
+                                    }
                                 }
                             }
-                        }
 
-                        // 服务区信息
-                        if (carrotManFields.sapaName.isNotEmpty()) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text("🏪 设施", fontSize = 8.sp, color = Color(0xFF94A3B8))
-                                Text(
-                                    text = carrotManFields.sapaName,
-                                    fontSize = 10.sp,
-                                    color = Color.White,
-                                    fontWeight = FontWeight.Medium,
-                                    maxLines = 1,
-                                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
-                                )
-                                if (carrotManFields.sapaDist > 0) {
+                            // 服务区信息
+                            if (carrotManFields.sapaName.isNotEmpty()) {
+                                Column(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .background(Color.White.copy(alpha = 0.05f), RoundedCornerShape(6.dp))
+                                        .padding(8.dp)
+                                ) {
+                                    Text("🏪 设施", fontSize = 8.sp, color = Color(0xFF94A3B8))
                                     Text(
-                                        text = if (carrotManFields.sapaDistAuto.isNotEmpty()) carrotManFields.sapaDistAuto else "${carrotManFields.sapaDist}m",
-                                        fontSize = 7.sp,
-                                        color = Color(0xFF10B981)
+                                        text = carrotManFields.sapaName,
+                                        fontSize = 10.sp,
+                                        color = Color.White,
+                                        fontWeight = FontWeight.Bold,
+                                        maxLines = 1,
+                                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                                     )
-                                }
-                                if (carrotManFields.nextSapaDistAuto.isNotEmpty()) {
-                                    Text(
-                                        text = "下个:${carrotManFields.nextSapaDistAuto}",
-                                        fontSize = 6.sp,
-                                        color = Color(0xFF64748B)
-                                    )
+                                    if (carrotManFields.sapaDist > 0) {
+                                        Text(
+                                            text = if (carrotManFields.sapaDistAuto.isNotEmpty()) carrotManFields.sapaDistAuto else "${carrotManFields.sapaDist}m",
+                                            fontSize = 7.sp,
+                                            color = Color(0xFF94A3B8)
+                                        )
+                                    }
                                 }
                             }
                         }

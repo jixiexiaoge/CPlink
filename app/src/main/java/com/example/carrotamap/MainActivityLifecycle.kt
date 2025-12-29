@@ -782,7 +782,15 @@ class MainActivityLifecycle(
                         // 尝试访问autoOvertakeManager，如果未初始化会抛出UninitializedPropertyAccessException
                         // 🆕 传递道路类型参数，如果为默认值8（未知）则传递null（向后兼容）
                         val roadTypeParam = if (roadType == 8) null else roadType
-                        core.autoOvertakeManager.update(dataWithTbtDist, roadTypeParam)
+                        // 🆕 获取导航辅助动作和TBT文本
+                        val segAssistantAction = core.carrotManFields.value.segAssistantAction
+                        val tbtMainText = core.carrotManFields.value.szTBTMainText
+                        core.autoOvertakeManager.update(
+                            dataWithTbtDist, 
+                            roadTypeParam,
+                            segAssistantAction,
+                            tbtMainText
+                        )
                     } catch (e: UninitializedPropertyAccessException) {
                         // 如果未初始化，返回null
                         null

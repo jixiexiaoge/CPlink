@@ -56,6 +56,10 @@ class AutoOvertakeManager(
         private const val OVERTAKE_ACTION_COOLDOWN_MS = 20000L  // 🆕 超车操作冷却时间（20秒）
         private const val PENDING_TIMEOUT_MS = 2500L  // 待确认超车超时时间（2.5秒）
         
+        // 🆕 车道提醒参数
+        private const val LANE_REMINDER_COOLDOWN_MS = 15000L  // 15秒提醒一次
+        private const val EXIT_TBT_DIST_THRESHOLD = 1500      // 1.5公里内开始提醒
+        
         // 返回原车道参数（方案5）
         private const val MAX_LANE_MEMORY_TIME_MS = 30000L  // 30秒超时
         private const val RETURN_MIN_SPEED_ADVANTAGE_KPH = 8.0f  // 返回需要至少8 km/h速度优势
@@ -77,9 +81,13 @@ class AutoOvertakeManager(
         private var soundPool: android.media.SoundPool? = null
         private var soundIdLeft: Int? = null
         private var soundIdRight: Int? = null
-        private var soundIdLeftConfirm: Int? = null
-        private var soundIdRightConfirm: Int? = null
-        private val soundLoadedMap = mutableMapOf<Int, Boolean>()
+    private var soundIdLeftConfirm: Int? = null
+    private var soundIdRightConfirm: Int? = null
+    private var soundIdGoto: Int? = null
+    private val soundLoadedMap = mutableMapOf<Int, Boolean>()
+    
+    // 🆕 车道提醒状态
+    private var lastLaneReminderTime = 0L
     }
 
     /**
@@ -224,49 +232,70 @@ class AutoOvertakeManager(
      * ✅ 优化：拆分逻辑，提高可读性和可维护性
      * @param data 车辆数据
      * @param roadType 道路类型（高德地图 ROAD_TYPE：0=高速公路，6=快速路，8=未知等）。如果为null，则不检查道路类型（向后兼容）
+     * @param segAssistantAction 导航辅助动作（1表示驶出）
+     * @param tbtMainText TBT主文本
      * @return 更新后的超车状态数据，用于更新 XiaogeVehicleData
      */
-    fun update(data: XiaogeVehicleData?, roadType: Int? = null): OvertakeStatusData? {
+    fun update(
+        data: XiaogeVehicleData?, 
+        roadType: Int? = null,
+        segAssistantAction: Int? = null,
+        tbtMainText: String? = null
+    ): OvertakeStatusData? {
         // 快速失败：空数据检查
         if (data == null) return null
+        
+        // 🆕 1. 推断当前车道信息
+        val (currentLane, totalLanes) = inferLanePosition(data)
+        
+        // 🆕 2. 检查驶出提醒
+        val laneReminder = checkExitLaneReminder(
+            data, roadType, segAssistantAction, tbtMainText, currentLane, totalLanes
+        )
         
         // 获取超车模式
         val overtakeMode = config.getOvertakeMode()
         
-        // 1. 处理禁止超车模式
+        // 3. 处理禁止超车模式
         if (overtakeMode == 0) {
-            return handleOvertakeModeDisabled(data)
+            return handleOvertakeModeDisabled(data, currentLane, totalLanes, laneReminder)
         }
         
-        // 2. 处理待执行的变道（延迟执行机制）
-        val pendingCheck = checkPendingLaneChange(data, overtakeMode, roadType)
+        // 4. 处理待执行的变道（延迟执行机制）
+        val pendingCheck = checkPendingLaneChange(data, overtakeMode, roadType, currentLane, totalLanes, laneReminder)
         if (pendingCheck != null) return pendingCheck
         
-        // 3. 处理变道中状态
+        // 5. 处理变道中状态
         val laneChangeState = data.modelV2?.meta?.laneChangeState ?: 0
         if (laneChangeState != 0) {
-            return handleLaneChangeInProgress(data, laneChangeState)
+            return handleLaneChangeInProgress(data, laneChangeState, currentLane, totalLanes, laneReminder)
         }
         
-        // 4. 处理变道完成状态
+        // 6. 处理变道完成状态
         handleLaneChangeCompleted()
         
-        // 5. 检查返回原车道条件
-        val returnCheck = checkReturnToOriginalLane(data, overtakeMode)
+        // 7. 检查返回原车道条件
+        val returnCheck = checkReturnToOriginalLane(data, overtakeMode, currentLane, totalLanes, laneReminder)
         if (returnCheck != null) return returnCheck
         
-        // 6. 评估超车条件并执行决策
-        return evaluateOvertakeConditions(data, overtakeMode, roadType)
+        // 8. 评估超车条件并执行决策
+        return evaluateOvertakeConditions(data, overtakeMode, roadType, currentLane, totalLanes, laneReminder)
     }
     
     /**
      * ✅ 优化：处理禁止超车模式
      */
-    private fun handleOvertakeModeDisabled(data: XiaogeVehicleData): OvertakeStatusData {
+    private fun handleOvertakeModeDisabled(
+        data: XiaogeVehicleData,
+        currentLane: Int,
+        totalLanes: Int,
+        laneReminder: String?
+    ): OvertakeStatusData {
         debounceCounter = 0
         resetLaneMemory()
         cancelPendingLaneChange()
-        return createOvertakeStatus(data, "禁止超车", false, null)
+        return createOvertakeStatus(data, "禁止超车", false, null, 
+            currentLane = currentLane, totalLanes = totalLanes, laneReminder = laneReminder)
     }
     
     /**
@@ -274,7 +303,10 @@ class AutoOvertakeManager(
      */
     private fun handleLaneChangeInProgress(
         data: XiaogeVehicleData,
-        laneChangeState: Int
+        laneChangeState: Int,
+        currentLane: Int,
+        totalLanes: Int,
+        laneReminder: String?
     ): OvertakeStatusData {
         updateOvertakeResultFromLaneChangeState(laneChangeState)
         val direction = when (data.modelV2?.meta?.laneChangeDirection) {
@@ -282,12 +314,104 @@ class AutoOvertakeManager(
             1 -> "RIGHT"
             else -> null
         }
-        return createOvertakeStatus(data, "变道中", false, direction)
+        return createOvertakeStatus(data, "变道中", false, direction, 
+            currentLane = currentLane, totalLanes = totalLanes, laneReminder = laneReminder)
     }
     
     /**
      * ✅ 优化：处理变道完成状态
      */
+    /**
+     * 🆕 根据路缘和车道宽度推断当前车道位置
+     * 与 VehicleLaneVisualization 中的逻辑保持一致
+     */
+    private fun inferLanePosition(data: XiaogeVehicleData): Pair<Int, Int> {
+        val meta = data.modelV2?.meta ?: return Pair(0, 0)
+        
+        val laneWidthLeft = meta.laneWidthLeft
+        val laneWidthRight = meta.laneWidthRight
+        val roadEdgeLeft = meta.distanceToRoadEdgeLeft
+        val roadEdgeRight = meta.distanceToRoadEdgeRight
+        
+        val defaultLaneWidth = 3.6f
+        
+        // 1. 推断左侧还有几条车道
+        val leftLanes = when {
+            roadEdgeLeft > 0.5f -> {
+                val lanes = Math.round((roadEdgeLeft + (if (laneWidthLeft > 0.5f) defaultLaneWidth else 0f)) / defaultLaneWidth).toInt()
+                Math.max(if (laneWidthLeft > 0.5f) 1 else 0, lanes)
+            }
+            laneWidthLeft > 0.5f -> 1
+            else -> 0
+        }
+        
+        // 2. 推断右侧还有几条车道
+        val rightLanes = when {
+            roadEdgeRight > 0.5f -> {
+                val lanes = Math.round((roadEdgeRight + (if (laneWidthRight > 0.5f) defaultLaneWidth else 0f)) / defaultLaneWidth).toInt()
+                Math.max(if (laneWidthRight > 0.5f) 1 else 0, lanes)
+            }
+            laneWidthRight > 0.5f -> 1
+            else -> 0
+        }
+        
+        val totalLanes = leftLanes + 1 + rightLanes
+        val currentLaneIndex = leftLanes + 1
+        
+        return Pair(currentLaneIndex, totalLanes)
+    }
+
+    /**
+     * 🆕 检查是否需要驶出高速/高架的车道提醒
+     */
+    private fun checkExitLaneReminder(
+        data: XiaogeVehicleData,
+        roadType: Int?,
+        segAssistantAction: Int?,
+        tbtMainText: String?,
+        currentLane: Int,
+        totalLanes: Int
+    ): String? {
+        // 1. 检查道路类型：必须是高速公路(0)或快速路(6)
+        if (roadType != HIGHWAY_ROAD_TYPE && roadType != EXPRESSWAY_ROAD_TYPE) return null
+        
+        // 2. 检查是否接近出口
+        // 方案A: 检查 segAssistantAction (1表示驶出)
+        // 方案B: 检查 TBT 文本和距离
+        val isExiting = segAssistantAction == 1 || 
+                      (data.tbtDist > 0 && data.tbtDist < EXIT_TBT_DIST_THRESHOLD && 
+                       (tbtMainText?.contains("出口") == true || tbtMainText?.contains("驶出") == true))
+        
+        if (!isExiting) return null
+        
+        // 3. 检查是否在最右侧车道
+        // 高速公路(roadType=0)时，如果 totalLanes > 1，最右侧通常是第 totalLanes 车道
+        // 用户提到：高速时则忽略应急车道。通常模型识别出的 totalLanes 已经是不含应急车道的行驶车道。
+        if (totalLanes > 1 && currentLane < totalLanes) {
+            val now = System.currentTimeMillis()
+            if (now - lastLaneReminderTime > LANE_REMINDER_COOLDOWN_MS) {
+                lastLaneReminderTime = now
+                playGotoSound()
+                return "请靠右行驶以准备驶出"
+            }
+        }
+        
+        return null
+    }
+
+    private fun playGotoSound() {
+        try {
+            ensureSoundPool()
+            val id = soundIdGoto ?: return
+            if (soundLoadedMap[id] == true) {
+                soundPool?.play(id, 1f, 1f, 1, 0, 1f)
+                Log.i(TAG, "🎵 播放驶出提醒音效 (go_to.mp3)")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ 播放驶出提醒音效失败: ${e.message}")
+        }
+    }
+
     private fun handleLaneChangeCompleted() {
         if (lastOvertakeResult == OvertakeResult.PENDING) {
             val now = System.currentTimeMillis()
@@ -306,7 +430,10 @@ class AutoOvertakeManager(
      */
     private fun checkReturnToOriginalLane(
         data: XiaogeVehicleData,
-        overtakeMode: Int
+        overtakeMode: Int,
+        currentLane: Int,
+        totalLanes: Int,
+        laneReminder: String?
     ): OvertakeStatusData? {
         if (!checkReturnConditions(data)) return null
         
@@ -316,7 +443,8 @@ class AutoOvertakeManager(
             Log.i(TAG, "🔄 返回原车道: $returnDirection")
             resetLaneMemory()
         }
-        return createOvertakeStatus(data, "返回原车道", false, returnDirection)
+        return createOvertakeStatus(data, "返回原车道", false, returnDirection, 
+            currentLane = currentLane, totalLanes = totalLanes, laneReminder = laneReminder)
     }
         
     /**
@@ -325,7 +453,10 @@ class AutoOvertakeManager(
     private fun evaluateOvertakeConditions(
         data: XiaogeVehicleData,
         overtakeMode: Int,
-        roadType: Int?
+        roadType: Int?,
+        currentLane: Int,
+        totalLanes: Int,
+        laneReminder: String?
     ): OvertakeStatusData {
         // 🆕 检查超车操作冷却时间（20秒）
         val now = System.currentTimeMillis()
@@ -340,7 +471,10 @@ class AutoOvertakeManager(
                 false,
                 null,
                 blockingReason = "超车操作冷却中，剩余 $remainingSec 秒",
-                cooldownRemaining = remainingCooldown
+                cooldownRemaining = remainingCooldown,
+                currentLane = currentLane,
+                totalLanes = totalLanes,
+                laneReminder = laneReminder
             )
         }
         
@@ -353,7 +487,11 @@ class AutoOvertakeManager(
         val prerequisites = checkPrerequisites(data, roadType)
         if (prerequisites is CheckResult.Fail) {
             lastOvertakeResult = OvertakeResult.CONDITION_NOT_MET
-            return createOvertakeStatus(data, "监控中", false, null, blockingReason = prerequisites.reason)
+            return createOvertakeStatus(data, "监控中", false, null, 
+                blockingReason = prerequisites.reason,
+                currentLane = currentLane,
+                totalLanes = totalLanes,
+                laneReminder = laneReminder)
         }
         
         // 检查是否需要超车
@@ -361,25 +499,36 @@ class AutoOvertakeManager(
         if (overtakeCheck is CheckResult.Fail) {
             debounceCounter = 0
             lastOvertakeResult = OvertakeResult.CONDITION_NOT_MET
-            return createOvertakeStatus(data, "监控中", false, null, blockingReason = overtakeCheck.reason)
+            return createOvertakeStatus(data, "监控中", false, null, 
+                blockingReason = overtakeCheck.reason,
+                currentLane = currentLane,
+                totalLanes = totalLanes,
+                laneReminder = laneReminder)
         }
         
         // 防抖机制：需要连续3帧满足条件才确认超车，防止误判
         debounceCounter++
         if (debounceCounter < DEBOUNCE_FRAMES) {
-            return createOvertakeStatus(data, "监控中", true, null)
+            return createOvertakeStatus(data, "监控中", true, null,
+                currentLane = currentLane,
+                totalLanes = totalLanes,
+                laneReminder = laneReminder)
         }
         
         // 评估超车方向（已通过3帧验证）
         val decision = checkOvertakeConditions(data)
         if (decision != null) {
-            return handleOvertakeDecision(data, decision, overtakeMode)
+            return handleOvertakeDecision(data, decision, overtakeMode, currentLane, totalLanes, laneReminder)
         } else {
             // 超车方向不可行，重置防抖计数
             debounceCounter = 0
             lastOvertakeResult = OvertakeResult.CONDITION_NOT_MET
             val blockingReason = generateBlockingReason(data)
-            return createOvertakeStatus(data, "监控中", false, null, blockingReason = blockingReason)
+            return createOvertakeStatus(data, "监控中", false, null, 
+                blockingReason = blockingReason,
+                currentLane = currentLane,
+                totalLanes = totalLanes,
+                laneReminder = laneReminder)
         }
     }
     
@@ -389,7 +538,10 @@ class AutoOvertakeManager(
     private fun handleOvertakeDecision(
         data: XiaogeVehicleData,
         decision: OvertakeDecision,
-        overtakeMode: Int
+        overtakeMode: Int,
+        currentLane: Int,
+        totalLanes: Int,
+        laneReminder: String?
     ): OvertakeStatusData {
         val carState = data.carState
         val lead0 = data.modelV2?.lead0
@@ -412,7 +564,10 @@ class AutoOvertakeManager(
             data,
             if (overtakeMode == 2) "准备变道" else "可超车",
             true,
-            decision.direction
+            decision.direction,
+            currentLane = currentLane,
+            totalLanes = totalLanes,
+            laneReminder = laneReminder
         )
     }
     
@@ -777,6 +932,7 @@ class AutoOvertakeManager(
         soundIdRight = soundPool?.load(context, R.raw.right, 1)
         soundIdLeftConfirm = soundPool?.load(context, R.raw.left_confirm, 1)
         soundIdRightConfirm = soundPool?.load(context, R.raw.right_confirm, 1)
+        soundIdGoto = soundPool?.load(context, R.raw.go_to, 1)
     }
     
     /**
@@ -1032,7 +1188,10 @@ class AutoOvertakeManager(
         canOvertake: Boolean,
         lastDirection: String?,
         blockingReason: String? = null,  // 🆕 阻止超车的原因
-        cooldownRemaining: Long? = null  // 🆕 冷却剩余时间（毫秒），如果为null则自动计算
+        cooldownRemaining: Long? = null, // 🆕 冷却剩余时间（毫秒），如果为null则自动计算
+        currentLane: Int = 0,           // 🆕 当前车道
+        totalLanes: Int = 0,            // 🆕 总车道数
+        laneReminder: String? = null    // 🆕 车道提醒
     ): OvertakeStatusData {
         // 🆕 自动计算冷却剩余时间（如果未指定）
         val calculatedCooldown = cooldownRemaining ?: run {
@@ -1053,7 +1212,10 @@ class AutoOvertakeManager(
             canOvertake = canOvertake,
             cooldownRemaining = calculatedCooldown,
             lastDirection = lastDirection ?: lastOvertakeDirection,
-            blockingReason = blockingReason
+            blockingReason = blockingReason,
+            currentLane = currentLane,
+            totalLanes = totalLanes,
+            laneReminder = laneReminder
         )
     }
     
@@ -1093,7 +1255,14 @@ class AutoOvertakeManager(
      * @param roadType 道路类型（高德地图 ROAD_TYPE）。如果为null，则不检查道路类型（向后兼容）
      * @return 如果有待执行变道，返回状态数据；否则返回null
      */
-    private fun checkPendingLaneChange(data: XiaogeVehicleData, overtakeMode: Int, roadType: Int?): OvertakeStatusData? {
+    private fun checkPendingLaneChange(
+        data: XiaogeVehicleData, 
+        overtakeMode: Int, 
+        roadType: Int?,
+        currentLane: Int,
+        totalLanes: Int,
+        laneReminder: String?
+    ): OvertakeStatusData? {
         val pending = pendingLaneChange ?: return null
         
         val now = System.currentTimeMillis()
@@ -1106,7 +1275,10 @@ class AutoOvertakeManager(
                 data,
                 "准备变道 (${remainingSeconds}秒)",
                 true,
-                pending.direction
+                pending.direction,
+                currentLane = currentLane,
+                totalLanes = totalLanes,
+                laneReminder = laneReminder
             )
         }
         
@@ -1122,7 +1294,10 @@ class AutoOvertakeManager(
                 "监控中",
                 false,
                 null,
-                blockingReason = prerequisites.reason
+                blockingReason = prerequisites.reason,
+                currentLane = currentLane,
+                totalLanes = totalLanes,
+                laneReminder = laneReminder
             )
         }
         
@@ -1137,7 +1312,10 @@ class AutoOvertakeManager(
                 "监控中",
                 false,
                 null,
-                blockingReason = overtakeCheck.reason
+                blockingReason = overtakeCheck.reason,
+                currentLane = currentLane,
+                totalLanes = totalLanes,
+                laneReminder = laneReminder
             )
         }
         
@@ -1157,7 +1335,10 @@ class AutoOvertakeManager(
                 "监控中",
                 false,
                 null,
-                blockingReason = reason
+                blockingReason = reason,
+                currentLane = currentLane,
+                totalLanes = totalLanes,
+                laneReminder = laneReminder
             )
         }
         
@@ -1178,7 +1359,8 @@ class AutoOvertakeManager(
         }
         Log.i(TAG, "✅ 执行变道命令: $direction, 原因: ${decision.reason}$logContext")
         
-        return createOvertakeStatus(data, "变道中", false, direction)
+        return createOvertakeStatus(data, "变道中", false, direction, 
+            currentLane = currentLane, totalLanes = totalLanes, laneReminder = laneReminder)
     }
     
     /**
