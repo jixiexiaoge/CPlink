@@ -70,28 +70,34 @@ private fun inferLanePosition(
     roadEdgeLeft: Float,
     roadEdgeRight: Float
 ): VisualLanePositionResult {
-    val defaultLaneWidth = 3.6f
+    val referenceLaneWidth = 3.0f // 3.0m 作为基准车道宽
+    val minLaneWidth = 2.5f       // 低于 2.5m 不算车道
     
     // 1. 推断左侧还有几条车道
-    // 如果 laneWidthLeft > 0，说明左侧至少有一条完整车道
-    // 如果 roadEdgeLeft 很大，可能包含多条车道
     val leftLanes = when {
+        // 如果明确给出的左侧车道宽度小于 2.5m，则不算车道
+        laneWidthLeft > 0.1f && laneWidthLeft < minLaneWidth -> 0
+        
         roadEdgeLeft > 0.5f -> {
-            // 路缘距离包含左侧车道宽度
-            val lanes = Math.round((roadEdgeLeft + (if (laneWidthLeft > 0.5f) defaultLaneWidth else 0f)) / defaultLaneWidth).toInt()
-            Math.max(if (laneWidthLeft > 0.5f) 1 else 0, lanes)
+            // 计算路缘距离内能容纳多少条基准车道，且保证每条至少 2.5m
+            val count = (roadEdgeLeft / referenceLaneWidth).toInt()
+            val recognized = if (laneWidthLeft >= minLaneWidth) 1 else 0
+            Math.max(recognized, count)
         }
-        laneWidthLeft > 0.5f -> 1
+        laneWidthLeft >= minLaneWidth -> 1
         else -> 0
     }
     
     // 2. 推断右侧还有几条车道
     val rightLanes = when {
+        laneWidthRight > 0.1f && laneWidthRight < minLaneWidth -> 0
+        
         roadEdgeRight > 0.5f -> {
-            val lanes = Math.round((roadEdgeRight + (if (laneWidthRight > 0.5f) defaultLaneWidth else 0f)) / defaultLaneWidth).toInt()
-            Math.max(if (laneWidthRight > 0.5f) 1 else 0, lanes)
+            val count = (roadEdgeRight / referenceLaneWidth).toInt()
+            val recognized = if (laneWidthRight >= minLaneWidth) 1 else 0
+            Math.max(recognized, count)
         }
-        laneWidthRight > 0.5f -> 1
+        laneWidthRight >= minLaneWidth -> 1
         else -> 0
     }
     
@@ -376,35 +382,36 @@ fun TopDownVisualization(data: XiaogeVehicleData?, modifier: Modifier = Modifier
                 val height = size.height
                 val centerX = width / 2
                 
-                val defaultLaneWidth = 3.6f
+                val referenceLaneWidth = 3.0f
+                val minLaneWidth = 2.5f
                 
                 // 1. 获取汽车原始比例并计算视觉缩放
                 val intrinsicSize = carPainter.intrinsicSize
                 val carRatio = if (intrinsicSize.height > 0) intrinsicSize.width / intrinsicSize.height else 0.5f
                 
-                // 设定汽车在画布中的高度比例 (40% 画布高度，放大2倍)
-                 val carHeightPx = height * 0.4f 
-                 val carWidthPx = carHeightPx * carRatio
+                // 设定汽车在画布中的高度比例
+                val carHeightPx = height * 0.4f 
+                val carWidthPx = carHeightPx * carRatio
                  
-                 // 设定车道宽度为汽车宽度的 1.2 倍
-                 val visualLaneWidthPx = carWidthPx * 1.2f
+                // 设定中间车道宽度恒定为汽车宽度的 1.2 倍 (指代 3.0m)
+                val visualLaneWidthPx = carWidthPx * 1.2f
                 
-                // 计算物理米到像素的转换比例 (以标准车道宽 3.6m 为基准)
-                val meterToPx = visualLaneWidthPx / defaultLaneWidth
+                // 计算比例因子 (1m = meterToPx 像素)
+                val meterToPx = visualLaneWidthPx / referenceLaneWidth
                 
-                // 2. 计算当前车道边界 (基于视觉车道宽度)
-                // 如果实时数据有效，则按比例缩放，否则使用视觉基准宽度
-                val realLaneWidthLeft = if (laneWidthLeft > 0.5f) laneWidthLeft else (defaultLaneWidth / 2)
-                val realLaneWidthRight = if (laneWidthRight > 0.5f) laneWidthRight else (defaultLaneWidth / 2)
+                // 2. 计算当前车道边界 (中间两条线距离恒定)
+                val curLaneLeftX = centerX - (visualLaneWidthPx / 2)
+                val curLaneRightX = centerX + (visualLaneWidthPx / 2)
                 
-                val curLaneLeftX = centerX - realLaneWidthLeft * meterToPx
-                val curLaneRightX = centerX + realLaneWidthRight * meterToPx
-                
-                // 3. 绘制左侧其他车道
+                // 3. 绘制左侧其他车道 (等比例缩放)
                 val leftLanesCount = lanePos.currentLaneIndex - 1
+                var currentLeftX = curLaneLeftX
                 for (i in 1..leftLanesCount) {
-                    val laneLeftX = curLaneLeftX - i * visualLaneWidthPx
-                    val laneRightX = curLaneLeftX - (i - 1) * visualLaneWidthPx
+                    val physicalWidth = if (i == 1 && laneWidthLeft >= minLaneWidth) laneWidthLeft else referenceLaneWidth
+                    val widthPx = physicalWidth * meterToPx
+                    
+                    val laneLeftX = currentLeftX - widthPx
+                    val laneRightX = currentLeftX
                     
                     // 填充背景
                     drawRect(
@@ -413,7 +420,7 @@ fun TopDownVisualization(data: XiaogeVehicleData?, modifier: Modifier = Modifier
                         size = Size(laneRightX - laneLeftX, height)
                     )
                     
-                    // 绘制左侧车道线（虚线）
+                    // 绘制左侧车道线 (虚线)
                     drawPath(
                         path = Path().apply {
                             moveTo(laneLeftX, 0f)
@@ -425,13 +432,18 @@ fun TopDownVisualization(data: XiaogeVehicleData?, modifier: Modifier = Modifier
                             pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
                         )
                     )
+                    currentLeftX = laneLeftX
                 }
                 
-                // 4. 绘制右侧其他车道
+                // 4. 绘制右侧其他车道 (等比例缩放)
                 val rightLanesCount = lanePos.totalLanes - lanePos.currentLaneIndex
+                var currentRightX = curLaneRightX
                 for (i in 1..rightLanesCount) {
-                    val laneLeftX = curLaneRightX + (i - 1) * visualLaneWidthPx
-                    val laneRightX = curLaneRightX + i * visualLaneWidthPx
+                    val physicalWidth = if (i == 1 && laneWidthRight >= minLaneWidth) laneWidthRight else referenceLaneWidth
+                    val widthPx = physicalWidth * meterToPx
+                    
+                    val laneLeftX = currentRightX
+                    val laneRightX = currentRightX + widthPx
                     
                     // 填充背景
                     drawRect(
@@ -440,7 +452,7 @@ fun TopDownVisualization(data: XiaogeVehicleData?, modifier: Modifier = Modifier
                         size = Size(laneRightX - laneLeftX, height)
                     )
                     
-                    // 绘制右侧车道线（虚线）
+                    // 绘制右侧车道线 (虚线)
                     drawPath(
                         path = Path().apply {
                             moveTo(laneRightX, 0f)
@@ -452,12 +464,13 @@ fun TopDownVisualization(data: XiaogeVehicleData?, modifier: Modifier = Modifier
                             pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
                         )
                     )
+                    currentRightX = laneRightX
                 }
                 
                 // 5. 绘制左路缘 (相对于汽车中心偏移)
                 if (roadEdgeLeft > 0.1f) {
                     val edgeX = centerX - roadEdgeLeft * meterToPx
-                    val edgeWidth = 2.0f * meterToPx // 显示一段路缘宽度
+                    val edgeWidth = 2.0f * meterToPx
                     
                     drawRect(
                         color = Color(0xFF475569).copy(alpha = 0.2f),
@@ -490,7 +503,7 @@ fun TopDownVisualization(data: XiaogeVehicleData?, modifier: Modifier = Modifier
                     )
                 }
                 
-                // 7. 绘制当前车道边界（加粗虚线）
+                // 7. 绘制当前车道边界 (恒定宽度的两条线)
                 drawPath(
                     path = Path().apply {
                         moveTo(curLaneLeftX, 0f)

@@ -63,7 +63,17 @@ class AutoOvertakeManager(
         // 返回原车道参数（方案5）
         private const val MAX_LANE_MEMORY_TIME_MS = 30000L  // 30秒超时
         private const val RETURN_MIN_SPEED_ADVANTAGE_KPH = 8.0f  // 返回需要至少8 km/h速度优势
-        private const val OVERTAKE_COMPLETE_DURATION_MS = 2000L  // 超越完成后等待2秒再返回
+        // 超越完成后等待2秒再返回
+        private const val OVERTAKE_COMPLETE_DURATION_MS = 2000L  
+        
+        // 🆕 驾驶风格常量（性能：E）
+        private const val DRIVING_STYLE_CONSERVATIVE = 0 // 保守
+        private const val DRIVING_STYLE_STANDARD = 1     // 标准
+        private const val DRIVING_STYLE_AGGRESSIVE = 2   // 激进
+        
+        // 🆕 TBT 偏好参数（方案：D）
+        private const val TBT_BIAS_DISTANCE_THRESHOLD = 3000   // 3公里内开始考虑转向偏好
+        private const val TBT_STOP_OVERTAKE_THRESHOLD = 1000   // 1公里内禁止反向超车
         
         // 魔法数字优化
         private const val LANE_CENTER_OFFSET = 1.5f         // 车道中心偏移 (m)
@@ -171,6 +181,7 @@ class AutoOvertakeManager(
         
         private var cachedMinOvertakeSpeedKph: Float? = null
         private var cachedSpeedDiffThresholdKph: Float? = null
+        private var cachedDrivingStyle: Int? = null
         
         fun getOvertakeMode(): Int {
             val now = System.currentTimeMillis()
@@ -190,6 +201,85 @@ class AutoOvertakeManager(
             cachedOvertakeMode = mode
             cachedOvertakeModeTime = now
             return mode
+        }
+
+        /**
+         * 🆕 获取驾驶风格 (E)
+         */
+        fun getDrivingStyle(): Int {
+            cachedDrivingStyle?.let { return it }
+            val style = try {
+                context.getSharedPreferences("CarrotAmap", Context.MODE_PRIVATE)
+                    .getInt("overtake_driving_style", DRIVING_STYLE_STANDARD)
+            } catch (e: Exception) {
+                DRIVING_STYLE_STANDARD
+            }
+            cachedDrivingStyle = style
+            return style
+        }
+        
+        /**
+         * 🆕 获取自适应参数 (E)
+         */
+        fun <T : Number> getAdaptiveParameter(key: String, defaultValue: T): T {
+            val style = getDrivingStyle()
+            return when (key) {
+                "SPEED_DIFF_THRESHOLD" -> {
+                    val base = defaultValue.toFloat()
+                    val adjusted = when (style) {
+                        DRIVING_STYLE_CONSERVATIVE -> base * 1.5f  // 保守模式需要更大速度差 (15km/h)
+                        DRIVING_STYLE_AGGRESSIVE -> base * 0.7f    // 激进模式较小速度差即可超车 (7km/h)
+                        else -> base
+                    }
+                    adjusted as T
+                }
+                "EARLY_OVERTAKE_SPEED_RATIO" -> {
+                    val base = defaultValue.toFloat()
+                    val adjusted = when (style) {
+                        DRIVING_STYLE_CONSERVATIVE -> base * 0.8f  // 只有更慢才提前超车 (64%)
+                        DRIVING_STYLE_AGGRESSIVE -> base * 1.1f    // 接近巡航也提前超车 (88%)
+                        else -> base
+                    }
+                    adjusted.coerceIn(0.5f, 0.95f) as T
+                }
+                "RETURN_MIN_SPEED_ADVANTAGE" -> {
+                    val base = defaultValue.toFloat()
+                    val adjusted = when (style) {
+                        DRIVING_STYLE_CONSERVATIVE -> base * 1.5f  // 保守模式需要更大优势才回位 (12km/h)
+                        DRIVING_STYLE_AGGRESSIVE -> base * 0.5f    // 激进模式少量优势即回位 (4km/h)
+                        else -> base
+                    }
+                    adjusted as T
+                }
+                "MAX_LEAD_DISTANCE" -> {
+                    val base = defaultValue.toFloat()
+                    val adjusted = when (style) {
+                        DRIVING_STYLE_CONSERVATIVE -> base * 0.8f  // 保守模式关注更近的前车
+                        DRIVING_STYLE_AGGRESSIVE -> base * 1.2f    // 激进模式关注更远的前车
+                        else -> base
+                    }
+                    adjusted as T
+                }
+                "MIN_TURN_DIST" -> {
+                    val base = defaultValue.toFloat()
+                    val adjusted = when (style) {
+                        DRIVING_STYLE_CONSERVATIVE -> base * 1.5f  // 保守模式提前 3km 停止超车
+                        DRIVING_STYLE_AGGRESSIVE -> base * 0.7f    // 激进模式提前 1.4km 停止超车
+                        else -> base
+                    }
+                    adjusted as T
+                }
+                "ACTION_COOLDOWN" -> {
+                    val base = defaultValue.toLong()
+                    val adjusted = when (style) {
+                        DRIVING_STYLE_CONSERVATIVE -> (base * 1.5).toLong() // 冷却 30s
+                        DRIVING_STYLE_AGGRESSIVE -> (base * 0.5).toLong()   // 冷却 10s
+                        else -> base
+                    }
+                    adjusted as T
+                }
+                else -> defaultValue
+            }
         }
         
         fun getMinOvertakeSpeedKph(): Float {
@@ -212,7 +302,7 @@ class AutoOvertakeManager(
         fun getSpeedDiffThresholdKph(): Float {
             cachedSpeedDiffThresholdKph?.let { return it }
             
-            val value = try {
+            val rawValue = try {
                 val prefs = context.getSharedPreferences("CarrotAmap", Context.MODE_PRIVATE)
                 val defaultValue = SPEED_DIFF_THRESHOLD * 3.6f
                 val v = prefs.getFloat("overtake_param_speed_diff_kph", defaultValue)
@@ -221,6 +311,9 @@ class AutoOvertakeManager(
                 Log.w(TAG, "⚠️ 获取速度差阈值失败，使用默认值10: ${e.message}")
                 SPEED_DIFF_THRESHOLD * 3.6f
             }
+            
+            // 🆕 应用自适应参数 (E)
+            val value = getAdaptiveParameter("SPEED_DIFF_THRESHOLD", rawValue)
             
             cachedSpeedDiffThresholdKph = value
             return value
@@ -279,7 +372,7 @@ class AutoOvertakeManager(
         if (returnCheck != null) return returnCheck
         
         // 8. 评估超车条件并执行决策
-        return evaluateOvertakeConditions(data, overtakeMode, roadType, currentLane, totalLanes, laneReminder)
+        return evaluateOvertakeConditions(data, overtakeMode, roadType, currentLane, totalLanes, laneReminder, tbtMainText)
     }
     
     /**
@@ -333,25 +426,30 @@ class AutoOvertakeManager(
         val roadEdgeLeft = meta.distanceToRoadEdgeLeft
         val roadEdgeRight = meta.distanceToRoadEdgeRight
         
-        val defaultLaneWidth = 3.6f
+        val referenceLaneWidth = 3.0f // 3.0m 作为基准车道宽
+        val minLaneWidth = 2.5f       // 低于 2.5m 不算车道
         
         // 1. 推断左侧还有几条车道
         val leftLanes = when {
+            laneWidthLeft > 0.1f && laneWidthLeft < minLaneWidth -> 0
             roadEdgeLeft > 0.5f -> {
-                val lanes = Math.round((roadEdgeLeft + (if (laneWidthLeft > 0.5f) defaultLaneWidth else 0f)) / defaultLaneWidth).toInt()
-                Math.max(if (laneWidthLeft > 0.5f) 1 else 0, lanes)
+                val count = (roadEdgeLeft / referenceLaneWidth).toInt()
+                val recognized = if (laneWidthLeft >= minLaneWidth) 1 else 0
+                Math.max(recognized, count)
             }
-            laneWidthLeft > 0.5f -> 1
+            laneWidthLeft >= minLaneWidth -> 1
             else -> 0
         }
         
         // 2. 推断右侧还有几条车道
         val rightLanes = when {
+            laneWidthRight > 0.1f && laneWidthRight < minLaneWidth -> 0
             roadEdgeRight > 0.5f -> {
-                val lanes = Math.round((roadEdgeRight + (if (laneWidthRight > 0.5f) defaultLaneWidth else 0f)) / defaultLaneWidth).toInt()
-                Math.max(if (laneWidthRight > 0.5f) 1 else 0, lanes)
+                val count = (roadEdgeRight / referenceLaneWidth).toInt()
+                val recognized = if (laneWidthRight >= minLaneWidth) 1 else 0
+                Math.max(recognized, count)
             }
-            laneWidthRight > 0.5f -> 1
+            laneWidthRight >= minLaneWidth -> 1
             else -> 0
         }
         
@@ -456,13 +554,16 @@ class AutoOvertakeManager(
         roadType: Int?,
         currentLane: Int,
         totalLanes: Int,
-        laneReminder: String?
+        laneReminder: String?,
+        tbtMainText: String?
     ): OvertakeStatusData {
-        // 🆕 检查超车操作冷却时间（20秒）
+        // 🆕 检查超车操作冷却时间 (🆕 自适应冷却: E)
         val now = System.currentTimeMillis()
         val timeSinceLastAction = now - lastOvertakeActionTime
-        if (lastOvertakeActionTime > 0 && timeSinceLastAction < OVERTAKE_ACTION_COOLDOWN_MS) {
-            val remainingCooldown = OVERTAKE_ACTION_COOLDOWN_MS - timeSinceLastAction
+        val adaptiveCooldown = config.getAdaptiveParameter("ACTION_COOLDOWN", OVERTAKE_ACTION_COOLDOWN_MS)
+        
+        if (lastOvertakeActionTime > 0 && timeSinceLastAction < adaptiveCooldown) {
+            val remainingCooldown = adaptiveCooldown - timeSinceLastAction
             val remainingSec = String.format("%.1f", remainingCooldown / 1000.0)
             logThrottled("cooldown", "⏱️ 超车冷却中，剩余 $remainingSec 秒", Log.DEBUG)
             return createOvertakeStatus(
@@ -476,6 +577,18 @@ class AutoOvertakeManager(
                 totalLanes = totalLanes,
                 laneReminder = laneReminder
             )
+        }
+        
+        // 🆕 检查 TBT 方向偏好 (D)
+        val tbtBiasDirection = checkTbtDirectionBias(data, tbtMainText)
+        if (tbtBiasDirection != null && data.tbtDist > 0 && data.tbtDist < TBT_STOP_OVERTAKE_THRESHOLD) {
+            // 如果距离转向点已经非常近（1公里内），且该偏好方向与当前可能的超车方向冲突，则禁止超车
+            logThrottled("tbt_stop", "🛑 接近转向点 (${data.tbtDist}m)，禁止反向变道以保证安全驶出", Log.WARN)
+            return createOvertakeStatus(data, "监控中", false, null,
+                blockingReason = "接近转向点，禁止超车",
+                currentLane = currentLane,
+                totalLanes = totalLanes,
+                laneReminder = laneReminder)
         }
         
         // 如果有待执行的变道，检查条件是否仍满足
@@ -516,7 +629,25 @@ class AutoOvertakeManager(
         }
         
         // 评估超车方向（已通过3帧验证）
-        val decision = checkOvertakeConditions(data)
+        var decision = checkOvertakeConditions(data)
+        
+        // 🆕 应用 TBT 偏好权重 (D)
+        if (decision != null && tbtBiasDirection != null && decision.direction != tbtBiasDirection) {
+            // 如果当前决策方向与 TBT 偏好方向相反，则根据距离动态调整抑制力度
+            val vEgo = data.carState?.vEgo ?: 0f
+            val vLead = data.modelV2?.lead0?.v ?: 0f
+            val speedDiff = (vEgo - vLead) * 3.6f
+            
+            // 距离越近，要求的速度差越高（3km 时要求 15km/h，1km 时要求 40km/h）
+            val distRatio = (3000f - data.tbtDist.coerceIn(1000, 3000).toFloat()) / 2000f // 0.0 (3km) to 1.0 (1km)
+            val requiredSpeedDiff = 15f + distRatio * 25f 
+            
+            if (speedDiff < requiredSpeedDiff) {
+                Log.i(TAG, "⚖️ TBT 偏好抑制: 目标 $tbtBiasDirection, 距离 ${data.tbtDist}m, 要求速度差 ${requiredSpeedDiff.toInt()}km/h (当前 ${speedDiff.toInt()}km/h), 抑制反向变道")
+                decision = null
+            }
+        }
+
         if (decision != null) {
             return handleOvertakeDecision(data, decision, overtakeMode, currentLane, totalLanes, laneReminder)
         } else {
@@ -681,8 +812,9 @@ class AutoOvertakeManager(
             }
         }
         
-        // 1. 🆕 检查转弯距离：如果距离转弯点小于2000米，禁止超车
-        if (data.tbtDist > 0 && data.tbtDist < MIN_TURN_DIST) {
+        // 1. 🆕 检查转弯距离：如果距离转弯点小于2000米，禁止超车 (🆕 自适应距离: E)
+        val adaptiveMinTurnDist = config.getAdaptiveParameter("MIN_TURN_DIST", MIN_TURN_DIST.toFloat()).toInt()
+        if (data.tbtDist > 0 && data.tbtDist < adaptiveMinTurnDist) {
             return CheckResult.Fail("接近转弯点 (< ${data.tbtDist}m)")
         }
         
@@ -692,9 +824,10 @@ class AutoOvertakeManager(
             return CheckResult.Fail("变道中")
         }
         
-        // 3. 前车存在且距离较近（快速失败）
+        // 3. 前车存在且距离较近（快速失败） (🆕 自适应距离: E)
         val lead0 = modelV2.lead0
-        if (lead0 == null || lead0.x >= MAX_LEAD_DISTANCE || lead0.prob < 0.5f) {
+        val adaptiveMaxLeadDist = config.getAdaptiveParameter("MAX_LEAD_DISTANCE", MAX_LEAD_DISTANCE)
+        if (lead0 == null || lead0.x >= adaptiveMaxLeadDist || lead0.prob < 0.5f) {
             return CheckResult.Fail("前车距离过远或置信度不足")
         }
         
@@ -952,9 +1085,10 @@ class AutoOvertakeManager(
         // 条件1：前车最低速度检查（避免堵车）
         if (leadSpeedKph < EARLY_OVERTAKE_MIN_LEAD_SPEED_KPH) return false
         
-        // 条件2：前车速度 ≤ 80% 本车速度
+        // 条件2：前车速度 ≤ 80% 本车速度（🆕 使用自适应比例: E）
         val speedRatio = if (vEgoKph > 0.1f) leadSpeedKph / vEgoKph else 1.0f
-        if (speedRatio > EARLY_OVERTAKE_SPEED_RATIO) return false
+        val adaptiveRatio = config.getAdaptiveParameter("EARLY_OVERTAKE_SPEED_RATIO", EARLY_OVERTAKE_SPEED_RATIO)
+        if (speedRatio > adaptiveRatio) return false
         
         // 条件3：速度差 ≥ 20 km/h
         val speedDiff = vEgoKph - leadSpeedKph
@@ -1112,9 +1246,29 @@ class AutoOvertakeManager(
             lead0.v * 3.6f
         }
         
-        // 需要至少8 km/h的速度优势
+        // 需要至少8 km/h的速度优势（🆕 使用自适应阈值: B + E）
+        val baseAdvantage = RETURN_MIN_SPEED_ADVANTAGE_KPH
+        val adaptiveAdvantage = config.getAdaptiveParameter("RETURN_MIN_SPEED_ADVANTAGE", baseAdvantage)
+        
+        // 🆕 动态调整：如果在超车道时间过长，逐步降低返回门槛 (B)
+        val timeInOvertakeLane = if (laneMemoryStartTime > 0) System.currentTimeMillis() - laneMemoryStartTime else 0L
+        val timeBonus = when {
+            timeInOvertakeLane > 30000L -> 10.0f // 超过30秒，大幅降低门槛
+            timeInOvertakeLane > 15000L -> {
+                // 15秒到30秒之间，从 2km/h 线性增加到 10km/h
+                2.0f + (timeInOvertakeLane - 15000f) / 15000f * 8.0f
+            }
+            else -> 0f
+        }
+        
+        val finalThreshold = (adaptiveAdvantage - timeBonus).coerceAtLeast(1.0f) // 最低保留 1km/h 优势
         val speedAdvantage = targetSpeed - currentSpeedExpected
-        return speedAdvantage >= RETURN_MIN_SPEED_ADVANTAGE_KPH
+        
+        if (speedAdvantage < finalThreshold) {
+            // logThrottled("return_eff", "⏳ 返回效率不足: 优势 ${speedAdvantage.toInt()}km/h < 阈值 ${finalThreshold.toInt()}km/h", Log.DEBUG)
+            return false
+        }
+        return true
     }
     
     /**
@@ -1390,7 +1544,21 @@ class AutoOvertakeManager(
             else -> "左右车道均不可用"
         }
     }
-    
+
+    /**
+     * 🆕 检查 TBT 方向偏好 (D)
+     * 根据导航文本判断接下来的走向
+     */
+    private fun checkTbtDirectionBias(data: XiaogeVehicleData, tbtMainText: String?): String? {
+        if (tbtMainText == null || data.tbtDist <= 0 || data.tbtDist > TBT_BIAS_DISTANCE_THRESHOLD) return null
+        
+        return when {
+            tbtMainText.contains("左") -> "LEFT"
+            tbtMainText.contains("右") || tbtMainText.contains("出口") || tbtMainText.contains("驶出") -> "RIGHT"
+            else -> null
+        }
+    }
+
     /**
      * 获取道路类型描述（内部使用）
      * @param roadType 道路类型（高德地图 ROAD_TYPE）
