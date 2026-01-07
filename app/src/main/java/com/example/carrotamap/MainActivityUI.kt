@@ -38,6 +38,7 @@ import com.example.carrotamap.ui.components.LaneIconHelper
 import kotlinx.coroutines.delay
 import kotlin.math.abs
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.scale
 
 /**
  * MainActivity UI组件管理类
@@ -276,7 +277,7 @@ class MainActivityUI(
                 ) {
                     // 🆕 详细信息显示区域（用户类型 3, 4 或 0先锋用户 显示）
                     if (userType == 3 || userType == 4 || userType == 0) {
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(0.dp))
                         VehicleLaneDetailsSection(
                             core = core,
                             carrotManFields = carrotManFields
@@ -294,16 +295,16 @@ class MainActivityUI(
                         xiaogeData = data  // 🆕 传递数据，用于显示序号和时间
                     )
                     
-                    // 🆕 蓝牙控制卡片
-                    Spacer(modifier = Modifier.height(8.dp))
+                    // 🆕 蓝牙控制卡片 (精简间距)
+                    Spacer(modifier = Modifier.height(4.dp))
                     
                     val bluetoothHelper = core.getBluetoothHelperOrNull()
                     if (bluetoothHelper != null) {
                         BluetoothControlCard(bluetoothHelper)
                     }
                     
-                    // 添加底部安全间距
-                    Spacer(modifier = Modifier.height(6.dp))
+                    // 底部间距减小
+                    Spacer(modifier = Modifier.height(4.dp))
                 }
             }
             
@@ -722,13 +723,12 @@ class MainActivityUI(
     }
     
     /**
-     * 🆕 增强型蓝牙控制卡片
+     * 🆕 增强型蓝牙控制卡片 - 精简美化版
      */
     @Composable
     private fun BluetoothControlCard(bluetoothHelper: BluetoothHelper) {
         val connectionState by bluetoothHelper.connectionState.collectAsState()
         val connectedDeviceName by bluetoothHelper.connectedDeviceName.collectAsState()
-        val scannedDevices by bluetoothHelper.scannedDevices.collectAsState()
         val isScanning by bluetoothHelper.isScanning.collectAsState()
         
         var showDeviceListDialog by remember { mutableStateOf(false) }
@@ -756,104 +756,111 @@ class MainActivityUI(
 
         Card(
             modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-            shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
+            colors = CardDefaults.cardColors(containerColor = VehicleLaneUIConstants.CARD_BACKGROUND.copy(alpha = 0.85f)),
+            shape = RoundedCornerShape(12.dp),
+            border = androidx.compose.foundation.BorderStroke(0.5.dp, Color.White.copy(alpha = 0.1f))
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Icon(
-                                imageVector = when (connectionState) {
-                                    BluetoothState.CONNECTED -> Icons.Default.BluetoothConnected
-                                    BluetoothState.CONNECTING, BluetoothState.AUTO_CONNECTING -> Icons.AutoMirrored.Filled.BluetoothSearching
-                                    else -> Icons.Default.Bluetooth
-                                },
-                                contentDescription = "蓝牙",
-                                tint = when (connectionState) {
-                                    BluetoothState.CONNECTED -> Color(0xFF3B82F6)
-                                    BluetoothState.CONNECTING, BluetoothState.AUTO_CONNECTING -> Color(0xFFF59E0B)
-                                    else -> Color.Gray
-                                },
-                                modifier = Modifier.size(24.dp)
-                            )
-                            if (connectionState == BluetoothState.CONNECTING || connectionState == BluetoothState.AUTO_CONNECTING) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(32.dp),
-                                    color = Color(0xFFF59E0B),
-                                    strokeWidth = 2.dp
-                                )
-                            }
-                        }
-                        
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Column {
-                            Text(
-                                text = "蓝牙控制器",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF1E293B)
-                            )
-                            Text(
-                                text = when (connectionState) {
-                                    BluetoothState.CONNECTED -> "已连接: ${connectedDeviceName ?: "未知"}"
-                                    BluetoothState.CONNECTING -> "正在连接..."
-                                    BluetoothState.AUTO_CONNECTING -> "自动连接中..."
-                                    BluetoothState.DISCONNECTED -> "未连接"
-                                },
-                                fontSize = 12.sp,
-                                color = when (connectionState) {
-                                    BluetoothState.CONNECTED -> Color(0xFF10B981)
-                                    BluetoothState.CONNECTING, BluetoothState.AUTO_CONNECTING -> Color(0xFFF59E0B)
-                                    else -> Color(0xFF94A3B8)
-                                }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 10.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // 左侧：图标与状态
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                    Box(contentAlignment = Alignment.Center, modifier = Modifier.size(28.dp)) {
+                        Icon(
+                            imageVector = when (connectionState) {
+                                BluetoothState.CONNECTED -> Icons.Default.BluetoothConnected
+                                BluetoothState.CONNECTING, BluetoothState.AUTO_CONNECTING -> Icons.AutoMirrored.Filled.BluetoothSearching
+                                else -> Icons.Default.Bluetooth
+                            },
+                            contentDescription = "蓝牙",
+                            tint = when (connectionState) {
+                                BluetoothState.CONNECTED -> Color(0xFF3B82F6)
+                                BluetoothState.CONNECTING, BluetoothState.AUTO_CONNECTING -> Color(0xFFF59E0B)
+                                else -> Color(0xFF94A3B8)
+                            },
+                            modifier = Modifier.size(20.dp)
+                        )
+                        if (connectionState == BluetoothState.CONNECTING || connectionState == BluetoothState.AUTO_CONNECTING) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(28.dp),
+                                color = Color(0xFFF59E0B),
+                                strokeWidth = 1.5.dp
                             )
                         }
                     }
                     
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        if (connectionState == BluetoothState.DISCONNECTED) {
-                            IconButton(
-                                onClick = {
-                                    if (bluetoothHelper.hasPermissions()) {
-                                        bluetoothHelper.startScan()
-                                        showDeviceListDialog = true
-                                    } else {
-                                        permissionLauncher.launch(AppConstants.Permissions.BLUETOOTH_PERMISSIONS)
-                                    }
-                                }
-                            ) {
-                                Icon(Icons.Default.Refresh, contentDescription = "刷新", tint = Color(0xFF3B82F6))
-                            }
-                        }
-                        
-                        Switch(
-                            checked = connectionState != BluetoothState.DISCONNECTED,
-                            onCheckedChange = { checked ->
-                                if (checked) {
-                                    if (bluetoothHelper.hasPermissions()) {
-                                        bluetoothHelper.startScan()
-                                        showDeviceListDialog = true
-                                    } else {
-                                        permissionLauncher.launch(AppConstants.Permissions.BLUETOOTH_PERMISSIONS)
-                                    }
-                                } else {
-                                    bluetoothHelper.disconnect()
-                                    showDeviceListDialog = false
-                                }
-                            }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Column {
+                        Text(
+                            text = "蓝牙控制器",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                        Text(
+                            text = when (connectionState) {
+                                BluetoothState.CONNECTED -> "已连接: ${connectedDeviceName ?: "未知"}"
+                                BluetoothState.CONNECTING -> "正在连接..."
+                                BluetoothState.AUTO_CONNECTING -> "自动连接中..."
+                                BluetoothState.DISCONNECTED -> "未连接"
+                            },
+                            fontSize = 10.sp,
+                            color = when (connectionState) {
+                                BluetoothState.CONNECTED -> Color(0xFF10B981)
+                                BluetoothState.CONNECTING, BluetoothState.AUTO_CONNECTING -> Color(0xFFF59E0B)
+                                else -> Color(0xFF94A3B8)
+                            },
+                            maxLines = 1,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                         )
                     }
+                }
+                
+                // 右侧：控制按钮
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    if (connectionState == BluetoothState.DISCONNECTED) {
+                        IconButton(
+                            modifier = Modifier.size(32.dp),
+                            onClick = {
+                                if (bluetoothHelper.hasPermissions()) {
+                                    bluetoothHelper.startScan()
+                                    showDeviceListDialog = true
+                                } else {
+                                    permissionLauncher.launch(AppConstants.Permissions.BLUETOOTH_PERMISSIONS)
+                                }
+                            }
+                        ) {
+                            Icon(Icons.Default.Refresh, contentDescription = "刷新", tint = Color(0xFF3B82F6), modifier = Modifier.size(18.dp))
+                        }
+                    }
+                    
+                    Switch(
+                        checked = connectionState != BluetoothState.DISCONNECTED,
+                        onCheckedChange = { checked ->
+                            if (checked) {
+                                if (bluetoothHelper.hasPermissions()) {
+                                    bluetoothHelper.startScan()
+                                    showDeviceListDialog = true
+                                } else {
+                                    permissionLauncher.launch(AppConstants.Permissions.BLUETOOTH_PERMISSIONS)
+                                }
+                            } else {
+                                bluetoothHelper.disconnect()
+                                showDeviceListDialog = false
+                            }
+                        },
+                        modifier = Modifier.scale(0.7f)
+                    )
                 }
             }
         }
         
-        // 设备选择对话框
+        // 设备选择对话框 (保持原样，因为它不占常驻空间)
+        val scannedDevices by bluetoothHelper.scannedDevices.collectAsState()
         if (showDeviceListDialog && connectionState == BluetoothState.DISCONNECTED) {
             AlertDialog(
                 onDismissRequest = { 
@@ -1150,21 +1157,16 @@ private fun VehicleLaneDetailsSection(
     
     val context = LocalContext.current
     
-    Column(
+    // 1. NOA 战术引导卡片 (移除冗余表格，仅保留核心面板)
+    VehicleLaneDataInfoPanel(
+        data = currentData,
+        dataAge = dataAge,
+        isDataStale = isDataStale,
+        carrotManFields = carrotManFields,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-        // 数据信息面板（13个检查条件的表格）
-        VehicleLaneDataInfoPanel(
-            data = currentData,
-            dataAge = dataAge,
-            isDataStale = isDataStale,
-            carrotManFields = carrotManFields,
-            modifier = Modifier.fillMaxWidth()
-        )
-    }
+            .padding(horizontal = 0.dp)
+    )
 }
 
 /**
@@ -1569,11 +1571,12 @@ private fun VehicleConditionsTable(
 
     // 检查条件表格
     Card(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth().padding(0.dp),
         colors = CardDefaults.cardColors(
-            containerColor = VehicleLaneUIConstants.CARD_BACKGROUND
+            containerColor = VehicleLaneUIConstants.CARD_BACKGROUND.copy(alpha = 0.85f)
         ),
-        shape = VehicleLaneUIConstants.CARD_SHAPE
+        shape = RoundedCornerShape(0.dp),
+        border = null
     ) {
         Column(
             modifier = Modifier.fillMaxWidth(),
@@ -1719,291 +1722,87 @@ private fun VehicleLaneDataInfoPanel(
             hintInfo.detail != blockingReason && 
             !hintInfo.detail.contains(blockingReason)
         
-        // 🆕 NOA 战术引导卡片 - 增强版 (集成超车提示)
-        if (carrotManFields != null && (
-            carrotManFields.exitNameInfo.isNotEmpty() || 
-            carrotManFields.sapaName.isNotEmpty() || 
-            carrotManFields.roundAboutNum > 0 ||
-            carrotManFields.viaPOIdistance > 0 ||
-            carrotManFields.segAssistantAction > 0 ||
-            carrotManFields.nSdiBlockType == 2 ||
-            hintInfo.title != "监控中" || 
-            blockingReason != null
-        )) {
+        // 🆕 NOA 战术引导卡片 - 精简美化版 (始终显示)
+        if (carrotManFields != null) {
             Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = VehicleLaneUIConstants.CARD_BACKGROUND),
-                shape = VehicleLaneUIConstants.CARD_SHAPE
+                modifier = Modifier.fillMaxWidth().padding(0.dp),
+                colors = CardDefaults.cardColors(containerColor = VehicleLaneUIConstants.CARD_BACKGROUND.copy(alpha = 0.85f)),
+                shape = RoundedCornerShape(0.dp),
+                border = null
             ) {
                 Column(
-                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                    modifier = Modifier.padding(6.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    // 标题栏
+                    // 1. 顶部状态与进度行 (极简)
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            text = "🎯 NOA 战术引导",
-                            fontSize = VehicleLaneUIConstants.TEXT_SIZE_TITLE,
-                            color = VehicleLaneUIConstants.COLOR_INFO,
-                            fontWeight = FontWeight.ExtraBold
-                        )
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            // 🆕 实时车道显示
-                            if (data?.overtakeStatus != null && data.overtakeStatus.totalLanes > 0) {
-                                val laneStatus = data.overtakeStatus
-                                Text(
-                                    text = "🛣️ 第 ${laneStatus.currentLane} / ${laneStatus.totalLanes} 车道",
-                                    fontSize = 8.sp,
-                                    color = Color.White,
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier
-                                        .background(Color.White.copy(alpha = 0.1f), RoundedCornerShape(4.dp))
-                                        .padding(horizontal = 6.dp, vertical = 2.dp)
-                                )
-                            }
-
-                            // 🆕 超车状态提示 (集成到标题栏)
-                            if (hintInfo.title != "监控中" || blockingReason != null) {
-                                Text(
-                                    text = "${hintInfo.icon} ${hintInfo.title}",
-                                    fontSize = 8.sp,
-                                    color = hintInfo.titleColor,
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier
-                                        .background(hintInfo.cardColor.copy(alpha = 0.2f), RoundedCornerShape(4.dp))
-                                        .border(0.5.dp, hintInfo.cardColor.copy(alpha = 0.5f), RoundedCornerShape(4.dp))
-                                        .padding(horizontal = 6.dp, vertical = 2.dp)
-                                )
-                            } else {
-                                Text(
-                                    text = "👁️ 监控中",
-                                    fontSize = 8.sp,
-                                    color = Color(0xFF94A3B8),
-                                    modifier = Modifier
-                                        .background(Color(0xFF94A3B8).copy(alpha = 0.1f), RoundedCornerShape(4.dp))
-                                        .padding(horizontal = 6.dp, vertical = 2.dp)
-                                )
-                            }
-
-                            // NOA 状态
-                            if (carrotManFields.nextRoadNOAOrNot) {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            // NOA 状态徽标
+                            Box(
+                                modifier = Modifier
+                                    .background(
+                                        if (carrotManFields.nextRoadNOAOrNot) VehicleLaneUIConstants.COLOR_SUCCESS.copy(alpha = 0.2f)
+                                        else Color.White.copy(alpha = 0.1f),
+                                        RoundedCornerShape(4.dp)
+                                    )
+                                    .border(
+                                        0.5.dp,
+                                        if (carrotManFields.nextRoadNOAOrNot) VehicleLaneUIConstants.COLOR_SUCCESS else Color.White.copy(alpha = 0.2f),
+                                        RoundedCornerShape(4.dp)
+                                    )
+                                    .padding(horizontal = 4.dp, vertical = 1.dp)
+                            ) {
                                 Text(
                                     text = "NOA",
                                     fontSize = 8.sp,
-                                    color = Color.White,
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier
-                                        .background(VehicleLaneUIConstants.COLOR_SUCCESS, RoundedCornerShape(4.dp))
-                                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                                    color = if (carrotManFields.nextRoadNOAOrNot) VehicleLaneUIConstants.COLOR_SUCCESS else Color(0xFF94A3B8),
+                                    fontWeight = FontWeight.Black
                                 )
                             }
-                        }
-                    }
 
-                    // 🆕 路线总剩余时间与进度 (合并到一行)
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            if (carrotManFields.routeRemainTimeAuto.isNotEmpty()) {
-                                Text(
-                                    text = "🕒 ${carrotManFields.routeRemainTimeAuto}",
-                                    fontSize = 9.sp,
-                                    color = Color.White,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                androidx.compose.foundation.layout.Spacer(modifier = Modifier.width(8.dp))
-                            }
-                            if (carrotManFields.routeRemainDisAuto.isNotEmpty()) {
-                                Text(
-                                    text = "🏁 ${carrotManFields.routeRemainDisAuto}",
-                                    fontSize = 9.sp,
-                                    color = Color(0xFF94A3B8)
-                                )
-                            }
-                            
-                            // 🆕 路缘距离信息整合
-                            val meta = data?.modelV2?.meta
-                            val roadEdgeLeft = meta?.distanceToRoadEdgeLeft ?: 0f
-                            val roadEdgeRight = meta?.distanceToRoadEdgeRight ?: 0f
-                            
-                            if (roadEdgeLeft > 0 || roadEdgeRight > 0) {
-                                androidx.compose.foundation.layout.Spacer(modifier = Modifier.width(12.dp))
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                                ) {
-                                    if (roadEdgeLeft > 0) {
-                                        Text(
-                                            text = "L: ${String.format("%.1f", roadEdgeLeft)}m",
-                                            fontSize = 8.sp,
-                                            color = Color(0xFF94A3B8),
-                                            modifier = Modifier
-                                                .background(Color.White.copy(alpha = 0.05f), RoundedCornerShape(2.dp))
-                                                .padding(horizontal = 4.dp, vertical = 1.dp)
-                                        )
-                                    }
-                                    if (roadEdgeRight > 0) {
-                                        Text(
-                                            text = "R: ${String.format("%.1f", roadEdgeRight)}m",
-                                            fontSize = 8.sp,
-                                            color = Color(0xFF94A3B8),
-                                            modifier = Modifier
-                                                .background(Color.White.copy(alpha = 0.05f), RoundedCornerShape(2.dp))
-                                                .padding(horizontal = 4.dp, vertical = 1.dp)
-                                        )
-                                    }
-                                }
-                            }
-                        }
-
-                        if (carrotManFields.nextRoadProgressPercent >= 0) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Box(
-                                    modifier = Modifier
-                                        .width(40.dp)
-                                        .height(4.dp)
-                                        .background(Color(0xFF334155), RoundedCornerShape(2.dp))
-                                ) {
+                            // 进度条 (紧凑型)
+                            if (carrotManFields.nextRoadProgressPercent >= 0) {
+                                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                                     Box(
                                         modifier = Modifier
-                                            .fillMaxWidth(carrotManFields.nextRoadProgressPercent / 100f)
-                                            .fillMaxHeight()
-                                            .background(VehicleLaneUIConstants.COLOR_INFO, RoundedCornerShape(2.dp))
-                                    )
-                                }
-                                Text(
-                                    text = " ${carrotManFields.nextRoadProgressPercent}%",
-                                    fontSize = 8.sp,
-                                    color = VehicleLaneUIConstants.COLOR_INFO,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                        }
-                    }
-
-                    // 🆕 超车详情、阻止原因与车道提醒 (更明显的提示)
-                    val laneReminder = data?.overtakeStatus?.laneReminder
-                    if (hintInfo.title != "监控中" || blockingReason != null || cooldownText != null || laneReminder != null) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(
-                                    if (laneReminder != null) VehicleLaneUIConstants.COLOR_WARNING.copy(alpha = 0.15f)
-                                    else hintInfo.cardColor.copy(alpha = 0.15f), 
-                                    RoundedCornerShape(6.dp)
-                                )
-                                .border(
-                                    0.5.dp, 
-                                    if (laneReminder != null) VehicleLaneUIConstants.COLOR_WARNING.copy(alpha = 0.3f)
-                                    else hintInfo.cardColor.copy(alpha = 0.3f), 
-                                    RoundedCornerShape(6.dp)
-                                )
-                                .padding(horizontal = 8.dp, vertical = 6.dp),
-                            horizontalArrangement = Arrangement.spacedBy(6.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = when {
-                                    laneReminder != null -> "📢 $laneReminder"
-                                    blockingReason != null -> "🚫 $blockingReason"
-                                    cooldownText != null -> "⏱️ $cooldownText"
-                                    else -> "ℹ️ ${hintInfo.detail}"
-                                },
-                                fontSize = 9.sp,
-                                color = if (laneReminder != null) Color(0xFFFBBF24) else if (blockingReason != null) Color(0xFFFCA5A5) else Color.White,
-                                fontWeight = if (laneReminder != null || blockingReason != null) FontWeight.Bold else FontWeight.Medium,
-                                maxLines = 2,
-                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
-                            )
-                        }
-                    }
-
-                    // 🆕 区间测速信息
-                    if (carrotManFields.nSdiBlockType == 2) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(VehicleLaneUIConstants.COLOR_DANGER.copy(alpha = 0.1f), RoundedCornerShape(6.dp))
-                                .border(0.5.dp, VehicleLaneUIConstants.COLOR_DANGER.copy(alpha = 0.3f), RoundedCornerShape(6.dp))
-                                .padding(horizontal = 8.dp, vertical = 6.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column {
-                                Text("📏 区间测速", fontSize = 8.sp, color = VehicleLaneUIConstants.COLOR_DANGER)
-                                Row(verticalAlignment = Alignment.Bottom) {
+                                            .width(30.dp)
+                                            .height(3.dp)
+                                            .background(Color.White.copy(alpha = 0.1f), RoundedCornerShape(1.5.dp))
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxWidth(carrotManFields.nextRoadProgressPercent / 100f)
+                                                .fillMaxHeight()
+                                                .background(VehicleLaneUIConstants.COLOR_INFO, RoundedCornerShape(1.5.dp))
+                                        )
+                                    }
                                     Text(
-                                        text = "${carrotManFields.nSdiDist}m",
-                                        fontSize = 11.sp,
-                                        color = Color.White,
-                                        fontWeight = FontWeight.ExtraBold
-                                    )
-                                    androidx.compose.foundation.layout.Spacer(modifier = Modifier.width(4.dp))
-                                    Text(
-                                        text = "/ ${carrotManFields.nSdiBlockDist}m",
+                                        text = "${carrotManFields.nextRoadProgressPercent}%",
                                         fontSize = 8.sp,
-                                        color = Color(0xFF94A3B8)
-                                    )
-                                }
-                            }
-                            Column(horizontalAlignment = Alignment.End) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text("限速 ", fontSize = 7.sp, color = Color(0xFF94A3B8))
-                                    Text(
-                                        text = "${carrotManFields.nSdiBlockSpeed}",
-                                        fontSize = 9.sp,
-                                        color = Color.White,
+                                        color = VehicleLaneUIConstants.COLOR_INFO,
                                         fontWeight = FontWeight.Bold
                                     )
                                 }
-                                if (carrotManFields.nSdiAverageSpeed > 0) {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Text("平均 ", fontSize = 7.sp, color = Color(0xFF94A3B8))
-                                        Text(
-                                            text = "${carrotManFields.nSdiAverageSpeed}",
-                                            fontSize = 9.sp,
-                                            color = if (carrotManFields.nSdiAverageSpeed > carrotManFields.nSdiBlockSpeed) VehicleLaneUIConstants.COLOR_DANGER else VehicleLaneUIConstants.COLOR_SUCCESS,
-                                            fontWeight = FontWeight.Bold
-                                        )
-                                    }
-                                }
                             }
                         }
-                    }
 
-                    // 途径点信息
-                    if (carrotManFields.viaPOIdistance > 0) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(Color(0xFF6366F1).copy(alpha = 0.1f), RoundedCornerShape(6.dp))
-                                .border(0.5.dp, Color(0xFF6366F1).copy(alpha = 0.3f), RoundedCornerShape(6.dp))
-                                .padding(horizontal = 8.dp, vertical = 6.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column {
-                                Text("📍 途径点", fontSize = 8.sp, color = Color(0xFF818CF8))
+                        // 剩余时间/距离
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            if (carrotManFields.routeRemainTimeAuto.isNotEmpty()) {
                                 Text(
-                                    text = "${carrotManFields.viaPOIdistance}m",
-                                    fontSize = 11.sp,
+                                    text = carrotManFields.routeRemainTimeAuto,
+                                    fontSize = 9.sp,
                                     color = Color.White,
                                     fontWeight = FontWeight.Bold
                                 )
                             }
-                            if (carrotManFields.viaPOItime > 0) {
+                            if (carrotManFields.routeRemainDisAuto.isNotEmpty()) {
                                 Text(
-                                    text = "约 ${carrotManFields.viaPOItime / 60} 分钟",
+                                    text = carrotManFields.routeRemainDisAuto,
                                     fontSize = 9.sp,
                                     color = Color(0xFF94A3B8)
                                 )
@@ -2011,21 +1810,71 @@ private fun VehicleLaneDataInfoPanel(
                         }
                     }
 
-                    // 主要战术信息行 (出口、环岛、服务区)
+                    // 2. 车道与超车状态 (紧凑信息条)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color.White.copy(alpha = 0.05f), RoundedCornerShape(6.dp))
+                            .padding(horizontal = 6.dp, vertical = 4.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // 车道信息
+                        if (data?.overtakeStatus != null && data.overtakeStatus.totalLanes > 0) {
+                            val laneStatus = data.overtakeStatus
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                Icon(Icons.Default.List, contentDescription = null, tint = Color(0xFF94A3B8), modifier = Modifier.size(10.dp))
+                                Text(
+                                    text = "L${laneStatus.currentLane}/${laneStatus.totalLanes}",
+                                    fontSize = 9.sp,
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        } else {
+                            Text(text = "🛣️ 车道监控中", fontSize = 8.sp, color = Color(0xFF94A3B8))
+                        }
+
+                        // 动态提示文本 (优先级：车道提醒 > 阻止原因 > 冷却 > 详情)
+                        val laneReminder = data?.overtakeStatus?.laneReminder
+                        val displayHint = when {
+                            laneReminder != null -> "📢 $laneReminder"
+                            blockingReason != null -> "🚫 $blockingReason"
+                            cooldownText != null -> "⏱️ $cooldownText"
+                            hintInfo.title != "监控中" -> "${hintInfo.icon} ${hintInfo.detail}"
+                            else -> "👁️ 驾驶监控中"
+                        }
+                        
+                        Text(
+                            text = displayHint,
+                            fontSize = 9.sp,
+                            color = when {
+                                laneReminder != null -> Color(0xFFFBBF24)
+                                blockingReason != null -> Color(0xFFFCA5A5)
+                                else -> Color.White.copy(alpha = 0.9f)
+                            },
+                            fontWeight = if (laneReminder != null || blockingReason != null) FontWeight.Bold else FontWeight.Medium,
+                            maxLines = 1,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f, fill = false).padding(start = 8.dp)
+                        )
+                    }
+
+                    // 3. 核心引导战术区 (仅在有数据时显示，平铺布局)
                     if (carrotManFields.exitNameInfo.isNotEmpty() || carrotManFields.roundAboutNum > 0 || carrotManFields.sapaName.isNotEmpty()) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
-                            // 出口信息
+                            // 出口磁贴
                             if (carrotManFields.exitNameInfo.isNotEmpty()) {
                                 Column(
                                     modifier = Modifier
                                         .weight(1f)
-                                        .background(Color.White.copy(alpha = 0.05f), RoundedCornerShape(6.dp))
-                                        .padding(8.dp)
+                                        .background(Color(0xFF1E293B), RoundedCornerShape(6.dp))
+                                        .padding(6.dp)
                                 ) {
-                                    Text("🚏 出口", fontSize = 8.sp, color = Color(0xFF94A3B8))
+                                    Text("🚏 出口", fontSize = 7.sp, color = Color(0xFF94A3B8))
                                     Text(
                                         text = carrotManFields.exitNameInfo,
                                         fontSize = 10.sp,
@@ -2035,146 +1884,94 @@ private fun VehicleLaneDataInfoPanel(
                                         overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                                     )
                                     if (carrotManFields.exitDirectionInfo.isNotEmpty()) {
-                                        Text(
-                                            text = carrotManFields.exitDirectionInfo,
-                                            fontSize = 7.sp,
-                                            color = Color(0xFFFBBF24),
-                                            fontWeight = FontWeight.Medium
-                                        )
+                                        Text(text = carrotManFields.exitDirectionInfo, fontSize = 7.sp, color = Color(0xFFFBBF24))
                                     }
                                 }
                             }
 
-                            // 环岛信息
-                            if (carrotManFields.roundAboutNum > 0) {
-                                Column(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .background(Color.White.copy(alpha = 0.05f), RoundedCornerShape(6.dp))
-                                        .padding(8.dp)
-                                ) {
-                                    Text("🔄 环岛", fontSize = 8.sp, color = Color(0xFF94A3B8))
-                                    Text(
-                                        text = "第 ${carrotManFields.roundAboutNum} 出口",
-                                        fontSize = 10.sp,
-                                        color = Color.White,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                    if (carrotManFields.roundAllNum > 0) {
-                                        Text(
-                                            text = "共 ${carrotManFields.roundAllNum} 个",
-                                            fontSize = 7.sp,
-                                            color = Color(0xFF94A3B8)
-                                        )
-                                    }
-                                }
+                            // 服务区/环岛磁贴
+                            val secondaryInfo = when {
+                                carrotManFields.sapaName.isNotEmpty() -> "SAPA" to carrotManFields.sapaName
+                                carrotManFields.roundAboutNum > 0 -> "ROUND" to "第${carrotManFields.roundAboutNum}出口"
+                                else -> null
                             }
 
-                            // 服务区信息
-                            if (carrotManFields.sapaName.isNotEmpty()) {
+                            if (secondaryInfo != null) {
                                 Column(
                                     modifier = Modifier
                                         .weight(1f)
-                                        .background(Color.White.copy(alpha = 0.05f), RoundedCornerShape(6.dp))
-                                        .padding(8.dp)
+                                        .background(Color(0xFF1E293B), RoundedCornerShape(6.dp))
+                                        .padding(6.dp)
                                 ) {
-                                    Text("🏪 设施", fontSize = 8.sp, color = Color(0xFF94A3B8))
+                                    Text(text = "📍 ${secondaryInfo.first}", fontSize = 7.sp, color = Color(0xFF94A3B8))
                                     Text(
-                                        text = carrotManFields.sapaName,
+                                        text = secondaryInfo.second,
                                         fontSize = 10.sp,
                                         color = Color.White,
                                         fontWeight = FontWeight.Bold,
                                         maxLines = 1,
                                         overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                                     )
-                                    if (carrotManFields.sapaDist > 0) {
-                                        Text(
-                                            text = if (carrotManFields.sapaDistAuto.isNotEmpty()) carrotManFields.sapaDistAuto else "${carrotManFields.sapaDist}m",
-                                            fontSize = 7.sp,
-                                            color = Color(0xFF94A3B8)
-                                        )
+                                    if (carrotManFields.sapaDistAuto.isNotEmpty()) {
+                                        Text(text = carrotManFields.sapaDistAuto, fontSize = 7.sp, color = Color(0xFF94A3B8))
                                     }
                                 }
                             }
                         }
                     }
-                    
-                    // 🆕 电子眼增强信息
-                    if (carrotManFields.nSdiType != -1 && (carrotManFields.cameraPenalty || carrotManFields.newCamera)) {
+
+                    // 4. 特殊告警行 (测速、电子眼、辅助动作)
+                    if (carrotManFields.nSdiBlockType == 2 || (carrotManFields.nSdiType != -1 && carrotManFields.cameraPenalty) || carrotManFields.segAssistantAction > 0) {
                         Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(Color(0xFFEF4444).copy(alpha = 0.1f), RoundedCornerShape(4.dp))
-                                .padding(horizontal = 6.dp, vertical = 2.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("📸 电子眼", fontSize = 8.sp, color = Color(0xFFF87171))
-                            if (carrotManFields.cameraPenalty) {
+                            // 区间测速
+                            if (carrotManFields.nSdiBlockType == 2) {
+                                Row(
+                                    modifier = Modifier
+                                        .background(VehicleLaneUIConstants.COLOR_DANGER.copy(alpha = 0.15f), RoundedCornerShape(4.dp))
+                                        .padding(horizontal = 4.dp, vertical = 2.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    Text("📏 ${carrotManFields.nSdiDist}m", fontSize = 8.sp, color = Color.White, fontWeight = FontWeight.Bold)
+                                    Text("限${carrotManFields.nSdiBlockSpeed}", fontSize = 8.sp, color = VehicleLaneUIConstants.COLOR_DANGER)
+                                }
+                            }
+
+                            // 辅助动作
+                            if (carrotManFields.segAssistantAction > 0) {
+                                val actionText = when (carrotManFields.segAssistantAction) {
+                                    1 -> "分流"
+                                    2 -> "岔路"
+                                    3 -> "保持"
+                                    5 -> "主路"
+                                    34 -> "汇入"
+                                    else -> "辅助"
+                                }
                                 Text(
-                                    text = "⚠️ 抓拍违章",
+                                    text = "⚠️ $actionText",
                                     fontSize = 8.sp,
                                     color = Color(0xFFFBBF24),
-                                    fontWeight = FontWeight.Bold
+                                    modifier = Modifier
+                                        .background(Color(0xFFFBBF24).copy(alpha = 0.1f), RoundedCornerShape(3.dp))
+                                        .padding(horizontal = 4.dp, vertical = 1.dp)
                                 )
                             }
-                            if (carrotManFields.newCamera) {
+
+                            // 电子眼
+                            if (carrotManFields.nSdiType != -1 && carrotManFields.cameraPenalty) {
                                 Text(
-                                    text = "🆕 新增",
+                                    text = "📸 抓拍",
                                     fontSize = 8.sp,
-                                    color = Color(0xFF34D399),
-                                    fontWeight = FontWeight.Bold
+                                    color = Color(0xFFF87171),
+                                    modifier = Modifier
+                                        .background(Color(0xFFEF4444).copy(alpha = 0.1f), RoundedCornerShape(3.dp))
+                                        .padding(horizontal = 4.dp, vertical = 1.dp)
                                 )
                             }
-                            if (carrotManFields.cameraID != -1L) {
-                                Spacer(modifier = Modifier.weight(1f))
-                                Text(
-                                    text = "ID: ${carrotManFields.cameraID}",
-                                    fontSize = 6.sp,
-                                    color = Color(0xFF64748B)
-                                )
-                            }
-                        }
-                    }
-                    
-                    // 辅助动作与后续指引
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        // 辅助动作（岔路、分流等复杂路况）
-                        if (carrotManFields.segAssistantAction > 0) {
-                            val actionText = when (carrotManFields.segAssistantAction) {
-                                1 -> "⚠️ 注意分流"
-                                2 -> "⚠️ 注意岔路"
-                                3 -> "⚠️ 保持车道"
-                                5 -> "🛣️ 沿主路行驶"
-                                25 -> "📸 压线拍照"
-                                34 -> "🛣️ 汇入主路"
-                                117 -> "🎯 到达目的地"
-                                else -> "辅助动作:${carrotManFields.segAssistantAction}"
-                            }
-                            Text(
-                                text = actionText,
-                                fontSize = 8.sp,
-                                color = Color(0xFFFBBF24),
-                                fontWeight = FontWeight.Medium,
-                                modifier = Modifier
-                                    .background(Color(0xFFFBBF24).copy(alpha = 0.1f), RoundedCornerShape(3.dp))
-                                    .padding(horizontal = 4.dp, vertical = 2.dp)
-                            )
-                        }
-                        
-                        // 下下个动作预览
-                        if (carrotManFields.nextNextAddIcon.isNotEmpty()) {
-                            Spacer(modifier = Modifier.weight(1f))
-                            Text(
-                                text = "后续: ${carrotManFields.nextNextAddIcon}",
-                                fontSize = 8.sp,
-                                color = Color(0xFF6366F1),
-                                fontWeight = FontWeight.Medium
-                            )
                         }
                     }
                 }
